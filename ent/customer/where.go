@@ -90,6 +90,11 @@ func Cid(v string) predicate.Customer {
 	return predicate.Customer(sql.FieldEQ(FieldCid, v))
 }
 
+// MemberID applies equality check predicate on the "member_id" field. It's identical to MemberIDEQ.
+func MemberID(v int) predicate.Customer {
+	return predicate.Customer(sql.FieldEQ(FieldMemberID, v))
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Customer {
 	return predicate.Customer(sql.FieldEQ(FieldCreatedAt, v))
@@ -470,21 +475,74 @@ func CidContainsFold(v string) predicate.Customer {
 	return predicate.Customer(sql.FieldContainsFold(FieldCid, v))
 }
 
-// HasCustomerID applies the HasEdge predicate on the "customer_id" edge.
-func HasCustomerID() predicate.Customer {
+// MemberIDEQ applies the EQ predicate on the "member_id" field.
+func MemberIDEQ(v int) predicate.Customer {
+	return predicate.Customer(sql.FieldEQ(FieldMemberID, v))
+}
+
+// MemberIDNEQ applies the NEQ predicate on the "member_id" field.
+func MemberIDNEQ(v int) predicate.Customer {
+	return predicate.Customer(sql.FieldNEQ(FieldMemberID, v))
+}
+
+// MemberIDIn applies the In predicate on the "member_id" field.
+func MemberIDIn(vs ...int) predicate.Customer {
+	return predicate.Customer(sql.FieldIn(FieldMemberID, vs...))
+}
+
+// MemberIDNotIn applies the NotIn predicate on the "member_id" field.
+func MemberIDNotIn(vs ...int) predicate.Customer {
+	return predicate.Customer(sql.FieldNotIn(FieldMemberID, vs...))
+}
+
+// MemberIDIsNil applies the IsNil predicate on the "member_id" field.
+func MemberIDIsNil() predicate.Customer {
+	return predicate.Customer(sql.FieldIsNull(FieldMemberID))
+}
+
+// MemberIDNotNil applies the NotNil predicate on the "member_id" field.
+func MemberIDNotNil() predicate.Customer {
+	return predicate.Customer(sql.FieldNotNull(FieldMemberID))
+}
+
+// HasHasMember applies the HasEdge predicate on the "has_Member" edge.
+func HasHasMember() predicate.Customer {
 	return predicate.Customer(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, CustomerIDTable, CustomerIDColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, HasMemberTable, HasMemberColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasCustomerIDWith applies the HasEdge predicate on the "customer_id" edge with a given conditions (other predicates).
-func HasCustomerIDWith(preds ...predicate.Booking) predicate.Customer {
+// HasHasMemberWith applies the HasEdge predicate on the "has_Member" edge with a given conditions (other predicates).
+func HasHasMemberWith(preds ...predicate.Member) predicate.Customer {
 	return predicate.Customer(func(s *sql.Selector) {
-		step := newCustomerIDStep()
+		step := newHasMemberStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasHasFlight applies the HasEdge predicate on the "has_Flight" edge.
+func HasHasFlight() predicate.Customer {
+	return predicate.Customer(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, HasFlightTable, HasFlightColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasHasFlightWith applies the HasEdge predicate on the "has_Flight" edge with a given conditions (other predicates).
+func HasHasFlightWith(preds ...predicate.Flight) predicate.Customer {
+	return predicate.Customer(func(s *sql.Selector) {
+		step := newHasFlightStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

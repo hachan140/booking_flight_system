@@ -40,26 +40,23 @@ const (
 // AirportMutation represents an operation that mutates the Airport nodes in the graph.
 type AirportMutation struct {
 	config
-	op                     Op
-	typ                    string
-	id                     *int
-	created_at             *time.Time
-	updated_at             *time.Time
-	name                   *string
-	lat                    *float64
-	addlat                 *float64
-	long                   *float64
-	addlong                *float64
-	clearedFields          map[string]struct{}
-	from_airport_id        map[int]struct{}
-	removedfrom_airport_id map[int]struct{}
-	clearedfrom_airport_id bool
-	dest_airport_id        map[int]struct{}
-	removeddest_airport_id map[int]struct{}
-	cleareddest_airport_id bool
-	done                   bool
-	oldValue               func(context.Context) (*Airport, error)
-	predicates             []predicate.Airport
+	op                Op
+	typ               string
+	id                *int
+	created_at        *time.Time
+	updated_at        *time.Time
+	name              *string
+	lat               *float64
+	addlat            *float64
+	long              *float64
+	addlong           *float64
+	clearedFields     map[string]struct{}
+	has_Flight        map[int]struct{}
+	removedhas_Flight map[int]struct{}
+	clearedhas_Flight bool
+	done              bool
+	oldValue          func(context.Context) (*Airport, error)
+	predicates        []predicate.Airport
 }
 
 var _ ent.Mutation = (*AirportMutation)(nil)
@@ -380,112 +377,58 @@ func (m *AirportMutation) ResetLong() {
 	m.addlong = nil
 }
 
-// AddFromAirportIDIDs adds the "from_airport_id" edge to the Flight entity by ids.
-func (m *AirportMutation) AddFromAirportIDIDs(ids ...int) {
-	if m.from_airport_id == nil {
-		m.from_airport_id = make(map[int]struct{})
+// AddHasFlightIDs adds the "has_Flight" edge to the Flight entity by ids.
+func (m *AirportMutation) AddHasFlightIDs(ids ...int) {
+	if m.has_Flight == nil {
+		m.has_Flight = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.from_airport_id[ids[i]] = struct{}{}
+		m.has_Flight[ids[i]] = struct{}{}
 	}
 }
 
-// ClearFromAirportID clears the "from_airport_id" edge to the Flight entity.
-func (m *AirportMutation) ClearFromAirportID() {
-	m.clearedfrom_airport_id = true
+// ClearHasFlight clears the "has_Flight" edge to the Flight entity.
+func (m *AirportMutation) ClearHasFlight() {
+	m.clearedhas_Flight = true
 }
 
-// FromAirportIDCleared reports if the "from_airport_id" edge to the Flight entity was cleared.
-func (m *AirportMutation) FromAirportIDCleared() bool {
-	return m.clearedfrom_airport_id
+// HasFlightCleared reports if the "has_Flight" edge to the Flight entity was cleared.
+func (m *AirportMutation) HasFlightCleared() bool {
+	return m.clearedhas_Flight
 }
 
-// RemoveFromAirportIDIDs removes the "from_airport_id" edge to the Flight entity by IDs.
-func (m *AirportMutation) RemoveFromAirportIDIDs(ids ...int) {
-	if m.removedfrom_airport_id == nil {
-		m.removedfrom_airport_id = make(map[int]struct{})
+// RemoveHasFlightIDs removes the "has_Flight" edge to the Flight entity by IDs.
+func (m *AirportMutation) RemoveHasFlightIDs(ids ...int) {
+	if m.removedhas_Flight == nil {
+		m.removedhas_Flight = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m.from_airport_id, ids[i])
-		m.removedfrom_airport_id[ids[i]] = struct{}{}
+		delete(m.has_Flight, ids[i])
+		m.removedhas_Flight[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedFromAirportID returns the removed IDs of the "from_airport_id" edge to the Flight entity.
-func (m *AirportMutation) RemovedFromAirportIDIDs() (ids []int) {
-	for id := range m.removedfrom_airport_id {
+// RemovedHasFlight returns the removed IDs of the "has_Flight" edge to the Flight entity.
+func (m *AirportMutation) RemovedHasFlightIDs() (ids []int) {
+	for id := range m.removedhas_Flight {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// FromAirportIDIDs returns the "from_airport_id" edge IDs in the mutation.
-func (m *AirportMutation) FromAirportIDIDs() (ids []int) {
-	for id := range m.from_airport_id {
+// HasFlightIDs returns the "has_Flight" edge IDs in the mutation.
+func (m *AirportMutation) HasFlightIDs() (ids []int) {
+	for id := range m.has_Flight {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetFromAirportID resets all changes to the "from_airport_id" edge.
-func (m *AirportMutation) ResetFromAirportID() {
-	m.from_airport_id = nil
-	m.clearedfrom_airport_id = false
-	m.removedfrom_airport_id = nil
-}
-
-// AddDestAirportIDIDs adds the "dest_airport_id" edge to the Flight entity by ids.
-func (m *AirportMutation) AddDestAirportIDIDs(ids ...int) {
-	if m.dest_airport_id == nil {
-		m.dest_airport_id = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.dest_airport_id[ids[i]] = struct{}{}
-	}
-}
-
-// ClearDestAirportID clears the "dest_airport_id" edge to the Flight entity.
-func (m *AirportMutation) ClearDestAirportID() {
-	m.cleareddest_airport_id = true
-}
-
-// DestAirportIDCleared reports if the "dest_airport_id" edge to the Flight entity was cleared.
-func (m *AirportMutation) DestAirportIDCleared() bool {
-	return m.cleareddest_airport_id
-}
-
-// RemoveDestAirportIDIDs removes the "dest_airport_id" edge to the Flight entity by IDs.
-func (m *AirportMutation) RemoveDestAirportIDIDs(ids ...int) {
-	if m.removeddest_airport_id == nil {
-		m.removeddest_airport_id = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.dest_airport_id, ids[i])
-		m.removeddest_airport_id[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedDestAirportID returns the removed IDs of the "dest_airport_id" edge to the Flight entity.
-func (m *AirportMutation) RemovedDestAirportIDIDs() (ids []int) {
-	for id := range m.removeddest_airport_id {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// DestAirportIDIDs returns the "dest_airport_id" edge IDs in the mutation.
-func (m *AirportMutation) DestAirportIDIDs() (ids []int) {
-	for id := range m.dest_airport_id {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetDestAirportID resets all changes to the "dest_airport_id" edge.
-func (m *AirportMutation) ResetDestAirportID() {
-	m.dest_airport_id = nil
-	m.cleareddest_airport_id = false
-	m.removeddest_airport_id = nil
+// ResetHasFlight resets all changes to the "has_Flight" edge.
+func (m *AirportMutation) ResetHasFlight() {
+	m.has_Flight = nil
+	m.clearedhas_Flight = false
+	m.removedhas_Flight = nil
 }
 
 // Where appends a list predicates to the AirportMutation builder.
@@ -716,12 +659,9 @@ func (m *AirportMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *AirportMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.from_airport_id != nil {
-		edges = append(edges, airport.EdgeFromAirportID)
-	}
-	if m.dest_airport_id != nil {
-		edges = append(edges, airport.EdgeDestAirportID)
+	edges := make([]string, 0, 1)
+	if m.has_Flight != nil {
+		edges = append(edges, airport.EdgeHasFlight)
 	}
 	return edges
 }
@@ -730,15 +670,9 @@ func (m *AirportMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *AirportMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case airport.EdgeFromAirportID:
-		ids := make([]ent.Value, 0, len(m.from_airport_id))
-		for id := range m.from_airport_id {
-			ids = append(ids, id)
-		}
-		return ids
-	case airport.EdgeDestAirportID:
-		ids := make([]ent.Value, 0, len(m.dest_airport_id))
-		for id := range m.dest_airport_id {
+	case airport.EdgeHasFlight:
+		ids := make([]ent.Value, 0, len(m.has_Flight))
+		for id := range m.has_Flight {
 			ids = append(ids, id)
 		}
 		return ids
@@ -748,12 +682,9 @@ func (m *AirportMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *AirportMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removedfrom_airport_id != nil {
-		edges = append(edges, airport.EdgeFromAirportID)
-	}
-	if m.removeddest_airport_id != nil {
-		edges = append(edges, airport.EdgeDestAirportID)
+	edges := make([]string, 0, 1)
+	if m.removedhas_Flight != nil {
+		edges = append(edges, airport.EdgeHasFlight)
 	}
 	return edges
 }
@@ -762,15 +693,9 @@ func (m *AirportMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *AirportMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case airport.EdgeFromAirportID:
-		ids := make([]ent.Value, 0, len(m.removedfrom_airport_id))
-		for id := range m.removedfrom_airport_id {
-			ids = append(ids, id)
-		}
-		return ids
-	case airport.EdgeDestAirportID:
-		ids := make([]ent.Value, 0, len(m.removeddest_airport_id))
-		for id := range m.removeddest_airport_id {
+	case airport.EdgeHasFlight:
+		ids := make([]ent.Value, 0, len(m.removedhas_Flight))
+		for id := range m.removedhas_Flight {
 			ids = append(ids, id)
 		}
 		return ids
@@ -780,12 +705,9 @@ func (m *AirportMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *AirportMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedfrom_airport_id {
-		edges = append(edges, airport.EdgeFromAirportID)
-	}
-	if m.cleareddest_airport_id {
-		edges = append(edges, airport.EdgeDestAirportID)
+	edges := make([]string, 0, 1)
+	if m.clearedhas_Flight {
+		edges = append(edges, airport.EdgeHasFlight)
 	}
 	return edges
 }
@@ -794,10 +716,8 @@ func (m *AirportMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *AirportMutation) EdgeCleared(name string) bool {
 	switch name {
-	case airport.EdgeFromAirportID:
-		return m.clearedfrom_airport_id
-	case airport.EdgeDestAirportID:
-		return m.cleareddest_airport_id
+	case airport.EdgeHasFlight:
+		return m.clearedhas_Flight
 	}
 	return false
 }
@@ -814,11 +734,8 @@ func (m *AirportMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *AirportMutation) ResetEdge(name string) error {
 	switch name {
-	case airport.EdgeFromAirportID:
-		m.ResetFromAirportID()
-		return nil
-	case airport.EdgeDestAirportID:
-		m.ResetDestAirportID()
+	case airport.EdgeHasFlight:
+		m.ResetHasFlight()
 		return nil
 	}
 	return fmt.Errorf("unknown Airport edge %s", name)
@@ -827,17 +744,19 @@ func (m *AirportMutation) ResetEdge(name string) error {
 // BookingMutation represents an operation that mutates the Booking nodes in the graph.
 type BookingMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	created_at    *time.Time
-	updated_at    *time.Time
-	code          *string
-	status        *booking.Status
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Booking, error)
-	predicates    []predicate.Booking
+	op                Op
+	typ               string
+	id                *int
+	created_at        *time.Time
+	updated_at        *time.Time
+	code              *string
+	status            *string
+	clearedFields     map[string]struct{}
+	has_flight        *int
+	clearedhas_flight bool
+	done              bool
+	oldValue          func(context.Context) (*Booking, error)
+	predicates        []predicate.Booking
 }
 
 var _ ent.Mutation = (*BookingMutation)(nil)
@@ -1047,12 +966,12 @@ func (m *BookingMutation) ResetCode() {
 }
 
 // SetStatus sets the "status" field.
-func (m *BookingMutation) SetStatus(b booking.Status) {
-	m.status = &b
+func (m *BookingMutation) SetStatus(s string) {
+	m.status = &s
 }
 
 // Status returns the value of the "status" field in the mutation.
-func (m *BookingMutation) Status() (r booking.Status, exists bool) {
+func (m *BookingMutation) Status() (r string, exists bool) {
 	v := m.status
 	if v == nil {
 		return
@@ -1063,7 +982,7 @@ func (m *BookingMutation) Status() (r booking.Status, exists bool) {
 // OldStatus returns the old "status" field's value of the Booking entity.
 // If the Booking object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BookingMutation) OldStatus(ctx context.Context) (v booking.Status, err error) {
+func (m *BookingMutation) OldStatus(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
 	}
@@ -1080,6 +999,94 @@ func (m *BookingMutation) OldStatus(ctx context.Context) (v booking.Status, err 
 // ResetStatus resets all changes to the "status" field.
 func (m *BookingMutation) ResetStatus() {
 	m.status = nil
+}
+
+// SetFlightID sets the "flight_id" field.
+func (m *BookingMutation) SetFlightID(i int) {
+	m.has_flight = &i
+}
+
+// FlightID returns the value of the "flight_id" field in the mutation.
+func (m *BookingMutation) FlightID() (r int, exists bool) {
+	v := m.has_flight
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFlightID returns the old "flight_id" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldFlightID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFlightID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFlightID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFlightID: %w", err)
+	}
+	return oldValue.FlightID, nil
+}
+
+// ClearFlightID clears the value of the "flight_id" field.
+func (m *BookingMutation) ClearFlightID() {
+	m.has_flight = nil
+	m.clearedFields[booking.FieldFlightID] = struct{}{}
+}
+
+// FlightIDCleared returns if the "flight_id" field was cleared in this mutation.
+func (m *BookingMutation) FlightIDCleared() bool {
+	_, ok := m.clearedFields[booking.FieldFlightID]
+	return ok
+}
+
+// ResetFlightID resets all changes to the "flight_id" field.
+func (m *BookingMutation) ResetFlightID() {
+	m.has_flight = nil
+	delete(m.clearedFields, booking.FieldFlightID)
+}
+
+// SetHasFlightID sets the "has_flight" edge to the Flight entity by id.
+func (m *BookingMutation) SetHasFlightID(id int) {
+	m.has_flight = &id
+}
+
+// ClearHasFlight clears the "has_flight" edge to the Flight entity.
+func (m *BookingMutation) ClearHasFlight() {
+	m.clearedhas_flight = true
+}
+
+// HasFlightCleared reports if the "has_flight" edge to the Flight entity was cleared.
+func (m *BookingMutation) HasFlightCleared() bool {
+	return m.FlightIDCleared() || m.clearedhas_flight
+}
+
+// HasFlightID returns the "has_flight" edge ID in the mutation.
+func (m *BookingMutation) HasFlightID() (id int, exists bool) {
+	if m.has_flight != nil {
+		return *m.has_flight, true
+	}
+	return
+}
+
+// HasFlightIDs returns the "has_flight" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// HasFlightID instead. It exists only for internal usage by the builders.
+func (m *BookingMutation) HasFlightIDs() (ids []int) {
+	if id := m.has_flight; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetHasFlight resets all changes to the "has_flight" edge.
+func (m *BookingMutation) ResetHasFlight() {
+	m.has_flight = nil
+	m.clearedhas_flight = false
 }
 
 // Where appends a list predicates to the BookingMutation builder.
@@ -1116,7 +1123,7 @@ func (m *BookingMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *BookingMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.created_at != nil {
 		fields = append(fields, booking.FieldCreatedAt)
 	}
@@ -1128,6 +1135,9 @@ func (m *BookingMutation) Fields() []string {
 	}
 	if m.status != nil {
 		fields = append(fields, booking.FieldStatus)
+	}
+	if m.has_flight != nil {
+		fields = append(fields, booking.FieldFlightID)
 	}
 	return fields
 }
@@ -1145,6 +1155,8 @@ func (m *BookingMutation) Field(name string) (ent.Value, bool) {
 		return m.Code()
 	case booking.FieldStatus:
 		return m.Status()
+	case booking.FieldFlightID:
+		return m.FlightID()
 	}
 	return nil, false
 }
@@ -1162,6 +1174,8 @@ func (m *BookingMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldCode(ctx)
 	case booking.FieldStatus:
 		return m.OldStatus(ctx)
+	case booking.FieldFlightID:
+		return m.OldFlightID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Booking field %s", name)
 }
@@ -1193,11 +1207,18 @@ func (m *BookingMutation) SetField(name string, value ent.Value) error {
 		m.SetCode(v)
 		return nil
 	case booking.FieldStatus:
-		v, ok := value.(booking.Status)
+		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
+		return nil
+	case booking.FieldFlightID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFlightID(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Booking field %s", name)
@@ -1206,13 +1227,16 @@ func (m *BookingMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *BookingMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *BookingMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
 	return nil, false
 }
 
@@ -1228,7 +1252,11 @@ func (m *BookingMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *BookingMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(booking.FieldFlightID) {
+		fields = append(fields, booking.FieldFlightID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1241,6 +1269,11 @@ func (m *BookingMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *BookingMutation) ClearField(name string) error {
+	switch name {
+	case booking.FieldFlightID:
+		m.ClearFlightID()
+		return nil
+	}
 	return fmt.Errorf("unknown Booking nullable field %s", name)
 }
 
@@ -1260,25 +1293,37 @@ func (m *BookingMutation) ResetField(name string) error {
 	case booking.FieldStatus:
 		m.ResetStatus()
 		return nil
+	case booking.FieldFlightID:
+		m.ResetFlightID()
+		return nil
 	}
 	return fmt.Errorf("unknown Booking field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *BookingMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.has_flight != nil {
+		edges = append(edges, booking.EdgeHasFlight)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *BookingMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case booking.EdgeHasFlight:
+		if id := m.has_flight; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *BookingMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
@@ -1290,48 +1335,67 @@ func (m *BookingMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *BookingMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedhas_flight {
+		edges = append(edges, booking.EdgeHasFlight)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *BookingMutation) EdgeCleared(name string) bool {
+	switch name {
+	case booking.EdgeHasFlight:
+		return m.clearedhas_flight
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *BookingMutation) ClearEdge(name string) error {
+	switch name {
+	case booking.EdgeHasFlight:
+		m.ClearHasFlight()
+		return nil
+	}
 	return fmt.Errorf("unknown Booking unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *BookingMutation) ResetEdge(name string) error {
+	switch name {
+	case booking.EdgeHasFlight:
+		m.ResetHasFlight()
+		return nil
+	}
 	return fmt.Errorf("unknown Booking edge %s", name)
 }
 
 // CustomerMutation represents an operation that mutates the Customer nodes in the graph.
 type CustomerMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *int
-	created_at         *time.Time
-	updated_at         *time.Time
-	email              *string
-	phone_number       *string
-	full_name          *string
-	dob                *time.Time
-	cid                *string
-	clearedFields      map[string]struct{}
-	customer_id        map[int]struct{}
-	removedcustomer_id map[int]struct{}
-	clearedcustomer_id bool
-	done               bool
-	oldValue           func(context.Context) (*Customer, error)
-	predicates         []predicate.Customer
+	op                Op
+	typ               string
+	id                *int
+	created_at        *time.Time
+	updated_at        *time.Time
+	email             *string
+	phone_number      *string
+	full_name         *string
+	dob               *time.Time
+	cid               *string
+	clearedFields     map[string]struct{}
+	has_Member        *int
+	clearedhas_Member bool
+	has_Flight        map[int]struct{}
+	removedhas_Flight map[int]struct{}
+	clearedhas_Flight bool
+	done              bool
+	oldValue          func(context.Context) (*Customer, error)
+	predicates        []predicate.Customer
 }
 
 var _ ent.Mutation = (*CustomerMutation)(nil)
@@ -1684,58 +1748,146 @@ func (m *CustomerMutation) ResetCid() {
 	m.cid = nil
 }
 
-// AddCustomerIDIDs adds the "customer_id" edge to the Booking entity by ids.
-func (m *CustomerMutation) AddCustomerIDIDs(ids ...int) {
-	if m.customer_id == nil {
-		m.customer_id = make(map[int]struct{})
+// SetMemberID sets the "member_id" field.
+func (m *CustomerMutation) SetMemberID(i int) {
+	m.has_Member = &i
+}
+
+// MemberID returns the value of the "member_id" field in the mutation.
+func (m *CustomerMutation) MemberID() (r int, exists bool) {
+	v := m.has_Member
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldMemberID returns the old "member_id" field's value of the Customer entity.
+// If the Customer object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *CustomerMutation) OldMemberID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldMemberID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldMemberID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldMemberID: %w", err)
+	}
+	return oldValue.MemberID, nil
+}
+
+// ClearMemberID clears the value of the "member_id" field.
+func (m *CustomerMutation) ClearMemberID() {
+	m.has_Member = nil
+	m.clearedFields[customer.FieldMemberID] = struct{}{}
+}
+
+// MemberIDCleared returns if the "member_id" field was cleared in this mutation.
+func (m *CustomerMutation) MemberIDCleared() bool {
+	_, ok := m.clearedFields[customer.FieldMemberID]
+	return ok
+}
+
+// ResetMemberID resets all changes to the "member_id" field.
+func (m *CustomerMutation) ResetMemberID() {
+	m.has_Member = nil
+	delete(m.clearedFields, customer.FieldMemberID)
+}
+
+// SetHasMemberID sets the "has_Member" edge to the Member entity by id.
+func (m *CustomerMutation) SetHasMemberID(id int) {
+	m.has_Member = &id
+}
+
+// ClearHasMember clears the "has_Member" edge to the Member entity.
+func (m *CustomerMutation) ClearHasMember() {
+	m.clearedhas_Member = true
+}
+
+// HasMemberCleared reports if the "has_Member" edge to the Member entity was cleared.
+func (m *CustomerMutation) HasMemberCleared() bool {
+	return m.MemberIDCleared() || m.clearedhas_Member
+}
+
+// HasMemberID returns the "has_Member" edge ID in the mutation.
+func (m *CustomerMutation) HasMemberID() (id int, exists bool) {
+	if m.has_Member != nil {
+		return *m.has_Member, true
+	}
+	return
+}
+
+// HasMemberIDs returns the "has_Member" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// HasMemberID instead. It exists only for internal usage by the builders.
+func (m *CustomerMutation) HasMemberIDs() (ids []int) {
+	if id := m.has_Member; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetHasMember resets all changes to the "has_Member" edge.
+func (m *CustomerMutation) ResetHasMember() {
+	m.has_Member = nil
+	m.clearedhas_Member = false
+}
+
+// AddHasFlightIDs adds the "has_Flight" edge to the Flight entity by ids.
+func (m *CustomerMutation) AddHasFlightIDs(ids ...int) {
+	if m.has_Flight == nil {
+		m.has_Flight = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.customer_id[ids[i]] = struct{}{}
+		m.has_Flight[ids[i]] = struct{}{}
 	}
 }
 
-// ClearCustomerID clears the "customer_id" edge to the Booking entity.
-func (m *CustomerMutation) ClearCustomerID() {
-	m.clearedcustomer_id = true
+// ClearHasFlight clears the "has_Flight" edge to the Flight entity.
+func (m *CustomerMutation) ClearHasFlight() {
+	m.clearedhas_Flight = true
 }
 
-// CustomerIDCleared reports if the "customer_id" edge to the Booking entity was cleared.
-func (m *CustomerMutation) CustomerIDCleared() bool {
-	return m.clearedcustomer_id
+// HasFlightCleared reports if the "has_Flight" edge to the Flight entity was cleared.
+func (m *CustomerMutation) HasFlightCleared() bool {
+	return m.clearedhas_Flight
 }
 
-// RemoveCustomerIDIDs removes the "customer_id" edge to the Booking entity by IDs.
-func (m *CustomerMutation) RemoveCustomerIDIDs(ids ...int) {
-	if m.removedcustomer_id == nil {
-		m.removedcustomer_id = make(map[int]struct{})
+// RemoveHasFlightIDs removes the "has_Flight" edge to the Flight entity by IDs.
+func (m *CustomerMutation) RemoveHasFlightIDs(ids ...int) {
+	if m.removedhas_Flight == nil {
+		m.removedhas_Flight = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m.customer_id, ids[i])
-		m.removedcustomer_id[ids[i]] = struct{}{}
+		delete(m.has_Flight, ids[i])
+		m.removedhas_Flight[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedCustomerID returns the removed IDs of the "customer_id" edge to the Booking entity.
-func (m *CustomerMutation) RemovedCustomerIDIDs() (ids []int) {
-	for id := range m.removedcustomer_id {
+// RemovedHasFlight returns the removed IDs of the "has_Flight" edge to the Flight entity.
+func (m *CustomerMutation) RemovedHasFlightIDs() (ids []int) {
+	for id := range m.removedhas_Flight {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// CustomerIDIDs returns the "customer_id" edge IDs in the mutation.
-func (m *CustomerMutation) CustomerIDIDs() (ids []int) {
-	for id := range m.customer_id {
+// HasFlightIDs returns the "has_Flight" edge IDs in the mutation.
+func (m *CustomerMutation) HasFlightIDs() (ids []int) {
+	for id := range m.has_Flight {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetCustomerID resets all changes to the "customer_id" edge.
-func (m *CustomerMutation) ResetCustomerID() {
-	m.customer_id = nil
-	m.clearedcustomer_id = false
-	m.removedcustomer_id = nil
+// ResetHasFlight resets all changes to the "has_Flight" edge.
+func (m *CustomerMutation) ResetHasFlight() {
+	m.has_Flight = nil
+	m.clearedhas_Flight = false
+	m.removedhas_Flight = nil
 }
 
 // Where appends a list predicates to the CustomerMutation builder.
@@ -1772,7 +1924,7 @@ func (m *CustomerMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *CustomerMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.created_at != nil {
 		fields = append(fields, customer.FieldCreatedAt)
 	}
@@ -1793,6 +1945,9 @@ func (m *CustomerMutation) Fields() []string {
 	}
 	if m.cid != nil {
 		fields = append(fields, customer.FieldCid)
+	}
+	if m.has_Member != nil {
+		fields = append(fields, customer.FieldMemberID)
 	}
 	return fields
 }
@@ -1816,6 +1971,8 @@ func (m *CustomerMutation) Field(name string) (ent.Value, bool) {
 		return m.Dob()
 	case customer.FieldCid:
 		return m.Cid()
+	case customer.FieldMemberID:
+		return m.MemberID()
 	}
 	return nil, false
 }
@@ -1839,6 +1996,8 @@ func (m *CustomerMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldDob(ctx)
 	case customer.FieldCid:
 		return m.OldCid(ctx)
+	case customer.FieldMemberID:
+		return m.OldMemberID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Customer field %s", name)
 }
@@ -1897,6 +2056,13 @@ func (m *CustomerMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCid(v)
 		return nil
+	case customer.FieldMemberID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetMemberID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Customer field %s", name)
 }
@@ -1904,13 +2070,16 @@ func (m *CustomerMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *CustomerMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *CustomerMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
 	return nil, false
 }
 
@@ -1926,7 +2095,11 @@ func (m *CustomerMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *CustomerMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(customer.FieldMemberID) {
+		fields = append(fields, customer.FieldMemberID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1939,6 +2112,11 @@ func (m *CustomerMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *CustomerMutation) ClearField(name string) error {
+	switch name {
+	case customer.FieldMemberID:
+		m.ClearMemberID()
+		return nil
+	}
 	return fmt.Errorf("unknown Customer nullable field %s", name)
 }
 
@@ -1967,15 +2145,21 @@ func (m *CustomerMutation) ResetField(name string) error {
 	case customer.FieldCid:
 		m.ResetCid()
 		return nil
+	case customer.FieldMemberID:
+		m.ResetMemberID()
+		return nil
 	}
 	return fmt.Errorf("unknown Customer field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *CustomerMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.customer_id != nil {
-		edges = append(edges, customer.EdgeCustomerID)
+	edges := make([]string, 0, 2)
+	if m.has_Member != nil {
+		edges = append(edges, customer.EdgeHasMember)
+	}
+	if m.has_Flight != nil {
+		edges = append(edges, customer.EdgeHasFlight)
 	}
 	return edges
 }
@@ -1984,9 +2168,13 @@ func (m *CustomerMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *CustomerMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case customer.EdgeCustomerID:
-		ids := make([]ent.Value, 0, len(m.customer_id))
-		for id := range m.customer_id {
+	case customer.EdgeHasMember:
+		if id := m.has_Member; id != nil {
+			return []ent.Value{*id}
+		}
+	case customer.EdgeHasFlight:
+		ids := make([]ent.Value, 0, len(m.has_Flight))
+		for id := range m.has_Flight {
 			ids = append(ids, id)
 		}
 		return ids
@@ -1996,9 +2184,9 @@ func (m *CustomerMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *CustomerMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.removedcustomer_id != nil {
-		edges = append(edges, customer.EdgeCustomerID)
+	edges := make([]string, 0, 2)
+	if m.removedhas_Flight != nil {
+		edges = append(edges, customer.EdgeHasFlight)
 	}
 	return edges
 }
@@ -2007,9 +2195,9 @@ func (m *CustomerMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *CustomerMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case customer.EdgeCustomerID:
-		ids := make([]ent.Value, 0, len(m.removedcustomer_id))
-		for id := range m.removedcustomer_id {
+	case customer.EdgeHasFlight:
+		ids := make([]ent.Value, 0, len(m.removedhas_Flight))
+		for id := range m.removedhas_Flight {
 			ids = append(ids, id)
 		}
 		return ids
@@ -2019,9 +2207,12 @@ func (m *CustomerMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *CustomerMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedcustomer_id {
-		edges = append(edges, customer.EdgeCustomerID)
+	edges := make([]string, 0, 2)
+	if m.clearedhas_Member {
+		edges = append(edges, customer.EdgeHasMember)
+	}
+	if m.clearedhas_Flight {
+		edges = append(edges, customer.EdgeHasFlight)
 	}
 	return edges
 }
@@ -2030,8 +2221,10 @@ func (m *CustomerMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *CustomerMutation) EdgeCleared(name string) bool {
 	switch name {
-	case customer.EdgeCustomerID:
-		return m.clearedcustomer_id
+	case customer.EdgeHasMember:
+		return m.clearedhas_Member
+	case customer.EdgeHasFlight:
+		return m.clearedhas_Flight
 	}
 	return false
 }
@@ -2040,6 +2233,9 @@ func (m *CustomerMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *CustomerMutation) ClearEdge(name string) error {
 	switch name {
+	case customer.EdgeHasMember:
+		m.ClearHasMember()
+		return nil
 	}
 	return fmt.Errorf("unknown Customer unique edge %s", name)
 }
@@ -2048,8 +2244,11 @@ func (m *CustomerMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *CustomerMutation) ResetEdge(name string) error {
 	switch name {
-	case customer.EdgeCustomerID:
-		m.ResetCustomerID()
+	case customer.EdgeHasMember:
+		m.ResetHasMember()
+		return nil
+	case customer.EdgeHasFlight:
+		m.ResetHasFlight()
 		return nil
 	}
 	return fmt.Errorf("unknown Customer edge %s", name)
@@ -2072,9 +2271,15 @@ type FlightMutation struct {
 	addavailable_bc_slot *int
 	status               *flight.Status
 	clearedFields        map[string]struct{}
-	flight_id            map[int]struct{}
-	removedflight_id     map[int]struct{}
-	clearedflight_id     bool
+	has_plane            *int
+	clearedhas_plane     bool
+	has_booking          map[int]struct{}
+	removedhas_booking   map[int]struct{}
+	clearedhas_booking   bool
+	has_Airport          *int
+	clearedhas_Airport   bool
+	has_Customer         *int
+	clearedhas_Customer  bool
 	done                 bool
 	oldValue             func(context.Context) (*Flight, error)
 	predicates           []predicate.Flight
@@ -2506,58 +2711,322 @@ func (m *FlightMutation) ResetStatus() {
 	m.status = nil
 }
 
-// AddFlightIDIDs adds the "flight_id" edge to the Booking entity by ids.
-func (m *FlightMutation) AddFlightIDIDs(ids ...int) {
-	if m.flight_id == nil {
-		m.flight_id = make(map[int]struct{})
+// SetPlaneID sets the "plane_id" field.
+func (m *FlightMutation) SetPlaneID(i int) {
+	m.has_plane = &i
+}
+
+// PlaneID returns the value of the "plane_id" field in the mutation.
+func (m *FlightMutation) PlaneID() (r int, exists bool) {
+	v := m.has_plane
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPlaneID returns the old "plane_id" field's value of the Flight entity.
+// If the Flight object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FlightMutation) OldPlaneID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPlaneID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPlaneID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPlaneID: %w", err)
+	}
+	return oldValue.PlaneID, nil
+}
+
+// ClearPlaneID clears the value of the "plane_id" field.
+func (m *FlightMutation) ClearPlaneID() {
+	m.has_plane = nil
+	m.clearedFields[flight.FieldPlaneID] = struct{}{}
+}
+
+// PlaneIDCleared returns if the "plane_id" field was cleared in this mutation.
+func (m *FlightMutation) PlaneIDCleared() bool {
+	_, ok := m.clearedFields[flight.FieldPlaneID]
+	return ok
+}
+
+// ResetPlaneID resets all changes to the "plane_id" field.
+func (m *FlightMutation) ResetPlaneID() {
+	m.has_plane = nil
+	delete(m.clearedFields, flight.FieldPlaneID)
+}
+
+// SetAirportID sets the "airport_id" field.
+func (m *FlightMutation) SetAirportID(i int) {
+	m.has_Airport = &i
+}
+
+// AirportID returns the value of the "airport_id" field in the mutation.
+func (m *FlightMutation) AirportID() (r int, exists bool) {
+	v := m.has_Airport
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldAirportID returns the old "airport_id" field's value of the Flight entity.
+// If the Flight object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FlightMutation) OldAirportID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldAirportID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldAirportID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldAirportID: %w", err)
+	}
+	return oldValue.AirportID, nil
+}
+
+// ClearAirportID clears the value of the "airport_id" field.
+func (m *FlightMutation) ClearAirportID() {
+	m.has_Airport = nil
+	m.clearedFields[flight.FieldAirportID] = struct{}{}
+}
+
+// AirportIDCleared returns if the "airport_id" field was cleared in this mutation.
+func (m *FlightMutation) AirportIDCleared() bool {
+	_, ok := m.clearedFields[flight.FieldAirportID]
+	return ok
+}
+
+// ResetAirportID resets all changes to the "airport_id" field.
+func (m *FlightMutation) ResetAirportID() {
+	m.has_Airport = nil
+	delete(m.clearedFields, flight.FieldAirportID)
+}
+
+// SetCustomerID sets the "customer_id" field.
+func (m *FlightMutation) SetCustomerID(i int) {
+	m.has_Customer = &i
+}
+
+// CustomerID returns the value of the "customer_id" field in the mutation.
+func (m *FlightMutation) CustomerID() (r int, exists bool) {
+	v := m.has_Customer
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCustomerID returns the old "customer_id" field's value of the Flight entity.
+// If the Flight object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *FlightMutation) OldCustomerID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCustomerID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCustomerID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCustomerID: %w", err)
+	}
+	return oldValue.CustomerID, nil
+}
+
+// ClearCustomerID clears the value of the "customer_id" field.
+func (m *FlightMutation) ClearCustomerID() {
+	m.has_Customer = nil
+	m.clearedFields[flight.FieldCustomerID] = struct{}{}
+}
+
+// CustomerIDCleared returns if the "customer_id" field was cleared in this mutation.
+func (m *FlightMutation) CustomerIDCleared() bool {
+	_, ok := m.clearedFields[flight.FieldCustomerID]
+	return ok
+}
+
+// ResetCustomerID resets all changes to the "customer_id" field.
+func (m *FlightMutation) ResetCustomerID() {
+	m.has_Customer = nil
+	delete(m.clearedFields, flight.FieldCustomerID)
+}
+
+// SetHasPlaneID sets the "has_plane" edge to the Plane entity by id.
+func (m *FlightMutation) SetHasPlaneID(id int) {
+	m.has_plane = &id
+}
+
+// ClearHasPlane clears the "has_plane" edge to the Plane entity.
+func (m *FlightMutation) ClearHasPlane() {
+	m.clearedhas_plane = true
+}
+
+// HasPlaneCleared reports if the "has_plane" edge to the Plane entity was cleared.
+func (m *FlightMutation) HasPlaneCleared() bool {
+	return m.PlaneIDCleared() || m.clearedhas_plane
+}
+
+// HasPlaneID returns the "has_plane" edge ID in the mutation.
+func (m *FlightMutation) HasPlaneID() (id int, exists bool) {
+	if m.has_plane != nil {
+		return *m.has_plane, true
+	}
+	return
+}
+
+// HasPlaneIDs returns the "has_plane" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// HasPlaneID instead. It exists only for internal usage by the builders.
+func (m *FlightMutation) HasPlaneIDs() (ids []int) {
+	if id := m.has_plane; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetHasPlane resets all changes to the "has_plane" edge.
+func (m *FlightMutation) ResetHasPlane() {
+	m.has_plane = nil
+	m.clearedhas_plane = false
+}
+
+// AddHasBookingIDs adds the "has_booking" edge to the Booking entity by ids.
+func (m *FlightMutation) AddHasBookingIDs(ids ...int) {
+	if m.has_booking == nil {
+		m.has_booking = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.flight_id[ids[i]] = struct{}{}
+		m.has_booking[ids[i]] = struct{}{}
 	}
 }
 
-// ClearFlightID clears the "flight_id" edge to the Booking entity.
-func (m *FlightMutation) ClearFlightID() {
-	m.clearedflight_id = true
+// ClearHasBooking clears the "has_booking" edge to the Booking entity.
+func (m *FlightMutation) ClearHasBooking() {
+	m.clearedhas_booking = true
 }
 
-// FlightIDCleared reports if the "flight_id" edge to the Booking entity was cleared.
-func (m *FlightMutation) FlightIDCleared() bool {
-	return m.clearedflight_id
+// HasBookingCleared reports if the "has_booking" edge to the Booking entity was cleared.
+func (m *FlightMutation) HasBookingCleared() bool {
+	return m.clearedhas_booking
 }
 
-// RemoveFlightIDIDs removes the "flight_id" edge to the Booking entity by IDs.
-func (m *FlightMutation) RemoveFlightIDIDs(ids ...int) {
-	if m.removedflight_id == nil {
-		m.removedflight_id = make(map[int]struct{})
+// RemoveHasBookingIDs removes the "has_booking" edge to the Booking entity by IDs.
+func (m *FlightMutation) RemoveHasBookingIDs(ids ...int) {
+	if m.removedhas_booking == nil {
+		m.removedhas_booking = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m.flight_id, ids[i])
-		m.removedflight_id[ids[i]] = struct{}{}
+		delete(m.has_booking, ids[i])
+		m.removedhas_booking[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedFlightID returns the removed IDs of the "flight_id" edge to the Booking entity.
-func (m *FlightMutation) RemovedFlightIDIDs() (ids []int) {
-	for id := range m.removedflight_id {
+// RemovedHasBooking returns the removed IDs of the "has_booking" edge to the Booking entity.
+func (m *FlightMutation) RemovedHasBookingIDs() (ids []int) {
+	for id := range m.removedhas_booking {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// FlightIDIDs returns the "flight_id" edge IDs in the mutation.
-func (m *FlightMutation) FlightIDIDs() (ids []int) {
-	for id := range m.flight_id {
+// HasBookingIDs returns the "has_booking" edge IDs in the mutation.
+func (m *FlightMutation) HasBookingIDs() (ids []int) {
+	for id := range m.has_booking {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetFlightID resets all changes to the "flight_id" edge.
-func (m *FlightMutation) ResetFlightID() {
-	m.flight_id = nil
-	m.clearedflight_id = false
-	m.removedflight_id = nil
+// ResetHasBooking resets all changes to the "has_booking" edge.
+func (m *FlightMutation) ResetHasBooking() {
+	m.has_booking = nil
+	m.clearedhas_booking = false
+	m.removedhas_booking = nil
+}
+
+// SetHasAirportID sets the "has_Airport" edge to the Airport entity by id.
+func (m *FlightMutation) SetHasAirportID(id int) {
+	m.has_Airport = &id
+}
+
+// ClearHasAirport clears the "has_Airport" edge to the Airport entity.
+func (m *FlightMutation) ClearHasAirport() {
+	m.clearedhas_Airport = true
+}
+
+// HasAirportCleared reports if the "has_Airport" edge to the Airport entity was cleared.
+func (m *FlightMutation) HasAirportCleared() bool {
+	return m.AirportIDCleared() || m.clearedhas_Airport
+}
+
+// HasAirportID returns the "has_Airport" edge ID in the mutation.
+func (m *FlightMutation) HasAirportID() (id int, exists bool) {
+	if m.has_Airport != nil {
+		return *m.has_Airport, true
+	}
+	return
+}
+
+// HasAirportIDs returns the "has_Airport" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// HasAirportID instead. It exists only for internal usage by the builders.
+func (m *FlightMutation) HasAirportIDs() (ids []int) {
+	if id := m.has_Airport; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetHasAirport resets all changes to the "has_Airport" edge.
+func (m *FlightMutation) ResetHasAirport() {
+	m.has_Airport = nil
+	m.clearedhas_Airport = false
+}
+
+// SetHasCustomerID sets the "has_Customer" edge to the Customer entity by id.
+func (m *FlightMutation) SetHasCustomerID(id int) {
+	m.has_Customer = &id
+}
+
+// ClearHasCustomer clears the "has_Customer" edge to the Customer entity.
+func (m *FlightMutation) ClearHasCustomer() {
+	m.clearedhas_Customer = true
+}
+
+// HasCustomerCleared reports if the "has_Customer" edge to the Customer entity was cleared.
+func (m *FlightMutation) HasCustomerCleared() bool {
+	return m.CustomerIDCleared() || m.clearedhas_Customer
+}
+
+// HasCustomerID returns the "has_Customer" edge ID in the mutation.
+func (m *FlightMutation) HasCustomerID() (id int, exists bool) {
+	if m.has_Customer != nil {
+		return *m.has_Customer, true
+	}
+	return
+}
+
+// HasCustomerIDs returns the "has_Customer" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// HasCustomerID instead. It exists only for internal usage by the builders.
+func (m *FlightMutation) HasCustomerIDs() (ids []int) {
+	if id := m.has_Customer; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetHasCustomer resets all changes to the "has_Customer" edge.
+func (m *FlightMutation) ResetHasCustomer() {
+	m.has_Customer = nil
+	m.clearedhas_Customer = false
 }
 
 // Where appends a list predicates to the FlightMutation builder.
@@ -2594,7 +3063,7 @@ func (m *FlightMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *FlightMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 11)
 	if m.created_at != nil {
 		fields = append(fields, flight.FieldCreatedAt)
 	}
@@ -2618,6 +3087,15 @@ func (m *FlightMutation) Fields() []string {
 	}
 	if m.status != nil {
 		fields = append(fields, flight.FieldStatus)
+	}
+	if m.has_plane != nil {
+		fields = append(fields, flight.FieldPlaneID)
+	}
+	if m.has_Airport != nil {
+		fields = append(fields, flight.FieldAirportID)
+	}
+	if m.has_Customer != nil {
+		fields = append(fields, flight.FieldCustomerID)
 	}
 	return fields
 }
@@ -2643,6 +3121,12 @@ func (m *FlightMutation) Field(name string) (ent.Value, bool) {
 		return m.AvailableBcSlot()
 	case flight.FieldStatus:
 		return m.Status()
+	case flight.FieldPlaneID:
+		return m.PlaneID()
+	case flight.FieldAirportID:
+		return m.AirportID()
+	case flight.FieldCustomerID:
+		return m.CustomerID()
 	}
 	return nil, false
 }
@@ -2668,6 +3152,12 @@ func (m *FlightMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldAvailableBcSlot(ctx)
 	case flight.FieldStatus:
 		return m.OldStatus(ctx)
+	case flight.FieldPlaneID:
+		return m.OldPlaneID(ctx)
+	case flight.FieldAirportID:
+		return m.OldAirportID(ctx)
+	case flight.FieldCustomerID:
+		return m.OldCustomerID(ctx)
 	}
 	return nil, fmt.Errorf("unknown Flight field %s", name)
 }
@@ -2733,6 +3223,27 @@ func (m *FlightMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetStatus(v)
 		return nil
+	case flight.FieldPlaneID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPlaneID(v)
+		return nil
+	case flight.FieldAirportID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetAirportID(v)
+		return nil
+	case flight.FieldCustomerID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCustomerID(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Flight field %s", name)
 }
@@ -2789,7 +3300,17 @@ func (m *FlightMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *FlightMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(flight.FieldPlaneID) {
+		fields = append(fields, flight.FieldPlaneID)
+	}
+	if m.FieldCleared(flight.FieldAirportID) {
+		fields = append(fields, flight.FieldAirportID)
+	}
+	if m.FieldCleared(flight.FieldCustomerID) {
+		fields = append(fields, flight.FieldCustomerID)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -2802,6 +3323,17 @@ func (m *FlightMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *FlightMutation) ClearField(name string) error {
+	switch name {
+	case flight.FieldPlaneID:
+		m.ClearPlaneID()
+		return nil
+	case flight.FieldAirportID:
+		m.ClearAirportID()
+		return nil
+	case flight.FieldCustomerID:
+		m.ClearCustomerID()
+		return nil
+	}
 	return fmt.Errorf("unknown Flight nullable field %s", name)
 }
 
@@ -2833,15 +3365,33 @@ func (m *FlightMutation) ResetField(name string) error {
 	case flight.FieldStatus:
 		m.ResetStatus()
 		return nil
+	case flight.FieldPlaneID:
+		m.ResetPlaneID()
+		return nil
+	case flight.FieldAirportID:
+		m.ResetAirportID()
+		return nil
+	case flight.FieldCustomerID:
+		m.ResetCustomerID()
+		return nil
 	}
 	return fmt.Errorf("unknown Flight field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *FlightMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.flight_id != nil {
-		edges = append(edges, flight.EdgeFlightID)
+	edges := make([]string, 0, 4)
+	if m.has_plane != nil {
+		edges = append(edges, flight.EdgeHasPlane)
+	}
+	if m.has_booking != nil {
+		edges = append(edges, flight.EdgeHasBooking)
+	}
+	if m.has_Airport != nil {
+		edges = append(edges, flight.EdgeHasAirport)
+	}
+	if m.has_Customer != nil {
+		edges = append(edges, flight.EdgeHasCustomer)
 	}
 	return edges
 }
@@ -2850,21 +3400,33 @@ func (m *FlightMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *FlightMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case flight.EdgeFlightID:
-		ids := make([]ent.Value, 0, len(m.flight_id))
-		for id := range m.flight_id {
+	case flight.EdgeHasPlane:
+		if id := m.has_plane; id != nil {
+			return []ent.Value{*id}
+		}
+	case flight.EdgeHasBooking:
+		ids := make([]ent.Value, 0, len(m.has_booking))
+		for id := range m.has_booking {
 			ids = append(ids, id)
 		}
 		return ids
+	case flight.EdgeHasAirport:
+		if id := m.has_Airport; id != nil {
+			return []ent.Value{*id}
+		}
+	case flight.EdgeHasCustomer:
+		if id := m.has_Customer; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *FlightMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.removedflight_id != nil {
-		edges = append(edges, flight.EdgeFlightID)
+	edges := make([]string, 0, 4)
+	if m.removedhas_booking != nil {
+		edges = append(edges, flight.EdgeHasBooking)
 	}
 	return edges
 }
@@ -2873,9 +3435,9 @@ func (m *FlightMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *FlightMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case flight.EdgeFlightID:
-		ids := make([]ent.Value, 0, len(m.removedflight_id))
-		for id := range m.removedflight_id {
+	case flight.EdgeHasBooking:
+		ids := make([]ent.Value, 0, len(m.removedhas_booking))
+		for id := range m.removedhas_booking {
 			ids = append(ids, id)
 		}
 		return ids
@@ -2885,9 +3447,18 @@ func (m *FlightMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *FlightMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedflight_id {
-		edges = append(edges, flight.EdgeFlightID)
+	edges := make([]string, 0, 4)
+	if m.clearedhas_plane {
+		edges = append(edges, flight.EdgeHasPlane)
+	}
+	if m.clearedhas_booking {
+		edges = append(edges, flight.EdgeHasBooking)
+	}
+	if m.clearedhas_Airport {
+		edges = append(edges, flight.EdgeHasAirport)
+	}
+	if m.clearedhas_Customer {
+		edges = append(edges, flight.EdgeHasCustomer)
 	}
 	return edges
 }
@@ -2896,8 +3467,14 @@ func (m *FlightMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *FlightMutation) EdgeCleared(name string) bool {
 	switch name {
-	case flight.EdgeFlightID:
-		return m.clearedflight_id
+	case flight.EdgeHasPlane:
+		return m.clearedhas_plane
+	case flight.EdgeHasBooking:
+		return m.clearedhas_booking
+	case flight.EdgeHasAirport:
+		return m.clearedhas_Airport
+	case flight.EdgeHasCustomer:
+		return m.clearedhas_Customer
 	}
 	return false
 }
@@ -2906,6 +3483,15 @@ func (m *FlightMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *FlightMutation) ClearEdge(name string) error {
 	switch name {
+	case flight.EdgeHasPlane:
+		m.ClearHasPlane()
+		return nil
+	case flight.EdgeHasAirport:
+		m.ClearHasAirport()
+		return nil
+	case flight.EdgeHasCustomer:
+		m.ClearHasCustomer()
+		return nil
 	}
 	return fmt.Errorf("unknown Flight unique edge %s", name)
 }
@@ -2914,8 +3500,17 @@ func (m *FlightMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *FlightMutation) ResetEdge(name string) error {
 	switch name {
-	case flight.EdgeFlightID:
-		m.ResetFlightID()
+	case flight.EdgeHasPlane:
+		m.ResetHasPlane()
+		return nil
+	case flight.EdgeHasBooking:
+		m.ResetHasBooking()
+		return nil
+	case flight.EdgeHasAirport:
+		m.ResetHasAirport()
+		return nil
+	case flight.EdgeHasCustomer:
+		m.ResetHasCustomer()
 		return nil
 	}
 	return fmt.Errorf("unknown Flight edge %s", name)
@@ -2924,25 +3519,26 @@ func (m *FlightMutation) ResetEdge(name string) error {
 // MemberMutation represents an operation that mutates the Member nodes in the graph.
 type MemberMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *int
-	created_at       *time.Time
-	updated_at       *time.Time
-	email            *string
-	password         *string
-	phone_number     *string
-	full_name        *string
-	dob              *time.Time
-	cid              *string
-	role             *int
-	addrole          *int
-	clearedFields    map[string]struct{}
-	member_id        *int
-	clearedmember_id bool
-	done             bool
-	oldValue         func(context.Context) (*Member, error)
-	predicates       []predicate.Member
+	op                  Op
+	typ                 string
+	id                  *int
+	created_at          *time.Time
+	updated_at          *time.Time
+	email               *string
+	password            *string
+	phone_number        *string
+	full_name           *string
+	dob                 *time.Time
+	cid                 *string
+	role                *int
+	addrole             *int
+	clearedFields       map[string]struct{}
+	has_Customer        map[int]struct{}
+	removedhas_Customer map[int]struct{}
+	clearedhas_Customer bool
+	done                bool
+	oldValue            func(context.Context) (*Member, error)
+	predicates          []predicate.Member
 }
 
 var _ ent.Mutation = (*MemberMutation)(nil)
@@ -3387,43 +3983,58 @@ func (m *MemberMutation) ResetRole() {
 	m.addrole = nil
 }
 
-// SetMemberIDID sets the "member_id" edge to the Customer entity by id.
-func (m *MemberMutation) SetMemberIDID(id int) {
-	m.member_id = &id
+// AddHasCustomerIDs adds the "has_Customer" edge to the Customer entity by ids.
+func (m *MemberMutation) AddHasCustomerIDs(ids ...int) {
+	if m.has_Customer == nil {
+		m.has_Customer = make(map[int]struct{})
+	}
+	for i := range ids {
+		m.has_Customer[ids[i]] = struct{}{}
+	}
 }
 
-// ClearMemberID clears the "member_id" edge to the Customer entity.
-func (m *MemberMutation) ClearMemberID() {
-	m.clearedmember_id = true
+// ClearHasCustomer clears the "has_Customer" edge to the Customer entity.
+func (m *MemberMutation) ClearHasCustomer() {
+	m.clearedhas_Customer = true
 }
 
-// MemberIDCleared reports if the "member_id" edge to the Customer entity was cleared.
-func (m *MemberMutation) MemberIDCleared() bool {
-	return m.clearedmember_id
+// HasCustomerCleared reports if the "has_Customer" edge to the Customer entity was cleared.
+func (m *MemberMutation) HasCustomerCleared() bool {
+	return m.clearedhas_Customer
 }
 
-// MemberIDID returns the "member_id" edge ID in the mutation.
-func (m *MemberMutation) MemberIDID() (id int, exists bool) {
-	if m.member_id != nil {
-		return *m.member_id, true
+// RemoveHasCustomerIDs removes the "has_Customer" edge to the Customer entity by IDs.
+func (m *MemberMutation) RemoveHasCustomerIDs(ids ...int) {
+	if m.removedhas_Customer == nil {
+		m.removedhas_Customer = make(map[int]struct{})
+	}
+	for i := range ids {
+		delete(m.has_Customer, ids[i])
+		m.removedhas_Customer[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedHasCustomer returns the removed IDs of the "has_Customer" edge to the Customer entity.
+func (m *MemberMutation) RemovedHasCustomerIDs() (ids []int) {
+	for id := range m.removedhas_Customer {
+		ids = append(ids, id)
 	}
 	return
 }
 
-// MemberIDIDs returns the "member_id" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// MemberIDID instead. It exists only for internal usage by the builders.
-func (m *MemberMutation) MemberIDIDs() (ids []int) {
-	if id := m.member_id; id != nil {
-		ids = append(ids, *id)
+// HasCustomerIDs returns the "has_Customer" edge IDs in the mutation.
+func (m *MemberMutation) HasCustomerIDs() (ids []int) {
+	for id := range m.has_Customer {
+		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetMemberID resets all changes to the "member_id" edge.
-func (m *MemberMutation) ResetMemberID() {
-	m.member_id = nil
-	m.clearedmember_id = false
+// ResetHasCustomer resets all changes to the "has_Customer" edge.
+func (m *MemberMutation) ResetHasCustomer() {
+	m.has_Customer = nil
+	m.clearedhas_Customer = false
+	m.removedhas_Customer = nil
 }
 
 // Where appends a list predicates to the MemberMutation builder.
@@ -3711,8 +4322,8 @@ func (m *MemberMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *MemberMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.member_id != nil {
-		edges = append(edges, member.EdgeMemberID)
+	if m.has_Customer != nil {
+		edges = append(edges, member.EdgeHasCustomer)
 	}
 	return edges
 }
@@ -3721,10 +4332,12 @@ func (m *MemberMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *MemberMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case member.EdgeMemberID:
-		if id := m.member_id; id != nil {
-			return []ent.Value{*id}
+	case member.EdgeHasCustomer:
+		ids := make([]ent.Value, 0, len(m.has_Customer))
+		for id := range m.has_Customer {
+			ids = append(ids, id)
 		}
+		return ids
 	}
 	return nil
 }
@@ -3732,20 +4345,31 @@ func (m *MemberMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *MemberMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
+	if m.removedhas_Customer != nil {
+		edges = append(edges, member.EdgeHasCustomer)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *MemberMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case member.EdgeHasCustomer:
+		ids := make([]ent.Value, 0, len(m.removedhas_Customer))
+		for id := range m.removedhas_Customer {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *MemberMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedmember_id {
-		edges = append(edges, member.EdgeMemberID)
+	if m.clearedhas_Customer {
+		edges = append(edges, member.EdgeHasCustomer)
 	}
 	return edges
 }
@@ -3754,8 +4378,8 @@ func (m *MemberMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *MemberMutation) EdgeCleared(name string) bool {
 	switch name {
-	case member.EdgeMemberID:
-		return m.clearedmember_id
+	case member.EdgeHasCustomer:
+		return m.clearedhas_Customer
 	}
 	return false
 }
@@ -3764,9 +4388,6 @@ func (m *MemberMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *MemberMutation) ClearEdge(name string) error {
 	switch name {
-	case member.EdgeMemberID:
-		m.ClearMemberID()
-		return nil
 	}
 	return fmt.Errorf("unknown Member unique edge %s", name)
 }
@@ -3775,8 +4396,8 @@ func (m *MemberMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *MemberMutation) ResetEdge(name string) error {
 	switch name {
-	case member.EdgeMemberID:
-		m.ResetMemberID()
+	case member.EdgeHasCustomer:
+		m.ResetHasCustomer()
 		return nil
 	}
 	return fmt.Errorf("unknown Member edge %s", name)
@@ -3795,9 +4416,9 @@ type PlaneMutation struct {
 	addbusiness_class_slots *int64
 	status                  *plane.Status
 	clearedFields           map[string]struct{}
-	plane_id                map[int]struct{}
-	removedplane_id         map[int]struct{}
-	clearedplane_id         bool
+	flights                 map[int]struct{}
+	removedflights          map[int]struct{}
+	clearedflights          bool
 	done                    bool
 	oldValue                func(context.Context) (*Plane, error)
 	predicates              []predicate.Plane
@@ -4085,58 +4706,58 @@ func (m *PlaneMutation) ResetStatus() {
 	m.status = nil
 }
 
-// AddPlaneIDIDs adds the "plane_id" edge to the Flight entity by ids.
-func (m *PlaneMutation) AddPlaneIDIDs(ids ...int) {
-	if m.plane_id == nil {
-		m.plane_id = make(map[int]struct{})
+// AddFlightIDs adds the "flights" edge to the Flight entity by ids.
+func (m *PlaneMutation) AddFlightIDs(ids ...int) {
+	if m.flights == nil {
+		m.flights = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.plane_id[ids[i]] = struct{}{}
+		m.flights[ids[i]] = struct{}{}
 	}
 }
 
-// ClearPlaneID clears the "plane_id" edge to the Flight entity.
-func (m *PlaneMutation) ClearPlaneID() {
-	m.clearedplane_id = true
+// ClearFlights clears the "flights" edge to the Flight entity.
+func (m *PlaneMutation) ClearFlights() {
+	m.clearedflights = true
 }
 
-// PlaneIDCleared reports if the "plane_id" edge to the Flight entity was cleared.
-func (m *PlaneMutation) PlaneIDCleared() bool {
-	return m.clearedplane_id
+// FlightsCleared reports if the "flights" edge to the Flight entity was cleared.
+func (m *PlaneMutation) FlightsCleared() bool {
+	return m.clearedflights
 }
 
-// RemovePlaneIDIDs removes the "plane_id" edge to the Flight entity by IDs.
-func (m *PlaneMutation) RemovePlaneIDIDs(ids ...int) {
-	if m.removedplane_id == nil {
-		m.removedplane_id = make(map[int]struct{})
+// RemoveFlightIDs removes the "flights" edge to the Flight entity by IDs.
+func (m *PlaneMutation) RemoveFlightIDs(ids ...int) {
+	if m.removedflights == nil {
+		m.removedflights = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m.plane_id, ids[i])
-		m.removedplane_id[ids[i]] = struct{}{}
+		delete(m.flights, ids[i])
+		m.removedflights[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedPlaneID returns the removed IDs of the "plane_id" edge to the Flight entity.
-func (m *PlaneMutation) RemovedPlaneIDIDs() (ids []int) {
-	for id := range m.removedplane_id {
+// RemovedFlights returns the removed IDs of the "flights" edge to the Flight entity.
+func (m *PlaneMutation) RemovedFlightsIDs() (ids []int) {
+	for id := range m.removedflights {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// PlaneIDIDs returns the "plane_id" edge IDs in the mutation.
-func (m *PlaneMutation) PlaneIDIDs() (ids []int) {
-	for id := range m.plane_id {
+// FlightsIDs returns the "flights" edge IDs in the mutation.
+func (m *PlaneMutation) FlightsIDs() (ids []int) {
+	for id := range m.flights {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetPlaneID resets all changes to the "plane_id" edge.
-func (m *PlaneMutation) ResetPlaneID() {
-	m.plane_id = nil
-	m.clearedplane_id = false
-	m.removedplane_id = nil
+// ResetFlights resets all changes to the "flights" edge.
+func (m *PlaneMutation) ResetFlights() {
+	m.flights = nil
+	m.clearedflights = false
+	m.removedflights = nil
 }
 
 // Where appends a list predicates to the PlaneMutation builder.
@@ -4351,8 +4972,8 @@ func (m *PlaneMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *PlaneMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.plane_id != nil {
-		edges = append(edges, plane.EdgePlaneID)
+	if m.flights != nil {
+		edges = append(edges, plane.EdgeFlights)
 	}
 	return edges
 }
@@ -4361,9 +4982,9 @@ func (m *PlaneMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *PlaneMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case plane.EdgePlaneID:
-		ids := make([]ent.Value, 0, len(m.plane_id))
-		for id := range m.plane_id {
+	case plane.EdgeFlights:
+		ids := make([]ent.Value, 0, len(m.flights))
+		for id := range m.flights {
 			ids = append(ids, id)
 		}
 		return ids
@@ -4374,8 +4995,8 @@ func (m *PlaneMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *PlaneMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removedplane_id != nil {
-		edges = append(edges, plane.EdgePlaneID)
+	if m.removedflights != nil {
+		edges = append(edges, plane.EdgeFlights)
 	}
 	return edges
 }
@@ -4384,9 +5005,9 @@ func (m *PlaneMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *PlaneMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case plane.EdgePlaneID:
-		ids := make([]ent.Value, 0, len(m.removedplane_id))
-		for id := range m.removedplane_id {
+	case plane.EdgeFlights:
+		ids := make([]ent.Value, 0, len(m.removedflights))
+		for id := range m.removedflights {
 			ids = append(ids, id)
 		}
 		return ids
@@ -4397,8 +5018,8 @@ func (m *PlaneMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *PlaneMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedplane_id {
-		edges = append(edges, plane.EdgePlaneID)
+	if m.clearedflights {
+		edges = append(edges, plane.EdgeFlights)
 	}
 	return edges
 }
@@ -4407,8 +5028,8 @@ func (m *PlaneMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *PlaneMutation) EdgeCleared(name string) bool {
 	switch name {
-	case plane.EdgePlaneID:
-		return m.clearedplane_id
+	case plane.EdgeFlights:
+		return m.clearedflights
 	}
 	return false
 }
@@ -4425,8 +5046,8 @@ func (m *PlaneMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *PlaneMutation) ResetEdge(name string) error {
 	switch name {
-	case plane.EdgePlaneID:
-		m.ResetPlaneID()
+	case plane.EdgeFlights:
+		m.ResetFlights()
 		return nil
 	}
 	return fmt.Errorf("unknown Plane edge %s", name)

@@ -35,31 +35,20 @@ type Airport struct {
 
 // AirportEdges holds the relations/edges for other nodes in the graph.
 type AirportEdges struct {
-	// FromAirportID holds the value of the from_airport_id edge.
-	FromAirportID []*Flight `json:"from_airport_id,omitempty"`
-	// DestAirportID holds the value of the dest_airport_id edge.
-	DestAirportID []*Flight `json:"dest_airport_id,omitempty"`
+	// HasFlight holds the value of the has_Flight edge.
+	HasFlight []*Flight `json:"has_Flight,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [1]bool
 }
 
-// FromAirportIDOrErr returns the FromAirportID value or an error if the edge
+// HasFlightOrErr returns the HasFlight value or an error if the edge
 // was not loaded in eager-loading.
-func (e AirportEdges) FromAirportIDOrErr() ([]*Flight, error) {
+func (e AirportEdges) HasFlightOrErr() ([]*Flight, error) {
 	if e.loadedTypes[0] {
-		return e.FromAirportID, nil
+		return e.HasFlight, nil
 	}
-	return nil, &NotLoadedError{edge: "from_airport_id"}
-}
-
-// DestAirportIDOrErr returns the DestAirportID value or an error if the edge
-// was not loaded in eager-loading.
-func (e AirportEdges) DestAirportIDOrErr() ([]*Flight, error) {
-	if e.loadedTypes[1] {
-		return e.DestAirportID, nil
-	}
-	return nil, &NotLoadedError{edge: "dest_airport_id"}
+	return nil, &NotLoadedError{edge: "has_Flight"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -141,14 +130,9 @@ func (a *Airport) Value(name string) (ent.Value, error) {
 	return a.selectValues.Get(name)
 }
 
-// QueryFromAirportID queries the "from_airport_id" edge of the Airport entity.
-func (a *Airport) QueryFromAirportID() *FlightQuery {
-	return NewAirportClient(a.config).QueryFromAirportID(a)
-}
-
-// QueryDestAirportID queries the "dest_airport_id" edge of the Airport entity.
-func (a *Airport) QueryDestAirportID() *FlightQuery {
-	return NewAirportClient(a.config).QueryDestAirportID(a)
+// QueryHasFlight queries the "has_Flight" edge of the Airport entity.
+func (a *Airport) QueryHasFlight() *FlightQuery {
+	return NewAirportClient(a.config).QueryHasFlight(a)
 }
 
 // Update returns a builder for updating this Airport.

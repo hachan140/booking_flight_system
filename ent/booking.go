@@ -4,6 +4,7 @@ package ent
 
 import (
 	"booking-flight-sytem/ent/booking"
+	"booking-flight-sytem/ent/flight"
 	"fmt"
 	"strings"
 	"time"
@@ -24,10 +25,35 @@ type Booking struct {
 	// Code holds the value of the "code" field.
 	Code string `json:"code,omitempty"`
 	// Status holds the value of the "status" field.
-	Status               booking.Status `json:"status,omitempty"`
-	customer_customer_id *int
-	flight_flight_id     *int
-	selectValues         sql.SelectValues
+	Status string `json:"status,omitempty"`
+	// FlightID holds the value of the "flight_id" field.
+	FlightID int `json:"flight_id,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the BookingQuery when eager-loading is set.
+	Edges        BookingEdges `json:"edges"`
+	selectValues sql.SelectValues
+}
+
+// BookingEdges holds the relations/edges for other nodes in the graph.
+type BookingEdges struct {
+	// HasFlight holds the value of the has_flight edge.
+	HasFlight *Flight `json:"has_flight,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// HasFlightOrErr returns the HasFlight value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e BookingEdges) HasFlightOrErr() (*Flight, error) {
+	if e.loadedTypes[0] {
+		if e.HasFlight == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: flight.Label}
+		}
+		return e.HasFlight, nil
+	}
+	return nil, &NotLoadedError{edge: "has_flight"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -35,16 +61,12 @@ func (*Booking) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case booking.FieldID:
+		case booking.FieldID, booking.FieldFlightID:
 			values[i] = new(sql.NullInt64)
 		case booking.FieldCode, booking.FieldStatus:
 			values[i] = new(sql.NullString)
 		case booking.FieldCreatedAt, booking.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case booking.ForeignKeys[0]: // customer_customer_id
-			values[i] = new(sql.NullInt64)
-		case booking.ForeignKeys[1]: // flight_flight_id
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -88,21 +110,13 @@ func (b *Booking) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
-				b.Status = booking.Status(value.String)
+				b.Status = value.String
 			}
-		case booking.ForeignKeys[0]:
+		case booking.FieldFlightID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field customer_customer_id", value)
+				return fmt.Errorf("unexpected type %T for field flight_id", values[i])
 			} else if value.Valid {
-				b.customer_customer_id = new(int)
-				*b.customer_customer_id = int(value.Int64)
-			}
-		case booking.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field flight_flight_id", value)
-			} else if value.Valid {
-				b.flight_flight_id = new(int)
-				*b.flight_flight_id = int(value.Int64)
+				b.FlightID = int(value.Int64)
 			}
 		default:
 			b.selectValues.Set(columns[i], values[i])
@@ -115,6 +129,11 @@ func (b *Booking) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (b *Booking) Value(name string) (ent.Value, error) {
 	return b.selectValues.Get(name)
+}
+
+// QueryHasFlight queries the "has_flight" edge of the Booking entity.
+func (b *Booking) QueryHasFlight() *FlightQuery {
+	return NewBookingClient(b.config).QueryHasFlight(b)
 }
 
 // Update returns a builder for updating this Booking.
@@ -150,7 +169,10 @@ func (b *Booking) String() string {
 	builder.WriteString(b.Code)
 	builder.WriteString(", ")
 	builder.WriteString("status=")
-	builder.WriteString(fmt.Sprintf("%v", b.Status))
+	builder.WriteString(b.Status)
+	builder.WriteString(", ")
+	builder.WriteString("flight_id=")
+	builder.WriteString(fmt.Sprintf("%v", b.FlightID))
 	builder.WriteByte(')')
 	return builder.String()
 }

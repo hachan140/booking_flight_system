@@ -3,10 +3,10 @@
 package booking
 
 import (
-	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -22,8 +22,19 @@ const (
 	FieldCode = "code"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldFlightID holds the string denoting the flight_id field in the database.
+	FieldFlightID = "flight_id"
+	// EdgeHasFlight holds the string denoting the has_flight edge name in mutations.
+	EdgeHasFlight = "has_flight"
 	// Table holds the table name of the booking in the database.
 	Table = "bookings"
+	// HasFlightTable is the table that holds the has_flight relation/edge.
+	HasFlightTable = "bookings"
+	// HasFlightInverseTable is the table name for the Flight entity.
+	// It exists in this package in order to avoid circular dependency with the "flight" package.
+	HasFlightInverseTable = "flights"
+	// HasFlightColumn is the table column denoting the has_flight relation/edge.
+	HasFlightColumn = "flight_id"
 )
 
 // Columns holds all SQL columns for booking fields.
@@ -33,24 +44,13 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldCode,
 	FieldStatus,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "bookings"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"customer_customer_id",
-	"flight_flight_id",
+	FieldFlightID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -67,30 +67,6 @@ var (
 	// CodeValidator is a validator for the "code" field. It is called by the builders before save.
 	CodeValidator func(string) error
 )
-
-// Status defines the type for the "status" enum field.
-type Status string
-
-// Status values.
-const (
-	StatusSuccess Status = "success"
-	StatusFail    Status = "fail"
-	StatusCancel  Status = "cancel"
-)
-
-func (s Status) String() string {
-	return string(s)
-}
-
-// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
-func StatusValidator(s Status) error {
-	switch s {
-	case StatusSuccess, StatusFail, StatusCancel:
-		return nil
-	default:
-		return fmt.Errorf("booking: invalid enum value for status field: %q", s)
-	}
-}
 
 // OrderOption defines the ordering options for the Booking queries.
 type OrderOption func(*sql.Selector)
@@ -118,4 +94,23 @@ func ByCode(opts ...sql.OrderTermOption) OrderOption {
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByFlightID orders the results by the flight_id field.
+func ByFlightID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFlightID, opts...).ToFunc()
+}
+
+// ByHasFlightField orders the results by has_flight field.
+func ByHasFlightField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newHasFlightStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newHasFlightStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(HasFlightInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, HasFlightTable, HasFlightColumn),
+	)
 }

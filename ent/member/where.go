@@ -585,21 +585,21 @@ func RoleLTE(v int) predicate.Member {
 	return predicate.Member(sql.FieldLTE(FieldRole, v))
 }
 
-// HasMemberID applies the HasEdge predicate on the "member_id" edge.
-func HasMemberID() predicate.Member {
+// HasHasCustomer applies the HasEdge predicate on the "has_Customer" edge.
+func HasHasCustomer() predicate.Member {
 	return predicate.Member(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, MemberIDTable, MemberIDColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, HasCustomerTable, HasCustomerColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasMemberIDWith applies the HasEdge predicate on the "member_id" edge with a given conditions (other predicates).
-func HasMemberIDWith(preds ...predicate.Customer) predicate.Member {
+// HasHasCustomerWith applies the HasEdge predicate on the "has_Customer" edge with a given conditions (other predicates).
+func HasHasCustomerWith(preds ...predicate.Customer) predicate.Member {
 	return predicate.Member(func(s *sql.Selector) {
-		step := newMemberIDStep()
+		step := newHasCustomerStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

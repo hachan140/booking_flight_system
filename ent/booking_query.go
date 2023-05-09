@@ -4,6 +4,7 @@ package ent
 
 import (
 	"booking-flight-sytem/ent/booking"
+	"booking-flight-sytem/ent/flight"
 	"booking-flight-sytem/ent/predicate"
 	"context"
 	"fmt"
@@ -17,11 +18,11 @@ import (
 // BookingQuery is the builder for querying Booking entities.
 type BookingQuery struct {
 	config
-	ctx        *QueryContext
-	order      []booking.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Booking
-	withFKs    bool
+	ctx           *QueryContext
+	order         []booking.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.Booking
+	withHasFlight *FlightQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -56,6 +57,28 @@ func (bq *BookingQuery) Unique(unique bool) *BookingQuery {
 func (bq *BookingQuery) Order(o ...booking.OrderOption) *BookingQuery {
 	bq.order = append(bq.order, o...)
 	return bq
+}
+
+// QueryHasFlight chains the current query on the "has_flight" edge.
+func (bq *BookingQuery) QueryHasFlight() *FlightQuery {
+	query := (&FlightClient{config: bq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(booking.Table, booking.FieldID, selector),
+			sqlgraph.To(flight.Table, flight.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, booking.HasFlightTable, booking.HasFlightColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Booking entity from the query.
@@ -245,15 +268,27 @@ func (bq *BookingQuery) Clone() *BookingQuery {
 		return nil
 	}
 	return &BookingQuery{
-		config:     bq.config,
-		ctx:        bq.ctx.Clone(),
-		order:      append([]booking.OrderOption{}, bq.order...),
-		inters:     append([]Interceptor{}, bq.inters...),
-		predicates: append([]predicate.Booking{}, bq.predicates...),
+		config:        bq.config,
+		ctx:           bq.ctx.Clone(),
+		order:         append([]booking.OrderOption{}, bq.order...),
+		inters:        append([]Interceptor{}, bq.inters...),
+		predicates:    append([]predicate.Booking{}, bq.predicates...),
+		withHasFlight: bq.withHasFlight.Clone(),
 		// clone intermediate query.
 		sql:  bq.sql.Clone(),
 		path: bq.path,
 	}
+}
+
+// WithHasFlight tells the query-builder to eager-load the nodes that are connected to
+// the "has_flight" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BookingQuery) WithHasFlight(opts ...func(*FlightQuery)) *BookingQuery {
+	query := (&FlightClient{config: bq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	bq.withHasFlight = query
+	return bq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -332,19 +367,19 @@ func (bq *BookingQuery) prepareQuery(ctx context.Context) error {
 
 func (bq *BookingQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Booking, error) {
 	var (
-		nodes   = []*Booking{}
-		withFKs = bq.withFKs
-		_spec   = bq.querySpec()
+		nodes       = []*Booking{}
+		_spec       = bq.querySpec()
+		loadedTypes = [1]bool{
+			bq.withHasFlight != nil,
+		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, booking.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Booking).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Booking{config: bq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -356,7 +391,43 @@ func (bq *BookingQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := bq.withHasFlight; query != nil {
+		if err := bq.loadHasFlight(ctx, query, nodes, nil,
+			func(n *Booking, e *Flight) { n.Edges.HasFlight = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (bq *BookingQuery) loadHasFlight(ctx context.Context, query *FlightQuery, nodes []*Booking, init func(*Booking), assign func(*Booking, *Flight)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Booking)
+	for i := range nodes {
+		fk := nodes[i].FlightID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(flight.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "flight_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (bq *BookingQuery) sqlCount(ctx context.Context) (int, error) {
@@ -383,6 +454,9 @@ func (bq *BookingQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != booking.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if bq.withHasFlight != nil {
+			_spec.Node.AddColumnOnce(booking.FieldFlightID)
 		}
 	}
 	if ps := bq.predicates; len(ps) > 0 {

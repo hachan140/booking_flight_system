@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"booking-flight-sytem/ent/customer"
 	"booking-flight-sytem/ent/member"
 	"fmt"
 	"strings"
@@ -38,31 +37,26 @@ type Member struct {
 	Role int `json:"role,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MemberQuery when eager-loading is set.
-	Edges            MemberEdges `json:"edges"`
-	member_member_id *int
-	selectValues     sql.SelectValues
+	Edges        MemberEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // MemberEdges holds the relations/edges for other nodes in the graph.
 type MemberEdges struct {
-	// MemberID holds the value of the member_id edge.
-	MemberID *Customer `json:"member_id,omitempty"`
+	// HasCustomer holds the value of the has_Customer edge.
+	HasCustomer []*Customer `json:"has_Customer,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// MemberIDOrErr returns the MemberID value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e MemberEdges) MemberIDOrErr() (*Customer, error) {
+// HasCustomerOrErr returns the HasCustomer value or an error if the edge
+// was not loaded in eager-loading.
+func (e MemberEdges) HasCustomerOrErr() ([]*Customer, error) {
 	if e.loadedTypes[0] {
-		if e.MemberID == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: customer.Label}
-		}
-		return e.MemberID, nil
+		return e.HasCustomer, nil
 	}
-	return nil, &NotLoadedError{edge: "member_id"}
+	return nil, &NotLoadedError{edge: "has_Customer"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -76,8 +70,6 @@ func (*Member) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case member.FieldCreatedAt, member.FieldUpdatedAt, member.FieldDob:
 			values[i] = new(sql.NullTime)
-		case member.ForeignKeys[0]: // member_member_id
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -153,13 +145,6 @@ func (m *Member) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				m.Role = int(value.Int64)
 			}
-		case member.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field member_member_id", value)
-			} else if value.Valid {
-				m.member_member_id = new(int)
-				*m.member_member_id = int(value.Int64)
-			}
 		default:
 			m.selectValues.Set(columns[i], values[i])
 		}
@@ -173,9 +158,9 @@ func (m *Member) Value(name string) (ent.Value, error) {
 	return m.selectValues.Get(name)
 }
 
-// QueryMemberID queries the "member_id" edge of the Member entity.
-func (m *Member) QueryMemberID() *CustomerQuery {
-	return NewMemberClient(m.config).QueryMemberID(m)
+// QueryHasCustomer queries the "has_Customer" edge of the Member entity.
+func (m *Member) QueryHasCustomer() *CustomerQuery {
+	return NewMemberClient(m.config).QueryHasCustomer(m)
 }
 
 // Update returns a builder for updating this Member.

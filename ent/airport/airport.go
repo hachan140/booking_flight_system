@@ -24,26 +24,17 @@ const (
 	FieldLat = "lat"
 	// FieldLong holds the string denoting the long field in the database.
 	FieldLong = "long"
-	// EdgeFromAirportID holds the string denoting the from_airport_id edge name in mutations.
-	EdgeFromAirportID = "from_airport_id"
-	// EdgeDestAirportID holds the string denoting the dest_airport_id edge name in mutations.
-	EdgeDestAirportID = "dest_airport_id"
+	// EdgeHasFlight holds the string denoting the has_flight edge name in mutations.
+	EdgeHasFlight = "has_Flight"
 	// Table holds the table name of the airport in the database.
 	Table = "airports"
-	// FromAirportIDTable is the table that holds the from_airport_id relation/edge.
-	FromAirportIDTable = "flights"
-	// FromAirportIDInverseTable is the table name for the Flight entity.
+	// HasFlightTable is the table that holds the has_Flight relation/edge.
+	HasFlightTable = "flights"
+	// HasFlightInverseTable is the table name for the Flight entity.
 	// It exists in this package in order to avoid circular dependency with the "flight" package.
-	FromAirportIDInverseTable = "flights"
-	// FromAirportIDColumn is the table column denoting the from_airport_id relation/edge.
-	FromAirportIDColumn = "airport_from_airport_id"
-	// DestAirportIDTable is the table that holds the dest_airport_id relation/edge.
-	DestAirportIDTable = "flights"
-	// DestAirportIDInverseTable is the table name for the Flight entity.
-	// It exists in this package in order to avoid circular dependency with the "flight" package.
-	DestAirportIDInverseTable = "flights"
-	// DestAirportIDColumn is the table column denoting the dest_airport_id relation/edge.
-	DestAirportIDColumn = "airport_dest_airport_id"
+	HasFlightInverseTable = "flights"
+	// HasFlightColumn is the table column denoting the has_Flight relation/edge.
+	HasFlightColumn = "airport_id"
 )
 
 // Columns holds all SQL columns for airport fields.
@@ -114,44 +105,23 @@ func ByLong(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLong, opts...).ToFunc()
 }
 
-// ByFromAirportIDCount orders the results by from_airport_id count.
-func ByFromAirportIDCount(opts ...sql.OrderTermOption) OrderOption {
+// ByHasFlightCount orders the results by has_Flight count.
+func ByHasFlightCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newFromAirportIDStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newHasFlightStep(), opts...)
 	}
 }
 
-// ByFromAirportID orders the results by from_airport_id terms.
-func ByFromAirportID(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByHasFlight orders the results by has_Flight terms.
+func ByHasFlight(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newFromAirportIDStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newHasFlightStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-
-// ByDestAirportIDCount orders the results by dest_airport_id count.
-func ByDestAirportIDCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newDestAirportIDStep(), opts...)
-	}
-}
-
-// ByDestAirportID orders the results by dest_airport_id terms.
-func ByDestAirportID(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newDestAirportIDStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-func newFromAirportIDStep() *sqlgraph.Step {
+func newHasFlightStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(FromAirportIDInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, FromAirportIDTable, FromAirportIDColumn),
-	)
-}
-func newDestAirportIDStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(DestAirportIDInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, DestAirportIDTable, DestAirportIDColumn),
+		sqlgraph.To(HasFlightInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, HasFlightTable, HasFlightColumn),
 	)
 }

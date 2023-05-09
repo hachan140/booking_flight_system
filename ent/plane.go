@@ -32,20 +32,20 @@ type Plane struct {
 
 // PlaneEdges holds the relations/edges for other nodes in the graph.
 type PlaneEdges struct {
-	// PlaneID holds the value of the plane_id edge.
-	PlaneID []*Flight `json:"plane_id,omitempty"`
+	// Flights holds the value of the flights edge.
+	Flights []*Flight `json:"flights,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// PlaneIDOrErr returns the PlaneID value or an error if the edge
+// FlightsOrErr returns the Flights value or an error if the edge
 // was not loaded in eager-loading.
-func (e PlaneEdges) PlaneIDOrErr() ([]*Flight, error) {
+func (e PlaneEdges) FlightsOrErr() ([]*Flight, error) {
 	if e.loadedTypes[0] {
-		return e.PlaneID, nil
+		return e.Flights, nil
 	}
-	return nil, &NotLoadedError{edge: "plane_id"}
+	return nil, &NotLoadedError{edge: "flights"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -115,9 +115,9 @@ func (pl *Plane) Value(name string) (ent.Value, error) {
 	return pl.selectValues.Get(name)
 }
 
-// QueryPlaneID queries the "plane_id" edge of the Plane entity.
-func (pl *Plane) QueryPlaneID() *FlightQuery {
-	return NewPlaneClient(pl.config).QueryPlaneID(pl)
+// QueryFlights queries the "flights" edge of the Plane entity.
+func (pl *Plane) QueryFlights() *FlightQuery {
+	return NewPlaneClient(pl.config).QueryFlights(pl)
 }
 
 // Update returns a builder for updating this Plane.

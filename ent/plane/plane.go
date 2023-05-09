@@ -22,17 +22,17 @@ const (
 	FieldBusinessClassSlots = "business_class_slots"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
-	// EdgePlaneID holds the string denoting the plane_id edge name in mutations.
-	EdgePlaneID = "plane_id"
+	// EdgeFlights holds the string denoting the flights edge name in mutations.
+	EdgeFlights = "flights"
 	// Table holds the table name of the plane in the database.
 	Table = "planes"
-	// PlaneIDTable is the table that holds the plane_id relation/edge.
-	PlaneIDTable = "flights"
-	// PlaneIDInverseTable is the table name for the Flight entity.
+	// FlightsTable is the table that holds the flights relation/edge.
+	FlightsTable = "flights"
+	// FlightsInverseTable is the table name for the Flight entity.
 	// It exists in this package in order to avoid circular dependency with the "flight" package.
-	PlaneIDInverseTable = "flights"
-	// PlaneIDColumn is the table column denoting the plane_id relation/edge.
-	PlaneIDColumn = "plane_plane_id"
+	FlightsInverseTable = "flights"
+	// FlightsColumn is the table column denoting the flights relation/edge.
+	FlightsColumn = "plane_id"
 )
 
 // Columns holds all SQL columns for plane fields.
@@ -62,10 +62,12 @@ var (
 // Status defines the type for the "status" enum field.
 type Status string
 
+// StatusBooked is the default value of the Status enum.
+const DefaultStatus = StatusBooked
+
 // Status values.
 const (
-	StatusBooked Status = "booked"
-	StatusFree   Status = "free"
+	StatusBooked Status = "free"
 )
 
 func (s Status) String() string {
@@ -75,7 +77,7 @@ func (s Status) String() string {
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
 func StatusValidator(s Status) error {
 	switch s {
-	case StatusBooked, StatusFree:
+	case StatusBooked:
 		return nil
 	default:
 		return fmt.Errorf("plane: invalid enum value for status field: %q", s)
@@ -110,23 +112,23 @@ func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
 }
 
-// ByPlaneIDCount orders the results by plane_id count.
-func ByPlaneIDCount(opts ...sql.OrderTermOption) OrderOption {
+// ByFlightsCount orders the results by flights count.
+func ByFlightsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newPlaneIDStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newFlightsStep(), opts...)
 	}
 }
 
-// ByPlaneID orders the results by plane_id terms.
-func ByPlaneID(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByFlights orders the results by flights terms.
+func ByFlights(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newPlaneIDStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newFlightsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newPlaneIDStep() *sqlgraph.Step {
+func newFlightsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(PlaneIDInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, PlaneIDTable, PlaneIDColumn),
+		sqlgraph.To(FlightsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, FlightsTable, FlightsColumn),
 	)
 }

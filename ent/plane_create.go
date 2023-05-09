@@ -44,19 +44,27 @@ func (pc *PlaneCreate) SetStatus(pl plane.Status) *PlaneCreate {
 	return pc
 }
 
-// AddPlaneIDIDs adds the "plane_id" edge to the Flight entity by IDs.
-func (pc *PlaneCreate) AddPlaneIDIDs(ids ...int) *PlaneCreate {
-	pc.mutation.AddPlaneIDIDs(ids...)
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (pc *PlaneCreate) SetNillableStatus(pl *plane.Status) *PlaneCreate {
+	if pl != nil {
+		pc.SetStatus(*pl)
+	}
 	return pc
 }
 
-// AddPlaneID adds the "plane_id" edges to the Flight entity.
-func (pc *PlaneCreate) AddPlaneID(f ...*Flight) *PlaneCreate {
+// AddFlightIDs adds the "flights" edge to the Flight entity by IDs.
+func (pc *PlaneCreate) AddFlightIDs(ids ...int) *PlaneCreate {
+	pc.mutation.AddFlightIDs(ids...)
+	return pc
+}
+
+// AddFlights adds the "flights" edges to the Flight entity.
+func (pc *PlaneCreate) AddFlights(f ...*Flight) *PlaneCreate {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return pc.AddPlaneIDIDs(ids...)
+	return pc.AddFlightIDs(ids...)
 }
 
 // Mutation returns the PlaneMutation object of the builder.
@@ -66,6 +74,7 @@ func (pc *PlaneCreate) Mutation() *PlaneMutation {
 
 // Save creates the Plane in the database.
 func (pc *PlaneCreate) Save(ctx context.Context) (*Plane, error) {
+	pc.defaults()
 	return withHooks(ctx, pc.sqlSave, pc.mutation, pc.hooks)
 }
 
@@ -88,6 +97,14 @@ func (pc *PlaneCreate) Exec(ctx context.Context) error {
 func (pc *PlaneCreate) ExecX(ctx context.Context) {
 	if err := pc.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (pc *PlaneCreate) defaults() {
+	if _, ok := pc.mutation.Status(); !ok {
+		v := plane.DefaultStatus
+		pc.mutation.SetStatus(v)
 	}
 }
 
@@ -157,12 +174,12 @@ func (pc *PlaneCreate) createSpec() (*Plane, *sqlgraph.CreateSpec) {
 		_spec.SetField(plane.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
 	}
-	if nodes := pc.mutation.PlaneIDIDs(); len(nodes) > 0 {
+	if nodes := pc.mutation.FlightsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   plane.PlaneIDTable,
-			Columns: []string{plane.PlaneIDColumn},
+			Table:   plane.FlightsTable,
+			Columns: []string{plane.FlightsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
@@ -190,6 +207,7 @@ func (pcb *PlaneCreateBulk) Save(ctx context.Context) ([]*Plane, error) {
 	for i := range pcb.builders {
 		func(i int, root context.Context) {
 			builder := pcb.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*PlaneMutation)
 				if !ok {

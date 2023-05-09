@@ -29,9 +29,8 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "code", Type: field.TypeString, Unique: true},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"success", "fail", "cancel"}},
-		{Name: "customer_customer_id", Type: field.TypeInt, Nullable: true},
-		{Name: "flight_flight_id", Type: field.TypeInt, Nullable: true},
+		{Name: "status", Type: field.TypeString},
+		{Name: "flight_id", Type: field.TypeInt, Nullable: true},
 	}
 	// BookingsTable holds the schema information for the "bookings" table.
 	BookingsTable = &schema.Table{
@@ -40,14 +39,8 @@ var (
 		PrimaryKey: []*schema.Column{BookingsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "bookings_customers_customer_id",
+				Symbol:     "bookings_flights_has_booking",
 				Columns:    []*schema.Column{BookingsColumns[5]},
-				RefColumns: []*schema.Column{CustomersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "bookings_flights_flight_id",
-				Columns:    []*schema.Column{BookingsColumns[6]},
 				RefColumns: []*schema.Column{FlightsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -63,12 +56,21 @@ var (
 		{Name: "full_name", Type: field.TypeString},
 		{Name: "dob", Type: field.TypeTime},
 		{Name: "cid", Type: field.TypeString, Unique: true},
+		{Name: "member_id", Type: field.TypeInt, Nullable: true},
 	}
 	// CustomersTable holds the schema information for the "customers" table.
 	CustomersTable = &schema.Table{
 		Name:       "customers",
 		Columns:    CustomersColumns,
 		PrimaryKey: []*schema.Column{CustomersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "customers_members_has_Customer",
+				Columns:    []*schema.Column{CustomersColumns[8]},
+				RefColumns: []*schema.Column{MembersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// FlightsColumns holds the columns for the "flights" table.
 	FlightsColumns = []*schema.Column{
@@ -80,10 +82,10 @@ var (
 		{Name: "land_at", Type: field.TypeTime},
 		{Name: "available_ec_slot", Type: field.TypeInt},
 		{Name: "available_bc_slot", Type: field.TypeInt},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"flying", "scheduled", "canceled", "landed"}, Default: "landed"},
-		{Name: "airport_from_airport_id", Type: field.TypeInt, Nullable: true},
-		{Name: "airport_dest_airport_id", Type: field.TypeInt, Nullable: true},
-		{Name: "plane_plane_id", Type: field.TypeInt, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"scheduled", "landed"}, Default: "landed"},
+		{Name: "airport_id", Type: field.TypeInt, Nullable: true},
+		{Name: "customer_id", Type: field.TypeInt, Nullable: true},
+		{Name: "plane_id", Type: field.TypeInt, Nullable: true},
 	}
 	// FlightsTable holds the schema information for the "flights" table.
 	FlightsTable = &schema.Table{
@@ -92,19 +94,19 @@ var (
 		PrimaryKey: []*schema.Column{FlightsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "flights_airports_from_airport_id",
+				Symbol:     "flights_airports_has_Flight",
 				Columns:    []*schema.Column{FlightsColumns[9]},
 				RefColumns: []*schema.Column{AirportsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "flights_airports_dest_airport_id",
+				Symbol:     "flights_customers_has_Flight",
 				Columns:    []*schema.Column{FlightsColumns[10]},
-				RefColumns: []*schema.Column{AirportsColumns[0]},
+				RefColumns: []*schema.Column{CustomersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "flights_planes_plane_id",
+				Symbol:     "flights_planes_flights",
 				Columns:    []*schema.Column{FlightsColumns[11]},
 				RefColumns: []*schema.Column{PlanesColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -123,21 +125,12 @@ var (
 		{Name: "dob", Type: field.TypeTime},
 		{Name: "cid", Type: field.TypeString, Unique: true},
 		{Name: "role", Type: field.TypeInt, Default: 1},
-		{Name: "member_member_id", Type: field.TypeInt, Nullable: true},
 	}
 	// MembersTable holds the schema information for the "members" table.
 	MembersTable = &schema.Table{
 		Name:       "members",
 		Columns:    MembersColumns,
 		PrimaryKey: []*schema.Column{MembersColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "members_customers_member_id",
-				Columns:    []*schema.Column{MembersColumns[10]},
-				RefColumns: []*schema.Column{CustomersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 	}
 	// PlanesColumns holds the columns for the "planes" table.
 	PlanesColumns = []*schema.Column{
@@ -145,7 +138,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "economy_class_slots", Type: field.TypeInt64},
 		{Name: "business_class_slots", Type: field.TypeInt64},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"booked", "free"}},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"free"}, Default: "free"},
 	}
 	// PlanesTable holds the schema information for the "planes" table.
 	PlanesTable = &schema.Table{
@@ -165,10 +158,9 @@ var (
 )
 
 func init() {
-	BookingsTable.ForeignKeys[0].RefTable = CustomersTable
-	BookingsTable.ForeignKeys[1].RefTable = FlightsTable
+	BookingsTable.ForeignKeys[0].RefTable = FlightsTable
+	CustomersTable.ForeignKeys[0].RefTable = MembersTable
 	FlightsTable.ForeignKeys[0].RefTable = AirportsTable
-	FlightsTable.ForeignKeys[1].RefTable = AirportsTable
+	FlightsTable.ForeignKeys[1].RefTable = CustomersTable
 	FlightsTable.ForeignKeys[2].RefTable = PlanesTable
-	MembersTable.ForeignKeys[0].RefTable = CustomersTable
 }

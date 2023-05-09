@@ -7,6 +7,7 @@ import (
 	"booking-flight-sytem/ent/member"
 	"booking-flight-sytem/ent/predicate"
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -18,12 +19,11 @@ import (
 // MemberQuery is the builder for querying Member entities.
 type MemberQuery struct {
 	config
-	ctx          *QueryContext
-	order        []member.OrderOption
-	inters       []Interceptor
-	predicates   []predicate.Member
-	withMemberID *CustomerQuery
-	withFKs      bool
+	ctx             *QueryContext
+	order           []member.OrderOption
+	inters          []Interceptor
+	predicates      []predicate.Member
+	withHasCustomer *CustomerQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -60,8 +60,8 @@ func (mq *MemberQuery) Order(o ...member.OrderOption) *MemberQuery {
 	return mq
 }
 
-// QueryMemberID chains the current query on the "member_id" edge.
-func (mq *MemberQuery) QueryMemberID() *CustomerQuery {
+// QueryHasCustomer chains the current query on the "has_Customer" edge.
+func (mq *MemberQuery) QueryHasCustomer() *CustomerQuery {
 	query := (&CustomerClient{config: mq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := mq.prepareQuery(ctx); err != nil {
@@ -74,7 +74,7 @@ func (mq *MemberQuery) QueryMemberID() *CustomerQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(member.Table, member.FieldID, selector),
 			sqlgraph.To(customer.Table, customer.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, member.MemberIDTable, member.MemberIDColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, member.HasCustomerTable, member.HasCustomerColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
 		return fromU, nil
@@ -269,26 +269,26 @@ func (mq *MemberQuery) Clone() *MemberQuery {
 		return nil
 	}
 	return &MemberQuery{
-		config:       mq.config,
-		ctx:          mq.ctx.Clone(),
-		order:        append([]member.OrderOption{}, mq.order...),
-		inters:       append([]Interceptor{}, mq.inters...),
-		predicates:   append([]predicate.Member{}, mq.predicates...),
-		withMemberID: mq.withMemberID.Clone(),
+		config:          mq.config,
+		ctx:             mq.ctx.Clone(),
+		order:           append([]member.OrderOption{}, mq.order...),
+		inters:          append([]Interceptor{}, mq.inters...),
+		predicates:      append([]predicate.Member{}, mq.predicates...),
+		withHasCustomer: mq.withHasCustomer.Clone(),
 		// clone intermediate query.
 		sql:  mq.sql.Clone(),
 		path: mq.path,
 	}
 }
 
-// WithMemberID tells the query-builder to eager-load the nodes that are connected to
-// the "member_id" edge. The optional arguments are used to configure the query builder of the edge.
-func (mq *MemberQuery) WithMemberID(opts ...func(*CustomerQuery)) *MemberQuery {
+// WithHasCustomer tells the query-builder to eager-load the nodes that are connected to
+// the "has_Customer" edge. The optional arguments are used to configure the query builder of the edge.
+func (mq *MemberQuery) WithHasCustomer(opts ...func(*CustomerQuery)) *MemberQuery {
 	query := (&CustomerClient{config: mq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	mq.withMemberID = query
+	mq.withHasCustomer = query
 	return mq
 }
 
@@ -369,18 +369,11 @@ func (mq *MemberQuery) prepareQuery(ctx context.Context) error {
 func (mq *MemberQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Member, error) {
 	var (
 		nodes       = []*Member{}
-		withFKs     = mq.withFKs
 		_spec       = mq.querySpec()
 		loadedTypes = [1]bool{
-			mq.withMemberID != nil,
+			mq.withHasCustomer != nil,
 		}
 	)
-	if mq.withMemberID != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, member.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Member).scanValues(nil, columns)
 	}
@@ -399,44 +392,43 @@ func (mq *MemberQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Membe
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := mq.withMemberID; query != nil {
-		if err := mq.loadMemberID(ctx, query, nodes, nil,
-			func(n *Member, e *Customer) { n.Edges.MemberID = e }); err != nil {
+	if query := mq.withHasCustomer; query != nil {
+		if err := mq.loadHasCustomer(ctx, query, nodes,
+			func(n *Member) { n.Edges.HasCustomer = []*Customer{} },
+			func(n *Member, e *Customer) { n.Edges.HasCustomer = append(n.Edges.HasCustomer, e) }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (mq *MemberQuery) loadMemberID(ctx context.Context, query *CustomerQuery, nodes []*Member, init func(*Member), assign func(*Member, *Customer)) error {
-	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*Member)
+func (mq *MemberQuery) loadHasCustomer(ctx context.Context, query *CustomerQuery, nodes []*Member, init func(*Member), assign func(*Member, *Customer)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Member)
 	for i := range nodes {
-		if nodes[i].member_member_id == nil {
-			continue
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
 		}
-		fk := *nodes[i].member_member_id
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	if len(ids) == 0 {
-		return nil
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(customer.FieldMemberID)
 	}
-	query.Where(customer.IDIn(ids...))
+	query.Where(predicate.Customer(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(member.HasCustomerColumn), fks...))
+	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
+		fk := n.MemberID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "member_member_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "member_id" returned %v for node %v`, fk, n.ID)
 		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
+		assign(node, n)
 	}
 	return nil
 }

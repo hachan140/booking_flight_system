@@ -4,6 +4,7 @@ package ent
 
 import (
 	"booking-flight-sytem/ent/booking"
+	"booking-flight-sytem/ent/flight"
 	"context"
 	"errors"
 	"fmt"
@@ -55,9 +56,42 @@ func (bc *BookingCreate) SetCode(s string) *BookingCreate {
 }
 
 // SetStatus sets the "status" field.
-func (bc *BookingCreate) SetStatus(b booking.Status) *BookingCreate {
-	bc.mutation.SetStatus(b)
+func (bc *BookingCreate) SetStatus(s string) *BookingCreate {
+	bc.mutation.SetStatus(s)
 	return bc
+}
+
+// SetFlightID sets the "flight_id" field.
+func (bc *BookingCreate) SetFlightID(i int) *BookingCreate {
+	bc.mutation.SetFlightID(i)
+	return bc
+}
+
+// SetNillableFlightID sets the "flight_id" field if the given value is not nil.
+func (bc *BookingCreate) SetNillableFlightID(i *int) *BookingCreate {
+	if i != nil {
+		bc.SetFlightID(*i)
+	}
+	return bc
+}
+
+// SetHasFlightID sets the "has_flight" edge to the Flight entity by ID.
+func (bc *BookingCreate) SetHasFlightID(id int) *BookingCreate {
+	bc.mutation.SetHasFlightID(id)
+	return bc
+}
+
+// SetNillableHasFlightID sets the "has_flight" edge to the Flight entity by ID if the given value is not nil.
+func (bc *BookingCreate) SetNillableHasFlightID(id *int) *BookingCreate {
+	if id != nil {
+		bc = bc.SetHasFlightID(*id)
+	}
+	return bc
+}
+
+// SetHasFlight sets the "has_flight" edge to the Flight entity.
+func (bc *BookingCreate) SetHasFlight(f *Flight) *BookingCreate {
+	return bc.SetHasFlightID(f.ID)
 }
 
 // Mutation returns the BookingMutation object of the builder.
@@ -124,11 +158,6 @@ func (bc *BookingCreate) check() error {
 	if _, ok := bc.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Booking.status"`)}
 	}
-	if v, ok := bc.mutation.Status(); ok {
-		if err := booking.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Booking.status": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -168,8 +197,25 @@ func (bc *BookingCreate) createSpec() (*Booking, *sqlgraph.CreateSpec) {
 		_node.Code = value
 	}
 	if value, ok := bc.mutation.Status(); ok {
-		_spec.SetField(booking.FieldStatus, field.TypeEnum, value)
+		_spec.SetField(booking.FieldStatus, field.TypeString, value)
 		_node.Status = value
+	}
+	if nodes := bc.mutation.HasFlightIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   booking.HasFlightTable,
+			Columns: []string{booking.HasFlightColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.FlightID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

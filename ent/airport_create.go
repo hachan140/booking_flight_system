@@ -67,34 +67,19 @@ func (ac *AirportCreate) SetLong(f float64) *AirportCreate {
 	return ac
 }
 
-// AddFromAirportIDIDs adds the "from_airport_id" edge to the Flight entity by IDs.
-func (ac *AirportCreate) AddFromAirportIDIDs(ids ...int) *AirportCreate {
-	ac.mutation.AddFromAirportIDIDs(ids...)
+// AddHasFlightIDs adds the "has_Flight" edge to the Flight entity by IDs.
+func (ac *AirportCreate) AddHasFlightIDs(ids ...int) *AirportCreate {
+	ac.mutation.AddHasFlightIDs(ids...)
 	return ac
 }
 
-// AddFromAirportID adds the "from_airport_id" edges to the Flight entity.
-func (ac *AirportCreate) AddFromAirportID(f ...*Flight) *AirportCreate {
+// AddHasFlight adds the "has_Flight" edges to the Flight entity.
+func (ac *AirportCreate) AddHasFlight(f ...*Flight) *AirportCreate {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return ac.AddFromAirportIDIDs(ids...)
-}
-
-// AddDestAirportIDIDs adds the "dest_airport_id" edge to the Flight entity by IDs.
-func (ac *AirportCreate) AddDestAirportIDIDs(ids ...int) *AirportCreate {
-	ac.mutation.AddDestAirportIDIDs(ids...)
-	return ac
-}
-
-// AddDestAirportID adds the "dest_airport_id" edges to the Flight entity.
-func (ac *AirportCreate) AddDestAirportID(f ...*Flight) *AirportCreate {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
-	}
-	return ac.AddDestAirportIDIDs(ids...)
+	return ac.AddHasFlightIDs(ids...)
 }
 
 // Mutation returns the AirportMutation object of the builder.
@@ -220,28 +205,12 @@ func (ac *AirportCreate) createSpec() (*Airport, *sqlgraph.CreateSpec) {
 		_spec.SetField(airport.FieldLong, field.TypeFloat64, value)
 		_node.Long = &value
 	}
-	if nodes := ac.mutation.FromAirportIDIDs(); len(nodes) > 0 {
+	if nodes := ac.mutation.HasFlightIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   airport.FromAirportIDTable,
-			Columns: []string{airport.FromAirportIDColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := ac.mutation.DestAirportIDIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   airport.DestAirportIDTable,
-			Columns: []string{airport.DestAirportIDColumn},
+			Table:   airport.HasFlightTable,
+			Columns: []string{airport.HasFlightColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),

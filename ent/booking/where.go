@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // ID filters vertices based on their ID field.
@@ -67,6 +68,16 @@ func UpdatedAt(v time.Time) predicate.Booking {
 // Code applies equality check predicate on the "code" field. It's identical to CodeEQ.
 func Code(v string) predicate.Booking {
 	return predicate.Booking(sql.FieldEQ(FieldCode, v))
+}
+
+// Status applies equality check predicate on the "status" field. It's identical to StatusEQ.
+func Status(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldStatus, v))
+}
+
+// FlightID applies equality check predicate on the "flight_id" field. It's identical to FlightIDEQ.
+func FlightID(v int) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldFlightID, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -215,23 +226,121 @@ func CodeContainsFold(v string) predicate.Booking {
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.
-func StatusEQ(v Status) predicate.Booking {
+func StatusEQ(v string) predicate.Booking {
 	return predicate.Booking(sql.FieldEQ(FieldStatus, v))
 }
 
 // StatusNEQ applies the NEQ predicate on the "status" field.
-func StatusNEQ(v Status) predicate.Booking {
+func StatusNEQ(v string) predicate.Booking {
 	return predicate.Booking(sql.FieldNEQ(FieldStatus, v))
 }
 
 // StatusIn applies the In predicate on the "status" field.
-func StatusIn(vs ...Status) predicate.Booking {
+func StatusIn(vs ...string) predicate.Booking {
 	return predicate.Booking(sql.FieldIn(FieldStatus, vs...))
 }
 
 // StatusNotIn applies the NotIn predicate on the "status" field.
-func StatusNotIn(vs ...Status) predicate.Booking {
+func StatusNotIn(vs ...string) predicate.Booking {
 	return predicate.Booking(sql.FieldNotIn(FieldStatus, vs...))
+}
+
+// StatusGT applies the GT predicate on the "status" field.
+func StatusGT(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldGT(FieldStatus, v))
+}
+
+// StatusGTE applies the GTE predicate on the "status" field.
+func StatusGTE(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldGTE(FieldStatus, v))
+}
+
+// StatusLT applies the LT predicate on the "status" field.
+func StatusLT(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldLT(FieldStatus, v))
+}
+
+// StatusLTE applies the LTE predicate on the "status" field.
+func StatusLTE(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldLTE(FieldStatus, v))
+}
+
+// StatusContains applies the Contains predicate on the "status" field.
+func StatusContains(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldContains(FieldStatus, v))
+}
+
+// StatusHasPrefix applies the HasPrefix predicate on the "status" field.
+func StatusHasPrefix(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldHasPrefix(FieldStatus, v))
+}
+
+// StatusHasSuffix applies the HasSuffix predicate on the "status" field.
+func StatusHasSuffix(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldHasSuffix(FieldStatus, v))
+}
+
+// StatusEqualFold applies the EqualFold predicate on the "status" field.
+func StatusEqualFold(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldEqualFold(FieldStatus, v))
+}
+
+// StatusContainsFold applies the ContainsFold predicate on the "status" field.
+func StatusContainsFold(v string) predicate.Booking {
+	return predicate.Booking(sql.FieldContainsFold(FieldStatus, v))
+}
+
+// FlightIDEQ applies the EQ predicate on the "flight_id" field.
+func FlightIDEQ(v int) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldFlightID, v))
+}
+
+// FlightIDNEQ applies the NEQ predicate on the "flight_id" field.
+func FlightIDNEQ(v int) predicate.Booking {
+	return predicate.Booking(sql.FieldNEQ(FieldFlightID, v))
+}
+
+// FlightIDIn applies the In predicate on the "flight_id" field.
+func FlightIDIn(vs ...int) predicate.Booking {
+	return predicate.Booking(sql.FieldIn(FieldFlightID, vs...))
+}
+
+// FlightIDNotIn applies the NotIn predicate on the "flight_id" field.
+func FlightIDNotIn(vs ...int) predicate.Booking {
+	return predicate.Booking(sql.FieldNotIn(FieldFlightID, vs...))
+}
+
+// FlightIDIsNil applies the IsNil predicate on the "flight_id" field.
+func FlightIDIsNil() predicate.Booking {
+	return predicate.Booking(sql.FieldIsNull(FieldFlightID))
+}
+
+// FlightIDNotNil applies the NotNil predicate on the "flight_id" field.
+func FlightIDNotNil() predicate.Booking {
+	return predicate.Booking(sql.FieldNotNull(FieldFlightID))
+}
+
+// HasHasFlight applies the HasEdge predicate on the "has_flight" edge.
+func HasHasFlight() predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, HasFlightTable, HasFlightColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasHasFlightWith applies the HasEdge predicate on the "has_flight" edge with a given conditions (other predicates).
+func HasHasFlightWith(preds ...predicate.Flight) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		step := newHasFlightStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

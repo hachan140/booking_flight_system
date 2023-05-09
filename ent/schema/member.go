@@ -30,6 +30,6 @@ func (Member) Fields() []ent.Field {
 // Edges of the Member.
 func (Member) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("member_id", Customer.Type).Unique(),
+		edge.To("has_Customer", Customer.Type),
 	}
 }

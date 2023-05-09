@@ -23,7 +23,7 @@ type PlaneQuery struct {
 	order       []plane.OrderOption
 	inters      []Interceptor
 	predicates  []predicate.Plane
-	withPlaneID *FlightQuery
+	withFlights *FlightQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -60,8 +60,8 @@ func (pq *PlaneQuery) Order(o ...plane.OrderOption) *PlaneQuery {
 	return pq
 }
 
-// QueryPlaneID chains the current query on the "plane_id" edge.
-func (pq *PlaneQuery) QueryPlaneID() *FlightQuery {
+// QueryFlights chains the current query on the "flights" edge.
+func (pq *PlaneQuery) QueryFlights() *FlightQuery {
 	query := (&FlightClient{config: pq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := pq.prepareQuery(ctx); err != nil {
@@ -74,7 +74,7 @@ func (pq *PlaneQuery) QueryPlaneID() *FlightQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plane.Table, plane.FieldID, selector),
 			sqlgraph.To(flight.Table, flight.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, plane.PlaneIDTable, plane.PlaneIDColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, plane.FlightsTable, plane.FlightsColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(pq.driver.Dialect(), step)
 		return fromU, nil
@@ -274,21 +274,21 @@ func (pq *PlaneQuery) Clone() *PlaneQuery {
 		order:       append([]plane.OrderOption{}, pq.order...),
 		inters:      append([]Interceptor{}, pq.inters...),
 		predicates:  append([]predicate.Plane{}, pq.predicates...),
-		withPlaneID: pq.withPlaneID.Clone(),
+		withFlights: pq.withFlights.Clone(),
 		// clone intermediate query.
 		sql:  pq.sql.Clone(),
 		path: pq.path,
 	}
 }
 
-// WithPlaneID tells the query-builder to eager-load the nodes that are connected to
-// the "plane_id" edge. The optional arguments are used to configure the query builder of the edge.
-func (pq *PlaneQuery) WithPlaneID(opts ...func(*FlightQuery)) *PlaneQuery {
+// WithFlights tells the query-builder to eager-load the nodes that are connected to
+// the "flights" edge. The optional arguments are used to configure the query builder of the edge.
+func (pq *PlaneQuery) WithFlights(opts ...func(*FlightQuery)) *PlaneQuery {
 	query := (&FlightClient{config: pq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	pq.withPlaneID = query
+	pq.withFlights = query
 	return pq
 }
 
@@ -371,7 +371,7 @@ func (pq *PlaneQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Plane,
 		nodes       = []*Plane{}
 		_spec       = pq.querySpec()
 		loadedTypes = [1]bool{
-			pq.withPlaneID != nil,
+			pq.withFlights != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -392,17 +392,17 @@ func (pq *PlaneQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Plane,
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := pq.withPlaneID; query != nil {
-		if err := pq.loadPlaneID(ctx, query, nodes,
-			func(n *Plane) { n.Edges.PlaneID = []*Flight{} },
-			func(n *Plane, e *Flight) { n.Edges.PlaneID = append(n.Edges.PlaneID, e) }); err != nil {
+	if query := pq.withFlights; query != nil {
+		if err := pq.loadFlights(ctx, query, nodes,
+			func(n *Plane) { n.Edges.Flights = []*Flight{} },
+			func(n *Plane, e *Flight) { n.Edges.Flights = append(n.Edges.Flights, e) }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (pq *PlaneQuery) loadPlaneID(ctx context.Context, query *FlightQuery, nodes []*Plane, init func(*Plane), assign func(*Plane, *Flight)) error {
+func (pq *PlaneQuery) loadFlights(ctx context.Context, query *FlightQuery, nodes []*Plane, init func(*Plane), assign func(*Plane, *Flight)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*Plane)
 	for i := range nodes {
@@ -412,22 +412,21 @@ func (pq *PlaneQuery) loadPlaneID(ctx context.Context, query *FlightQuery, nodes
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(flight.FieldPlaneID)
+	}
 	query.Where(predicate.Flight(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(plane.PlaneIDColumn), fks...))
+		s.Where(sql.InValues(s.C(plane.FlightsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.plane_plane_id
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "plane_plane_id" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.PlaneID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "plane_plane_id" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "plane_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

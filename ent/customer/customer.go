@@ -28,17 +28,28 @@ const (
 	FieldDob = "dob"
 	// FieldCid holds the string denoting the cid field in the database.
 	FieldCid = "cid"
-	// EdgeCustomerID holds the string denoting the customer_id edge name in mutations.
-	EdgeCustomerID = "customer_id"
+	// FieldMemberID holds the string denoting the member_id field in the database.
+	FieldMemberID = "member_id"
+	// EdgeHasMember holds the string denoting the has_member edge name in mutations.
+	EdgeHasMember = "has_Member"
+	// EdgeHasFlight holds the string denoting the has_flight edge name in mutations.
+	EdgeHasFlight = "has_Flight"
 	// Table holds the table name of the customer in the database.
 	Table = "customers"
-	// CustomerIDTable is the table that holds the customer_id relation/edge.
-	CustomerIDTable = "bookings"
-	// CustomerIDInverseTable is the table name for the Booking entity.
-	// It exists in this package in order to avoid circular dependency with the "booking" package.
-	CustomerIDInverseTable = "bookings"
-	// CustomerIDColumn is the table column denoting the customer_id relation/edge.
-	CustomerIDColumn = "customer_customer_id"
+	// HasMemberTable is the table that holds the has_Member relation/edge.
+	HasMemberTable = "customers"
+	// HasMemberInverseTable is the table name for the Member entity.
+	// It exists in this package in order to avoid circular dependency with the "member" package.
+	HasMemberInverseTable = "members"
+	// HasMemberColumn is the table column denoting the has_Member relation/edge.
+	HasMemberColumn = "member_id"
+	// HasFlightTable is the table that holds the has_Flight relation/edge.
+	HasFlightTable = "flights"
+	// HasFlightInverseTable is the table name for the Flight entity.
+	// It exists in this package in order to avoid circular dependency with the "flight" package.
+	HasFlightInverseTable = "flights"
+	// HasFlightColumn is the table column denoting the has_Flight relation/edge.
+	HasFlightColumn = "customer_id"
 )
 
 // Columns holds all SQL columns for customer fields.
@@ -51,6 +62,7 @@ var Columns = []string{
 	FieldFullName,
 	FieldDob,
 	FieldCid,
+	FieldMemberID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -123,23 +135,42 @@ func ByCid(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCid, opts...).ToFunc()
 }
 
-// ByCustomerIDCount orders the results by customer_id count.
-func ByCustomerIDCount(opts ...sql.OrderTermOption) OrderOption {
+// ByMemberID orders the results by the member_id field.
+func ByMemberID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMemberID, opts...).ToFunc()
+}
+
+// ByHasMemberField orders the results by has_Member field.
+func ByHasMemberField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCustomerIDStep(), opts...)
+		sqlgraph.OrderByNeighborTerms(s, newHasMemberStep(), sql.OrderByField(field, opts...))
 	}
 }
 
-// ByCustomerID orders the results by customer_id terms.
-func ByCustomerID(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByHasFlightCount orders the results by has_Flight count.
+func ByHasFlightCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCustomerIDStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborsCount(s, newHasFlightStep(), opts...)
 	}
 }
-func newCustomerIDStep() *sqlgraph.Step {
+
+// ByHasFlight orders the results by has_Flight terms.
+func ByHasFlight(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newHasFlightStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newHasMemberStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CustomerIDInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, CustomerIDTable, CustomerIDColumn),
+		sqlgraph.To(HasMemberInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, HasMemberTable, HasMemberColumn),
+	)
+}
+func newHasFlightStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(HasFlightInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, HasFlightTable, HasFlightColumn),
 	)
 }

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"booking-flight-sytem/ent/booking"
+	"booking-flight-sytem/ent/flight"
 	"booking-flight-sytem/ent/predicate"
 	"context"
 	"errors"
@@ -55,14 +56,59 @@ func (bu *BookingUpdate) SetCode(s string) *BookingUpdate {
 }
 
 // SetStatus sets the "status" field.
-func (bu *BookingUpdate) SetStatus(b booking.Status) *BookingUpdate {
-	bu.mutation.SetStatus(b)
+func (bu *BookingUpdate) SetStatus(s string) *BookingUpdate {
+	bu.mutation.SetStatus(s)
 	return bu
+}
+
+// SetFlightID sets the "flight_id" field.
+func (bu *BookingUpdate) SetFlightID(i int) *BookingUpdate {
+	bu.mutation.SetFlightID(i)
+	return bu
+}
+
+// SetNillableFlightID sets the "flight_id" field if the given value is not nil.
+func (bu *BookingUpdate) SetNillableFlightID(i *int) *BookingUpdate {
+	if i != nil {
+		bu.SetFlightID(*i)
+	}
+	return bu
+}
+
+// ClearFlightID clears the value of the "flight_id" field.
+func (bu *BookingUpdate) ClearFlightID() *BookingUpdate {
+	bu.mutation.ClearFlightID()
+	return bu
+}
+
+// SetHasFlightID sets the "has_flight" edge to the Flight entity by ID.
+func (bu *BookingUpdate) SetHasFlightID(id int) *BookingUpdate {
+	bu.mutation.SetHasFlightID(id)
+	return bu
+}
+
+// SetNillableHasFlightID sets the "has_flight" edge to the Flight entity by ID if the given value is not nil.
+func (bu *BookingUpdate) SetNillableHasFlightID(id *int) *BookingUpdate {
+	if id != nil {
+		bu = bu.SetHasFlightID(*id)
+	}
+	return bu
+}
+
+// SetHasFlight sets the "has_flight" edge to the Flight entity.
+func (bu *BookingUpdate) SetHasFlight(f *Flight) *BookingUpdate {
+	return bu.SetHasFlightID(f.ID)
 }
 
 // Mutation returns the BookingMutation object of the builder.
 func (bu *BookingUpdate) Mutation() *BookingMutation {
 	return bu.mutation
+}
+
+// ClearHasFlight clears the "has_flight" edge to the Flight entity.
+func (bu *BookingUpdate) ClearHasFlight() *BookingUpdate {
+	bu.mutation.ClearHasFlight()
+	return bu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -108,11 +154,6 @@ func (bu *BookingUpdate) check() error {
 			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Booking.code": %w`, err)}
 		}
 	}
-	if v, ok := bu.mutation.Status(); ok {
-		if err := booking.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Booking.status": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -138,7 +179,36 @@ func (bu *BookingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(booking.FieldCode, field.TypeString, value)
 	}
 	if value, ok := bu.mutation.Status(); ok {
-		_spec.SetField(booking.FieldStatus, field.TypeEnum, value)
+		_spec.SetField(booking.FieldStatus, field.TypeString, value)
+	}
+	if bu.mutation.HasFlightCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   booking.HasFlightTable,
+			Columns: []string{booking.HasFlightColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.HasFlightIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   booking.HasFlightTable,
+			Columns: []string{booking.HasFlightColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, bu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -187,14 +257,59 @@ func (buo *BookingUpdateOne) SetCode(s string) *BookingUpdateOne {
 }
 
 // SetStatus sets the "status" field.
-func (buo *BookingUpdateOne) SetStatus(b booking.Status) *BookingUpdateOne {
-	buo.mutation.SetStatus(b)
+func (buo *BookingUpdateOne) SetStatus(s string) *BookingUpdateOne {
+	buo.mutation.SetStatus(s)
 	return buo
+}
+
+// SetFlightID sets the "flight_id" field.
+func (buo *BookingUpdateOne) SetFlightID(i int) *BookingUpdateOne {
+	buo.mutation.SetFlightID(i)
+	return buo
+}
+
+// SetNillableFlightID sets the "flight_id" field if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableFlightID(i *int) *BookingUpdateOne {
+	if i != nil {
+		buo.SetFlightID(*i)
+	}
+	return buo
+}
+
+// ClearFlightID clears the value of the "flight_id" field.
+func (buo *BookingUpdateOne) ClearFlightID() *BookingUpdateOne {
+	buo.mutation.ClearFlightID()
+	return buo
+}
+
+// SetHasFlightID sets the "has_flight" edge to the Flight entity by ID.
+func (buo *BookingUpdateOne) SetHasFlightID(id int) *BookingUpdateOne {
+	buo.mutation.SetHasFlightID(id)
+	return buo
+}
+
+// SetNillableHasFlightID sets the "has_flight" edge to the Flight entity by ID if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableHasFlightID(id *int) *BookingUpdateOne {
+	if id != nil {
+		buo = buo.SetHasFlightID(*id)
+	}
+	return buo
+}
+
+// SetHasFlight sets the "has_flight" edge to the Flight entity.
+func (buo *BookingUpdateOne) SetHasFlight(f *Flight) *BookingUpdateOne {
+	return buo.SetHasFlightID(f.ID)
 }
 
 // Mutation returns the BookingMutation object of the builder.
 func (buo *BookingUpdateOne) Mutation() *BookingMutation {
 	return buo.mutation
+}
+
+// ClearHasFlight clears the "has_flight" edge to the Flight entity.
+func (buo *BookingUpdateOne) ClearHasFlight() *BookingUpdateOne {
+	buo.mutation.ClearHasFlight()
+	return buo
 }
 
 // Where appends a list predicates to the BookingUpdate builder.
@@ -253,11 +368,6 @@ func (buo *BookingUpdateOne) check() error {
 			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Booking.code": %w`, err)}
 		}
 	}
-	if v, ok := buo.mutation.Status(); ok {
-		if err := booking.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Booking.status": %w`, err)}
-		}
-	}
 	return nil
 }
 
@@ -300,7 +410,36 @@ func (buo *BookingUpdateOne) sqlSave(ctx context.Context) (_node *Booking, err e
 		_spec.SetField(booking.FieldCode, field.TypeString, value)
 	}
 	if value, ok := buo.mutation.Status(); ok {
-		_spec.SetField(booking.FieldStatus, field.TypeEnum, value)
+		_spec.SetField(booking.FieldStatus, field.TypeString, value)
+	}
+	if buo.mutation.HasFlightCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   booking.HasFlightTable,
+			Columns: []string{booking.HasFlightColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.HasFlightIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   booking.HasFlightTable,
+			Columns: []string{booking.HasFlightColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Booking{config: buo.config}
 	_spec.Assign = _node.assignValues

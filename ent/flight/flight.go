@@ -31,17 +31,50 @@ const (
 	FieldAvailableBcSlot = "available_bc_slot"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
-	// EdgeFlightID holds the string denoting the flight_id edge name in mutations.
-	EdgeFlightID = "flight_id"
+	// FieldPlaneID holds the string denoting the plane_id field in the database.
+	FieldPlaneID = "plane_id"
+	// FieldAirportID holds the string denoting the airport_id field in the database.
+	FieldAirportID = "airport_id"
+	// FieldCustomerID holds the string denoting the customer_id field in the database.
+	FieldCustomerID = "customer_id"
+	// EdgeHasPlane holds the string denoting the has_plane edge name in mutations.
+	EdgeHasPlane = "has_plane"
+	// EdgeHasBooking holds the string denoting the has_booking edge name in mutations.
+	EdgeHasBooking = "has_booking"
+	// EdgeHasAirport holds the string denoting the has_airport edge name in mutations.
+	EdgeHasAirport = "has_Airport"
+	// EdgeHasCustomer holds the string denoting the has_customer edge name in mutations.
+	EdgeHasCustomer = "has_Customer"
 	// Table holds the table name of the flight in the database.
 	Table = "flights"
-	// FlightIDTable is the table that holds the flight_id relation/edge.
-	FlightIDTable = "bookings"
-	// FlightIDInverseTable is the table name for the Booking entity.
+	// HasPlaneTable is the table that holds the has_plane relation/edge.
+	HasPlaneTable = "flights"
+	// HasPlaneInverseTable is the table name for the Plane entity.
+	// It exists in this package in order to avoid circular dependency with the "plane" package.
+	HasPlaneInverseTable = "planes"
+	// HasPlaneColumn is the table column denoting the has_plane relation/edge.
+	HasPlaneColumn = "plane_id"
+	// HasBookingTable is the table that holds the has_booking relation/edge.
+	HasBookingTable = "bookings"
+	// HasBookingInverseTable is the table name for the Booking entity.
 	// It exists in this package in order to avoid circular dependency with the "booking" package.
-	FlightIDInverseTable = "bookings"
-	// FlightIDColumn is the table column denoting the flight_id relation/edge.
-	FlightIDColumn = "flight_flight_id"
+	HasBookingInverseTable = "bookings"
+	// HasBookingColumn is the table column denoting the has_booking relation/edge.
+	HasBookingColumn = "flight_id"
+	// HasAirportTable is the table that holds the has_Airport relation/edge.
+	HasAirportTable = "flights"
+	// HasAirportInverseTable is the table name for the Airport entity.
+	// It exists in this package in order to avoid circular dependency with the "airport" package.
+	HasAirportInverseTable = "airports"
+	// HasAirportColumn is the table column denoting the has_Airport relation/edge.
+	HasAirportColumn = "airport_id"
+	// HasCustomerTable is the table that holds the has_Customer relation/edge.
+	HasCustomerTable = "flights"
+	// HasCustomerInverseTable is the table name for the Customer entity.
+	// It exists in this package in order to avoid circular dependency with the "customer" package.
+	HasCustomerInverseTable = "customers"
+	// HasCustomerColumn is the table column denoting the has_Customer relation/edge.
+	HasCustomerColumn = "customer_id"
 )
 
 // Columns holds all SQL columns for flight fields.
@@ -55,25 +88,15 @@ var Columns = []string{
 	FieldAvailableEcSlot,
 	FieldAvailableBcSlot,
 	FieldStatus,
-}
-
-// ForeignKeys holds the SQL foreign-keys that are owned by the "flights"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"airport_from_airport_id",
-	"airport_dest_airport_id",
-	"plane_plane_id",
+	FieldPlaneID,
+	FieldAirportID,
+	FieldCustomerID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -94,15 +117,13 @@ var (
 // Status defines the type for the "status" enum field.
 type Status string
 
-// StatusLanded is the default value of the Status enum.
-const DefaultStatus = StatusLanded
+// StatusCanceled is the default value of the Status enum.
+const DefaultStatus = StatusCanceled
 
 // Status values.
 const (
-	StatusFlying    Status = "flying"
-	StatusScheduled Status = "scheduled"
-	StatusCanceled  Status = "canceled"
-	StatusLanded    Status = "landed"
+	StatusFlying   Status = "scheduled"
+	StatusCanceled Status = "landed"
 )
 
 func (s Status) String() string {
@@ -112,7 +133,7 @@ func (s Status) String() string {
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
 func StatusValidator(s Status) error {
 	switch s {
-	case StatusFlying, StatusScheduled, StatusCanceled, StatusLanded:
+	case StatusFlying, StatusCanceled:
 		return nil
 	default:
 		return fmt.Errorf("flight: invalid enum value for status field: %q", s)
@@ -167,23 +188,80 @@ func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
 }
 
-// ByFlightIDCount orders the results by flight_id count.
-func ByFlightIDCount(opts ...sql.OrderTermOption) OrderOption {
+// ByPlaneID orders the results by the plane_id field.
+func ByPlaneID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPlaneID, opts...).ToFunc()
+}
+
+// ByAirportID orders the results by the airport_id field.
+func ByAirportID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAirportID, opts...).ToFunc()
+}
+
+// ByCustomerID orders the results by the customer_id field.
+func ByCustomerID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCustomerID, opts...).ToFunc()
+}
+
+// ByHasPlaneField orders the results by has_plane field.
+func ByHasPlaneField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newFlightIDStep(), opts...)
+		sqlgraph.OrderByNeighborTerms(s, newHasPlaneStep(), sql.OrderByField(field, opts...))
 	}
 }
 
-// ByFlightID orders the results by flight_id terms.
-func ByFlightID(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByHasBookingCount orders the results by has_booking count.
+func ByHasBookingCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newFlightIDStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborsCount(s, newHasBookingStep(), opts...)
 	}
 }
-func newFlightIDStep() *sqlgraph.Step {
+
+// ByHasBooking orders the results by has_booking terms.
+func ByHasBooking(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newHasBookingStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByHasAirportField orders the results by has_Airport field.
+func ByHasAirportField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newHasAirportStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByHasCustomerField orders the results by has_Customer field.
+func ByHasCustomerField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newHasCustomerStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newHasPlaneStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(FlightIDInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, FlightIDTable, FlightIDColumn),
+		sqlgraph.To(HasPlaneInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, HasPlaneTable, HasPlaneColumn),
+	)
+}
+func newHasBookingStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(HasBookingInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, HasBookingTable, HasBookingColumn),
+	)
+}
+func newHasAirportStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(HasAirportInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, HasAirportTable, HasAirportColumn),
+	)
+}
+func newHasCustomerStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(HasCustomerInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, HasCustomerTable, HasCustomerColumn),
 	)
 }

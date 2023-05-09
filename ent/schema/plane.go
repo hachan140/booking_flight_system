@@ -17,13 +17,13 @@ func (Plane) Fields() []ent.Field {
 		field.String("name").NotEmpty(),
 		field.Int64("economy_class_slots"),
 		field.Int64("business_class_slots"),
-		field.Enum("status").Values("booked", "free"),
+		field.Enum("status").NamedValues("booked", "free").Default("free"),
 	}
 }
 
 // Edges of the Plane.
 func (Plane) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("plane_id", Flight.Type),
+		edge.To("flights", Flight.Type),
 	}
 }

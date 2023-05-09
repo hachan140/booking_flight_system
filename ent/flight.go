@@ -3,7 +3,10 @@
 package ent
 
 import (
+	"booking-flight-sytem/ent/airport"
+	"booking-flight-sytem/ent/customer"
 	"booking-flight-sytem/ent/flight"
+	"booking-flight-sytem/ent/plane"
 	"fmt"
 	"strings"
 	"time"
@@ -33,31 +36,79 @@ type Flight struct {
 	AvailableBcSlot int `json:"available_bc_slot,omitempty"`
 	// Status holds the value of the "status" field.
 	Status flight.Status `json:"status,omitempty"`
+	// PlaneID holds the value of the "plane_id" field.
+	PlaneID int `json:"plane_id,omitempty"`
+	// AirportID holds the value of the "airport_id" field.
+	AirportID int `json:"airport_id,omitempty"`
+	// CustomerID holds the value of the "customer_id" field.
+	CustomerID int `json:"customer_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FlightQuery when eager-loading is set.
-	Edges                   FlightEdges `json:"edges"`
-	airport_from_airport_id *int
-	airport_dest_airport_id *int
-	plane_plane_id          *int
-	selectValues            sql.SelectValues
+	Edges        FlightEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // FlightEdges holds the relations/edges for other nodes in the graph.
 type FlightEdges struct {
-	// FlightID holds the value of the flight_id edge.
-	FlightID []*Booking `json:"flight_id,omitempty"`
+	// HasPlane holds the value of the has_plane edge.
+	HasPlane *Plane `json:"has_plane,omitempty"`
+	// HasBooking holds the value of the has_booking edge.
+	HasBooking []*Booking `json:"has_booking,omitempty"`
+	// HasAirport holds the value of the has_Airport edge.
+	HasAirport *Airport `json:"has_Airport,omitempty"`
+	// HasCustomer holds the value of the has_Customer edge.
+	HasCustomer *Customer `json:"has_Customer,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [4]bool
 }
 
-// FlightIDOrErr returns the FlightID value or an error if the edge
-// was not loaded in eager-loading.
-func (e FlightEdges) FlightIDOrErr() ([]*Booking, error) {
+// HasPlaneOrErr returns the HasPlane value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e FlightEdges) HasPlaneOrErr() (*Plane, error) {
 	if e.loadedTypes[0] {
-		return e.FlightID, nil
+		if e.HasPlane == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: plane.Label}
+		}
+		return e.HasPlane, nil
 	}
-	return nil, &NotLoadedError{edge: "flight_id"}
+	return nil, &NotLoadedError{edge: "has_plane"}
+}
+
+// HasBookingOrErr returns the HasBooking value or an error if the edge
+// was not loaded in eager-loading.
+func (e FlightEdges) HasBookingOrErr() ([]*Booking, error) {
+	if e.loadedTypes[1] {
+		return e.HasBooking, nil
+	}
+	return nil, &NotLoadedError{edge: "has_booking"}
+}
+
+// HasAirportOrErr returns the HasAirport value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e FlightEdges) HasAirportOrErr() (*Airport, error) {
+	if e.loadedTypes[2] {
+		if e.HasAirport == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: airport.Label}
+		}
+		return e.HasAirport, nil
+	}
+	return nil, &NotLoadedError{edge: "has_Airport"}
+}
+
+// HasCustomerOrErr returns the HasCustomer value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e FlightEdges) HasCustomerOrErr() (*Customer, error) {
+	if e.loadedTypes[3] {
+		if e.HasCustomer == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: customer.Label}
+		}
+		return e.HasCustomer, nil
+	}
+	return nil, &NotLoadedError{edge: "has_Customer"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -65,18 +116,12 @@ func (*Flight) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case flight.FieldID, flight.FieldAvailableEcSlot, flight.FieldAvailableBcSlot:
+		case flight.FieldID, flight.FieldAvailableEcSlot, flight.FieldAvailableBcSlot, flight.FieldPlaneID, flight.FieldAirportID, flight.FieldCustomerID:
 			values[i] = new(sql.NullInt64)
 		case flight.FieldName, flight.FieldStatus:
 			values[i] = new(sql.NullString)
 		case flight.FieldCreatedAt, flight.FieldUpdatedAt, flight.FieldDepartAt, flight.FieldLandAt:
 			values[i] = new(sql.NullTime)
-		case flight.ForeignKeys[0]: // airport_from_airport_id
-			values[i] = new(sql.NullInt64)
-		case flight.ForeignKeys[1]: // airport_dest_airport_id
-			values[i] = new(sql.NullInt64)
-		case flight.ForeignKeys[2]: // plane_plane_id
-			values[i] = new(sql.NullInt64)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -146,26 +191,23 @@ func (f *Flight) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				f.Status = flight.Status(value.String)
 			}
-		case flight.ForeignKeys[0]:
+		case flight.FieldPlaneID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field airport_from_airport_id", value)
+				return fmt.Errorf("unexpected type %T for field plane_id", values[i])
 			} else if value.Valid {
-				f.airport_from_airport_id = new(int)
-				*f.airport_from_airport_id = int(value.Int64)
+				f.PlaneID = int(value.Int64)
 			}
-		case flight.ForeignKeys[1]:
+		case flight.FieldAirportID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field airport_dest_airport_id", value)
+				return fmt.Errorf("unexpected type %T for field airport_id", values[i])
 			} else if value.Valid {
-				f.airport_dest_airport_id = new(int)
-				*f.airport_dest_airport_id = int(value.Int64)
+				f.AirportID = int(value.Int64)
 			}
-		case flight.ForeignKeys[2]:
+		case flight.FieldCustomerID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for edge-field plane_plane_id", value)
+				return fmt.Errorf("unexpected type %T for field customer_id", values[i])
 			} else if value.Valid {
-				f.plane_plane_id = new(int)
-				*f.plane_plane_id = int(value.Int64)
+				f.CustomerID = int(value.Int64)
 			}
 		default:
 			f.selectValues.Set(columns[i], values[i])
@@ -180,9 +222,24 @@ func (f *Flight) Value(name string) (ent.Value, error) {
 	return f.selectValues.Get(name)
 }
 
-// QueryFlightID queries the "flight_id" edge of the Flight entity.
-func (f *Flight) QueryFlightID() *BookingQuery {
-	return NewFlightClient(f.config).QueryFlightID(f)
+// QueryHasPlane queries the "has_plane" edge of the Flight entity.
+func (f *Flight) QueryHasPlane() *PlaneQuery {
+	return NewFlightClient(f.config).QueryHasPlane(f)
+}
+
+// QueryHasBooking queries the "has_booking" edge of the Flight entity.
+func (f *Flight) QueryHasBooking() *BookingQuery {
+	return NewFlightClient(f.config).QueryHasBooking(f)
+}
+
+// QueryHasAirport queries the "has_Airport" edge of the Flight entity.
+func (f *Flight) QueryHasAirport() *AirportQuery {
+	return NewFlightClient(f.config).QueryHasAirport(f)
+}
+
+// QueryHasCustomer queries the "has_Customer" edge of the Flight entity.
+func (f *Flight) QueryHasCustomer() *CustomerQuery {
+	return NewFlightClient(f.config).QueryHasCustomer(f)
 }
 
 // Update returns a builder for updating this Flight.
@@ -231,6 +288,15 @@ func (f *Flight) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", f.Status))
+	builder.WriteString(", ")
+	builder.WriteString("plane_id=")
+	builder.WriteString(fmt.Sprintf("%v", f.PlaneID))
+	builder.WriteString(", ")
+	builder.WriteString("airport_id=")
+	builder.WriteString(fmt.Sprintf("%v", f.AirportID))
+	builder.WriteString(", ")
+	builder.WriteString("customer_id=")
+	builder.WriteString(fmt.Sprintf("%v", f.CustomerID))
 	builder.WriteByte(')')
 	return builder.String()
 }

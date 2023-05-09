@@ -22,12 +22,14 @@ func (Customer) Fields() []ent.Field {
 		field.String("full_name").NotEmpty(),
 		field.Time("dob"),
 		field.String("cid").NotEmpty().Unique(),
+		field.Int("member_id").Optional(),
 	}
 }
 
 // Edges of the Customer.
 func (Customer) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("customer_id", Booking.Type),
+		edge.From("has_Member", Member.Type).Ref("has_Customer").Field("member_id").Unique(),
+		edge.To("has_Flight", Flight.Type),
 	}
 }

@@ -4,6 +4,7 @@ package ent
 
 import (
 	"booking-flight-sytem/ent/customer"
+	"booking-flight-sytem/ent/member"
 	"fmt"
 	"strings"
 	"time"
@@ -31,6 +32,8 @@ type Customer struct {
 	Dob time.Time `json:"dob,omitempty"`
 	// Cid holds the value of the "cid" field.
 	Cid string `json:"cid,omitempty"`
+	// MemberID holds the value of the "member_id" field.
+	MemberID int `json:"member_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the CustomerQuery when eager-loading is set.
 	Edges        CustomerEdges `json:"edges"`
@@ -39,20 +42,35 @@ type Customer struct {
 
 // CustomerEdges holds the relations/edges for other nodes in the graph.
 type CustomerEdges struct {
-	// CustomerID holds the value of the customer_id edge.
-	CustomerID []*Booking `json:"customer_id,omitempty"`
+	// HasMember holds the value of the has_Member edge.
+	HasMember *Member `json:"has_Member,omitempty"`
+	// HasFlight holds the value of the has_Flight edge.
+	HasFlight []*Flight `json:"has_Flight,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
-// CustomerIDOrErr returns the CustomerID value or an error if the edge
-// was not loaded in eager-loading.
-func (e CustomerEdges) CustomerIDOrErr() ([]*Booking, error) {
+// HasMemberOrErr returns the HasMember value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e CustomerEdges) HasMemberOrErr() (*Member, error) {
 	if e.loadedTypes[0] {
-		return e.CustomerID, nil
+		if e.HasMember == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: member.Label}
+		}
+		return e.HasMember, nil
 	}
-	return nil, &NotLoadedError{edge: "customer_id"}
+	return nil, &NotLoadedError{edge: "has_Member"}
+}
+
+// HasFlightOrErr returns the HasFlight value or an error if the edge
+// was not loaded in eager-loading.
+func (e CustomerEdges) HasFlightOrErr() ([]*Flight, error) {
+	if e.loadedTypes[1] {
+		return e.HasFlight, nil
+	}
+	return nil, &NotLoadedError{edge: "has_Flight"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -60,7 +78,7 @@ func (*Customer) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case customer.FieldID:
+		case customer.FieldID, customer.FieldMemberID:
 			values[i] = new(sql.NullInt64)
 		case customer.FieldEmail, customer.FieldPhoneNumber, customer.FieldFullName, customer.FieldCid:
 			values[i] = new(sql.NullString)
@@ -129,6 +147,12 @@ func (c *Customer) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				c.Cid = value.String
 			}
+		case customer.FieldMemberID:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field member_id", values[i])
+			} else if value.Valid {
+				c.MemberID = int(value.Int64)
+			}
 		default:
 			c.selectValues.Set(columns[i], values[i])
 		}
@@ -142,9 +166,14 @@ func (c *Customer) Value(name string) (ent.Value, error) {
 	return c.selectValues.Get(name)
 }
 
-// QueryCustomerID queries the "customer_id" edge of the Customer entity.
-func (c *Customer) QueryCustomerID() *BookingQuery {
-	return NewCustomerClient(c.config).QueryCustomerID(c)
+// QueryHasMember queries the "has_Member" edge of the Customer entity.
+func (c *Customer) QueryHasMember() *MemberQuery {
+	return NewCustomerClient(c.config).QueryHasMember(c)
+}
+
+// QueryHasFlight queries the "has_Flight" edge of the Customer entity.
+func (c *Customer) QueryHasFlight() *FlightQuery {
+	return NewCustomerClient(c.config).QueryHasFlight(c)
 }
 
 // Update returns a builder for updating this Customer.
@@ -190,6 +219,9 @@ func (c *Customer) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("cid=")
 	builder.WriteString(c.Cid)
+	builder.WriteString(", ")
+	builder.WriteString("member_id=")
+	builder.WriteString(fmt.Sprintf("%v", c.MemberID))
 	builder.WriteByte(')')
 	return builder.String()
 }

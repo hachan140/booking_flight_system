@@ -305,44 +305,21 @@ func LongLTE(v float64) predicate.Airport {
 	return predicate.Airport(sql.FieldLTE(FieldLong, v))
 }
 
-// HasFromAirportID applies the HasEdge predicate on the "from_airport_id" edge.
-func HasFromAirportID() predicate.Airport {
+// HasHasFlight applies the HasEdge predicate on the "has_Flight" edge.
+func HasHasFlight() predicate.Airport {
 	return predicate.Airport(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, FromAirportIDTable, FromAirportIDColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, HasFlightTable, HasFlightColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasFromAirportIDWith applies the HasEdge predicate on the "from_airport_id" edge with a given conditions (other predicates).
-func HasFromAirportIDWith(preds ...predicate.Flight) predicate.Airport {
+// HasHasFlightWith applies the HasEdge predicate on the "has_Flight" edge with a given conditions (other predicates).
+func HasHasFlightWith(preds ...predicate.Flight) predicate.Airport {
 	return predicate.Airport(func(s *sql.Selector) {
-		step := newFromAirportIDStep()
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasDestAirportID applies the HasEdge predicate on the "dest_airport_id" edge.
-func HasDestAirportID() predicate.Airport {
-	return predicate.Airport(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DestAirportIDTable, DestAirportIDColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasDestAirportIDWith applies the HasEdge predicate on the "dest_airport_id" edge with a given conditions (other predicates).
-func HasDestAirportIDWith(preds ...predicate.Flight) predicate.Airport {
-	return predicate.Airport(func(s *sql.Selector) {
-		step := newDestAirportIDStep()
+		step := newHasFlightStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

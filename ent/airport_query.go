@@ -19,12 +19,11 @@ import (
 // AirportQuery is the builder for querying Airport entities.
 type AirportQuery struct {
 	config
-	ctx               *QueryContext
-	order             []airport.OrderOption
-	inters            []Interceptor
-	predicates        []predicate.Airport
-	withFromAirportID *FlightQuery
-	withDestAirportID *FlightQuery
+	ctx           *QueryContext
+	order         []airport.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.Airport
+	withHasFlight *FlightQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -61,8 +60,8 @@ func (aq *AirportQuery) Order(o ...airport.OrderOption) *AirportQuery {
 	return aq
 }
 
-// QueryFromAirportID chains the current query on the "from_airport_id" edge.
-func (aq *AirportQuery) QueryFromAirportID() *FlightQuery {
+// QueryHasFlight chains the current query on the "has_Flight" edge.
+func (aq *AirportQuery) QueryHasFlight() *FlightQuery {
 	query := (&FlightClient{config: aq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := aq.prepareQuery(ctx); err != nil {
@@ -75,29 +74,7 @@ func (aq *AirportQuery) QueryFromAirportID() *FlightQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(airport.Table, airport.FieldID, selector),
 			sqlgraph.To(flight.Table, flight.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, airport.FromAirportIDTable, airport.FromAirportIDColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryDestAirportID chains the current query on the "dest_airport_id" edge.
-func (aq *AirportQuery) QueryDestAirportID() *FlightQuery {
-	query := (&FlightClient{config: aq.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := aq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := aq.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(airport.Table, airport.FieldID, selector),
-			sqlgraph.To(flight.Table, flight.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, airport.DestAirportIDTable, airport.DestAirportIDColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, airport.HasFlightTable, airport.HasFlightColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -292,38 +269,26 @@ func (aq *AirportQuery) Clone() *AirportQuery {
 		return nil
 	}
 	return &AirportQuery{
-		config:            aq.config,
-		ctx:               aq.ctx.Clone(),
-		order:             append([]airport.OrderOption{}, aq.order...),
-		inters:            append([]Interceptor{}, aq.inters...),
-		predicates:        append([]predicate.Airport{}, aq.predicates...),
-		withFromAirportID: aq.withFromAirportID.Clone(),
-		withDestAirportID: aq.withDestAirportID.Clone(),
+		config:        aq.config,
+		ctx:           aq.ctx.Clone(),
+		order:         append([]airport.OrderOption{}, aq.order...),
+		inters:        append([]Interceptor{}, aq.inters...),
+		predicates:    append([]predicate.Airport{}, aq.predicates...),
+		withHasFlight: aq.withHasFlight.Clone(),
 		// clone intermediate query.
 		sql:  aq.sql.Clone(),
 		path: aq.path,
 	}
 }
 
-// WithFromAirportID tells the query-builder to eager-load the nodes that are connected to
-// the "from_airport_id" edge. The optional arguments are used to configure the query builder of the edge.
-func (aq *AirportQuery) WithFromAirportID(opts ...func(*FlightQuery)) *AirportQuery {
+// WithHasFlight tells the query-builder to eager-load the nodes that are connected to
+// the "has_Flight" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *AirportQuery) WithHasFlight(opts ...func(*FlightQuery)) *AirportQuery {
 	query := (&FlightClient{config: aq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	aq.withFromAirportID = query
-	return aq
-}
-
-// WithDestAirportID tells the query-builder to eager-load the nodes that are connected to
-// the "dest_airport_id" edge. The optional arguments are used to configure the query builder of the edge.
-func (aq *AirportQuery) WithDestAirportID(opts ...func(*FlightQuery)) *AirportQuery {
-	query := (&FlightClient{config: aq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	aq.withDestAirportID = query
+	aq.withHasFlight = query
 	return aq
 }
 
@@ -405,9 +370,8 @@ func (aq *AirportQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Airp
 	var (
 		nodes       = []*Airport{}
 		_spec       = aq.querySpec()
-		loadedTypes = [2]bool{
-			aq.withFromAirportID != nil,
-			aq.withDestAirportID != nil,
+		loadedTypes = [1]bool{
+			aq.withHasFlight != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -428,24 +392,17 @@ func (aq *AirportQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Airp
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := aq.withFromAirportID; query != nil {
-		if err := aq.loadFromAirportID(ctx, query, nodes,
-			func(n *Airport) { n.Edges.FromAirportID = []*Flight{} },
-			func(n *Airport, e *Flight) { n.Edges.FromAirportID = append(n.Edges.FromAirportID, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := aq.withDestAirportID; query != nil {
-		if err := aq.loadDestAirportID(ctx, query, nodes,
-			func(n *Airport) { n.Edges.DestAirportID = []*Flight{} },
-			func(n *Airport, e *Flight) { n.Edges.DestAirportID = append(n.Edges.DestAirportID, e) }); err != nil {
+	if query := aq.withHasFlight; query != nil {
+		if err := aq.loadHasFlight(ctx, query, nodes,
+			func(n *Airport) { n.Edges.HasFlight = []*Flight{} },
+			func(n *Airport, e *Flight) { n.Edges.HasFlight = append(n.Edges.HasFlight, e) }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (aq *AirportQuery) loadFromAirportID(ctx context.Context, query *FlightQuery, nodes []*Airport, init func(*Airport), assign func(*Airport, *Flight)) error {
+func (aq *AirportQuery) loadHasFlight(ctx context.Context, query *FlightQuery, nodes []*Airport, init func(*Airport), assign func(*Airport, *Flight)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*Airport)
 	for i := range nodes {
@@ -455,53 +412,21 @@ func (aq *AirportQuery) loadFromAirportID(ctx context.Context, query *FlightQuer
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(flight.FieldAirportID)
+	}
 	query.Where(predicate.Flight(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(airport.FromAirportIDColumn), fks...))
+		s.Where(sql.InValues(s.C(airport.HasFlightColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.airport_from_airport_id
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "airport_from_airport_id" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.AirportID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "airport_from_airport_id" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (aq *AirportQuery) loadDestAirportID(ctx context.Context, query *FlightQuery, nodes []*Airport, init func(*Airport), assign func(*Airport, *Flight)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[int]*Airport)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.Flight(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(airport.DestAirportIDColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.airport_dest_airport_id
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "airport_dest_airport_id" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "airport_dest_airport_id" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "airport_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

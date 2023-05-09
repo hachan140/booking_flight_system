@@ -330,31 +330,15 @@ func (c *AirportClient) GetX(ctx context.Context, id int) *Airport {
 	return obj
 }
 
-// QueryFromAirportID queries the from_airport_id edge of a Airport.
-func (c *AirportClient) QueryFromAirportID(a *Airport) *FlightQuery {
+// QueryHasFlight queries the has_Flight edge of a Airport.
+func (c *AirportClient) QueryHasFlight(a *Airport) *FlightQuery {
 	query := (&FlightClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := a.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(airport.Table, airport.FieldID, id),
 			sqlgraph.To(flight.Table, flight.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, airport.FromAirportIDTable, airport.FromAirportIDColumn),
-		)
-		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryDestAirportID queries the dest_airport_id edge of a Airport.
-func (c *AirportClient) QueryDestAirportID(a *Airport) *FlightQuery {
-	query := (&FlightClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := a.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(airport.Table, airport.FieldID, id),
-			sqlgraph.To(flight.Table, flight.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, airport.DestAirportIDTable, airport.DestAirportIDColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, airport.HasFlightTable, airport.HasFlightColumn),
 		)
 		fromV = sqlgraph.Neighbors(a.driver.Dialect(), step)
 		return fromV, nil
@@ -480,6 +464,22 @@ func (c *BookingClient) GetX(ctx context.Context, id int) *Booking {
 	return obj
 }
 
+// QueryHasFlight queries the has_flight edge of a Booking.
+func (c *BookingClient) QueryHasFlight(b *Booking) *FlightQuery {
+	query := (&FlightClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := b.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(booking.Table, booking.FieldID, id),
+			sqlgraph.To(flight.Table, flight.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, booking.HasFlightTable, booking.HasFlightColumn),
+		)
+		fromV = sqlgraph.Neighbors(b.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *BookingClient) Hooks() []Hook {
 	return c.hooks.Booking
@@ -598,15 +598,31 @@ func (c *CustomerClient) GetX(ctx context.Context, id int) *Customer {
 	return obj
 }
 
-// QueryCustomerID queries the customer_id edge of a Customer.
-func (c *CustomerClient) QueryCustomerID(cu *Customer) *BookingQuery {
-	query := (&BookingClient{config: c.config}).Query()
+// QueryHasMember queries the has_Member edge of a Customer.
+func (c *CustomerClient) QueryHasMember(cu *Customer) *MemberQuery {
+	query := (&MemberClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := cu.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(customer.Table, customer.FieldID, id),
-			sqlgraph.To(booking.Table, booking.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, customer.CustomerIDTable, customer.CustomerIDColumn),
+			sqlgraph.To(member.Table, member.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, customer.HasMemberTable, customer.HasMemberColumn),
+		)
+		fromV = sqlgraph.Neighbors(cu.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryHasFlight queries the has_Flight edge of a Customer.
+func (c *CustomerClient) QueryHasFlight(cu *Customer) *FlightQuery {
+	query := (&FlightClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := cu.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(customer.Table, customer.FieldID, id),
+			sqlgraph.To(flight.Table, flight.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, customer.HasFlightTable, customer.HasFlightColumn),
 		)
 		fromV = sqlgraph.Neighbors(cu.driver.Dialect(), step)
 		return fromV, nil
@@ -732,15 +748,63 @@ func (c *FlightClient) GetX(ctx context.Context, id int) *Flight {
 	return obj
 }
 
-// QueryFlightID queries the flight_id edge of a Flight.
-func (c *FlightClient) QueryFlightID(f *Flight) *BookingQuery {
+// QueryHasPlane queries the has_plane edge of a Flight.
+func (c *FlightClient) QueryHasPlane(f *Flight) *PlaneQuery {
+	query := (&PlaneClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := f.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(flight.Table, flight.FieldID, id),
+			sqlgraph.To(plane.Table, plane.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, flight.HasPlaneTable, flight.HasPlaneColumn),
+		)
+		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryHasBooking queries the has_booking edge of a Flight.
+func (c *FlightClient) QueryHasBooking(f *Flight) *BookingQuery {
 	query := (&BookingClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := f.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(flight.Table, flight.FieldID, id),
 			sqlgraph.To(booking.Table, booking.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, flight.FlightIDTable, flight.FlightIDColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, flight.HasBookingTable, flight.HasBookingColumn),
+		)
+		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryHasAirport queries the has_Airport edge of a Flight.
+func (c *FlightClient) QueryHasAirport(f *Flight) *AirportQuery {
+	query := (&AirportClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := f.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(flight.Table, flight.FieldID, id),
+			sqlgraph.To(airport.Table, airport.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, flight.HasAirportTable, flight.HasAirportColumn),
+		)
+		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryHasCustomer queries the has_Customer edge of a Flight.
+func (c *FlightClient) QueryHasCustomer(f *Flight) *CustomerQuery {
+	query := (&CustomerClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := f.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(flight.Table, flight.FieldID, id),
+			sqlgraph.To(customer.Table, customer.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, flight.HasCustomerTable, flight.HasCustomerColumn),
 		)
 		fromV = sqlgraph.Neighbors(f.driver.Dialect(), step)
 		return fromV, nil
@@ -866,15 +930,15 @@ func (c *MemberClient) GetX(ctx context.Context, id int) *Member {
 	return obj
 }
 
-// QueryMemberID queries the member_id edge of a Member.
-func (c *MemberClient) QueryMemberID(m *Member) *CustomerQuery {
+// QueryHasCustomer queries the has_Customer edge of a Member.
+func (c *MemberClient) QueryHasCustomer(m *Member) *CustomerQuery {
 	query := (&CustomerClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(member.Table, member.FieldID, id),
 			sqlgraph.To(customer.Table, customer.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, member.MemberIDTable, member.MemberIDColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, member.HasCustomerTable, member.HasCustomerColumn),
 		)
 		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
 		return fromV, nil
@@ -1000,15 +1064,15 @@ func (c *PlaneClient) GetX(ctx context.Context, id int) *Plane {
 	return obj
 }
 
-// QueryPlaneID queries the plane_id edge of a Plane.
-func (c *PlaneClient) QueryPlaneID(pl *Plane) *FlightQuery {
+// QueryFlights queries the flights edge of a Plane.
+func (c *PlaneClient) QueryFlights(pl *Plane) *FlightQuery {
 	query := (&FlightClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := pl.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(plane.Table, plane.FieldID, id),
 			sqlgraph.To(flight.Table, flight.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, plane.PlaneIDTable, plane.PlaneIDColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, plane.FlightsTable, plane.FlightsColumn),
 		)
 		fromV = sqlgraph.Neighbors(pl.driver.Dialect(), step)
 		return fromV, nil

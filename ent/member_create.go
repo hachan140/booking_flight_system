@@ -99,23 +99,19 @@ func (mc *MemberCreate) SetNillableRole(i *int) *MemberCreate {
 	return mc
 }
 
-// SetMemberIDID sets the "member_id" edge to the Customer entity by ID.
-func (mc *MemberCreate) SetMemberIDID(id int) *MemberCreate {
-	mc.mutation.SetMemberIDID(id)
+// AddHasCustomerIDs adds the "has_Customer" edge to the Customer entity by IDs.
+func (mc *MemberCreate) AddHasCustomerIDs(ids ...int) *MemberCreate {
+	mc.mutation.AddHasCustomerIDs(ids...)
 	return mc
 }
 
-// SetNillableMemberIDID sets the "member_id" edge to the Customer entity by ID if the given value is not nil.
-func (mc *MemberCreate) SetNillableMemberIDID(id *int) *MemberCreate {
-	if id != nil {
-		mc = mc.SetMemberIDID(*id)
+// AddHasCustomer adds the "has_Customer" edges to the Customer entity.
+func (mc *MemberCreate) AddHasCustomer(c ...*Customer) *MemberCreate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
 	}
-	return mc
-}
-
-// SetMemberID sets the "member_id" edge to the Customer entity.
-func (mc *MemberCreate) SetMemberID(c *Customer) *MemberCreate {
-	return mc.SetMemberIDID(c.ID)
+	return mc.AddHasCustomerIDs(ids...)
 }
 
 // Mutation returns the MemberMutation object of the builder.
@@ -278,12 +274,12 @@ func (mc *MemberCreate) createSpec() (*Member, *sqlgraph.CreateSpec) {
 		_spec.SetField(member.FieldRole, field.TypeInt, value)
 		_node.Role = value
 	}
-	if nodes := mc.mutation.MemberIDIDs(); len(nodes) > 0 {
+	if nodes := mc.mutation.HasCustomerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   member.MemberIDTable,
-			Columns: []string{member.MemberIDColumn},
+			Table:   member.HasCustomerTable,
+			Columns: []string{member.HasCustomerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),
@@ -292,7 +288,6 @@ func (mc *MemberCreate) createSpec() (*Member, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.member_member_id = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

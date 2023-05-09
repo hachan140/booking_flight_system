@@ -234,21 +234,21 @@ func StatusNotIn(vs ...Status) predicate.Plane {
 	return predicate.Plane(sql.FieldNotIn(FieldStatus, vs...))
 }
 
-// HasPlaneID applies the HasEdge predicate on the "plane_id" edge.
-func HasPlaneID() predicate.Plane {
+// HasFlights applies the HasEdge predicate on the "flights" edge.
+func HasFlights() predicate.Plane {
 	return predicate.Plane(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, PlaneIDTable, PlaneIDColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, FlightsTable, FlightsColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasPlaneIDWith applies the HasEdge predicate on the "plane_id" edge with a given conditions (other predicates).
-func HasPlaneIDWith(preds ...predicate.Flight) predicate.Plane {
+// HasFlightsWith applies the HasEdge predicate on the "flights" edge with a given conditions (other predicates).
+func HasFlightsWith(preds ...predicate.Flight) predicate.Plane {
 	return predicate.Plane(func(s *sql.Selector) {
-		step := newPlaneIDStep()
+		step := newFlightsStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"time"
 )
@@ -17,11 +18,14 @@ func (Booking) Fields() []ent.Field {
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.String("code").NotEmpty().Unique(),
-		field.Enum("status").Values("success", "fail", "cancel"),
+		field.String("status"),
+		field.Int("flight_id").Optional(),
 	}
 }
 
 // Edges of the Booking.
 func (Booking) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("has_flight", Flight.Type).Ref("has_booking").Field("flight_id").Unique(),
+	}
 }

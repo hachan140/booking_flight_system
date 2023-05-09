@@ -3,8 +3,9 @@
 package ent
 
 import (
-	"booking-flight-sytem/ent/booking"
 	"booking-flight-sytem/ent/customer"
+	"booking-flight-sytem/ent/flight"
+	"booking-flight-sytem/ent/member"
 	"booking-flight-sytem/ent/predicate"
 	"context"
 	"database/sql/driver"
@@ -19,11 +20,12 @@ import (
 // CustomerQuery is the builder for querying Customer entities.
 type CustomerQuery struct {
 	config
-	ctx            *QueryContext
-	order          []customer.OrderOption
-	inters         []Interceptor
-	predicates     []predicate.Customer
-	withCustomerID *BookingQuery
+	ctx           *QueryContext
+	order         []customer.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.Customer
+	withHasMember *MemberQuery
+	withHasFlight *FlightQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -60,9 +62,9 @@ func (cq *CustomerQuery) Order(o ...customer.OrderOption) *CustomerQuery {
 	return cq
 }
 
-// QueryCustomerID chains the current query on the "customer_id" edge.
-func (cq *CustomerQuery) QueryCustomerID() *BookingQuery {
-	query := (&BookingClient{config: cq.config}).Query()
+// QueryHasMember chains the current query on the "has_Member" edge.
+func (cq *CustomerQuery) QueryHasMember() *MemberQuery {
+	query := (&MemberClient{config: cq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := cq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -73,8 +75,30 @@ func (cq *CustomerQuery) QueryCustomerID() *BookingQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(customer.Table, customer.FieldID, selector),
-			sqlgraph.To(booking.Table, booking.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, customer.CustomerIDTable, customer.CustomerIDColumn),
+			sqlgraph.To(member.Table, member.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, customer.HasMemberTable, customer.HasMemberColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryHasFlight chains the current query on the "has_Flight" edge.
+func (cq *CustomerQuery) QueryHasFlight() *FlightQuery {
+	query := (&FlightClient{config: cq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := cq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := cq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(customer.Table, customer.FieldID, selector),
+			sqlgraph.To(flight.Table, flight.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, customer.HasFlightTable, customer.HasFlightColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -269,26 +293,38 @@ func (cq *CustomerQuery) Clone() *CustomerQuery {
 		return nil
 	}
 	return &CustomerQuery{
-		config:         cq.config,
-		ctx:            cq.ctx.Clone(),
-		order:          append([]customer.OrderOption{}, cq.order...),
-		inters:         append([]Interceptor{}, cq.inters...),
-		predicates:     append([]predicate.Customer{}, cq.predicates...),
-		withCustomerID: cq.withCustomerID.Clone(),
+		config:        cq.config,
+		ctx:           cq.ctx.Clone(),
+		order:         append([]customer.OrderOption{}, cq.order...),
+		inters:        append([]Interceptor{}, cq.inters...),
+		predicates:    append([]predicate.Customer{}, cq.predicates...),
+		withHasMember: cq.withHasMember.Clone(),
+		withHasFlight: cq.withHasFlight.Clone(),
 		// clone intermediate query.
 		sql:  cq.sql.Clone(),
 		path: cq.path,
 	}
 }
 
-// WithCustomerID tells the query-builder to eager-load the nodes that are connected to
-// the "customer_id" edge. The optional arguments are used to configure the query builder of the edge.
-func (cq *CustomerQuery) WithCustomerID(opts ...func(*BookingQuery)) *CustomerQuery {
-	query := (&BookingClient{config: cq.config}).Query()
+// WithHasMember tells the query-builder to eager-load the nodes that are connected to
+// the "has_Member" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CustomerQuery) WithHasMember(opts ...func(*MemberQuery)) *CustomerQuery {
+	query := (&MemberClient{config: cq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	cq.withCustomerID = query
+	cq.withHasMember = query
+	return cq
+}
+
+// WithHasFlight tells the query-builder to eager-load the nodes that are connected to
+// the "has_Flight" edge. The optional arguments are used to configure the query builder of the edge.
+func (cq *CustomerQuery) WithHasFlight(opts ...func(*FlightQuery)) *CustomerQuery {
+	query := (&FlightClient{config: cq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	cq.withHasFlight = query
 	return cq
 }
 
@@ -370,8 +406,9 @@ func (cq *CustomerQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Cus
 	var (
 		nodes       = []*Customer{}
 		_spec       = cq.querySpec()
-		loadedTypes = [1]bool{
-			cq.withCustomerID != nil,
+		loadedTypes = [2]bool{
+			cq.withHasMember != nil,
+			cq.withHasFlight != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -392,17 +429,52 @@ func (cq *CustomerQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Cus
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := cq.withCustomerID; query != nil {
-		if err := cq.loadCustomerID(ctx, query, nodes,
-			func(n *Customer) { n.Edges.CustomerID = []*Booking{} },
-			func(n *Customer, e *Booking) { n.Edges.CustomerID = append(n.Edges.CustomerID, e) }); err != nil {
+	if query := cq.withHasMember; query != nil {
+		if err := cq.loadHasMember(ctx, query, nodes, nil,
+			func(n *Customer, e *Member) { n.Edges.HasMember = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := cq.withHasFlight; query != nil {
+		if err := cq.loadHasFlight(ctx, query, nodes,
+			func(n *Customer) { n.Edges.HasFlight = []*Flight{} },
+			func(n *Customer, e *Flight) { n.Edges.HasFlight = append(n.Edges.HasFlight, e) }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (cq *CustomerQuery) loadCustomerID(ctx context.Context, query *BookingQuery, nodes []*Customer, init func(*Customer), assign func(*Customer, *Booking)) error {
+func (cq *CustomerQuery) loadHasMember(ctx context.Context, query *MemberQuery, nodes []*Customer, init func(*Customer), assign func(*Customer, *Member)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Customer)
+	for i := range nodes {
+		fk := nodes[i].MemberID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(member.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "member_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (cq *CustomerQuery) loadHasFlight(ctx context.Context, query *FlightQuery, nodes []*Customer, init func(*Customer), assign func(*Customer, *Flight)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*Customer)
 	for i := range nodes {
@@ -412,22 +484,21 @@ func (cq *CustomerQuery) loadCustomerID(ctx context.Context, query *BookingQuery
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.Booking(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(customer.CustomerIDColumn), fks...))
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(flight.FieldCustomerID)
+	}
+	query.Where(predicate.Flight(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(customer.HasFlightColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.customer_customer_id
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "customer_customer_id" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		fk := n.CustomerID
+		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "customer_customer_id" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "customer_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -458,6 +529,9 @@ func (cq *CustomerQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != customer.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if cq.withHasMember != nil {
+			_spec.Node.AddColumnOnce(customer.FieldMemberID)
 		}
 	}
 	if ps := cq.predicates; len(ps) > 0 {

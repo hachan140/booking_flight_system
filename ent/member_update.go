@@ -106,23 +106,19 @@ func (mu *MemberUpdate) AddRole(i int) *MemberUpdate {
 	return mu
 }
 
-// SetMemberIDID sets the "member_id" edge to the Customer entity by ID.
-func (mu *MemberUpdate) SetMemberIDID(id int) *MemberUpdate {
-	mu.mutation.SetMemberIDID(id)
+// AddHasCustomerIDs adds the "has_Customer" edge to the Customer entity by IDs.
+func (mu *MemberUpdate) AddHasCustomerIDs(ids ...int) *MemberUpdate {
+	mu.mutation.AddHasCustomerIDs(ids...)
 	return mu
 }
 
-// SetNillableMemberIDID sets the "member_id" edge to the Customer entity by ID if the given value is not nil.
-func (mu *MemberUpdate) SetNillableMemberIDID(id *int) *MemberUpdate {
-	if id != nil {
-		mu = mu.SetMemberIDID(*id)
+// AddHasCustomer adds the "has_Customer" edges to the Customer entity.
+func (mu *MemberUpdate) AddHasCustomer(c ...*Customer) *MemberUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
 	}
-	return mu
-}
-
-// SetMemberID sets the "member_id" edge to the Customer entity.
-func (mu *MemberUpdate) SetMemberID(c *Customer) *MemberUpdate {
-	return mu.SetMemberIDID(c.ID)
+	return mu.AddHasCustomerIDs(ids...)
 }
 
 // Mutation returns the MemberMutation object of the builder.
@@ -130,10 +126,25 @@ func (mu *MemberUpdate) Mutation() *MemberMutation {
 	return mu.mutation
 }
 
-// ClearMemberID clears the "member_id" edge to the Customer entity.
-func (mu *MemberUpdate) ClearMemberID() *MemberUpdate {
-	mu.mutation.ClearMemberID()
+// ClearHasCustomer clears all "has_Customer" edges to the Customer entity.
+func (mu *MemberUpdate) ClearHasCustomer() *MemberUpdate {
+	mu.mutation.ClearHasCustomer()
 	return mu
+}
+
+// RemoveHasCustomerIDs removes the "has_Customer" edge to Customer entities by IDs.
+func (mu *MemberUpdate) RemoveHasCustomerIDs(ids ...int) *MemberUpdate {
+	mu.mutation.RemoveHasCustomerIDs(ids...)
+	return mu
+}
+
+// RemoveHasCustomer removes "has_Customer" edges to Customer entities.
+func (mu *MemberUpdate) RemoveHasCustomer(c ...*Customer) *MemberUpdate {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return mu.RemoveHasCustomerIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -239,12 +250,12 @@ func (mu *MemberUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := mu.mutation.AddedRole(); ok {
 		_spec.AddField(member.FieldRole, field.TypeInt, value)
 	}
-	if mu.mutation.MemberIDCleared() {
+	if mu.mutation.HasCustomerCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   member.MemberIDTable,
-			Columns: []string{member.MemberIDColumn},
+			Table:   member.HasCustomerTable,
+			Columns: []string{member.HasCustomerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),
@@ -252,12 +263,28 @@ func (mu *MemberUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := mu.mutation.MemberIDIDs(); len(nodes) > 0 {
+	if nodes := mu.mutation.RemovedHasCustomerIDs(); len(nodes) > 0 && !mu.mutation.HasCustomerCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   member.MemberIDTable,
-			Columns: []string{member.MemberIDColumn},
+			Table:   member.HasCustomerTable,
+			Columns: []string{member.HasCustomerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.HasCustomerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   member.HasCustomerTable,
+			Columns: []string{member.HasCustomerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),
@@ -365,23 +392,19 @@ func (muo *MemberUpdateOne) AddRole(i int) *MemberUpdateOne {
 	return muo
 }
 
-// SetMemberIDID sets the "member_id" edge to the Customer entity by ID.
-func (muo *MemberUpdateOne) SetMemberIDID(id int) *MemberUpdateOne {
-	muo.mutation.SetMemberIDID(id)
+// AddHasCustomerIDs adds the "has_Customer" edge to the Customer entity by IDs.
+func (muo *MemberUpdateOne) AddHasCustomerIDs(ids ...int) *MemberUpdateOne {
+	muo.mutation.AddHasCustomerIDs(ids...)
 	return muo
 }
 
-// SetNillableMemberIDID sets the "member_id" edge to the Customer entity by ID if the given value is not nil.
-func (muo *MemberUpdateOne) SetNillableMemberIDID(id *int) *MemberUpdateOne {
-	if id != nil {
-		muo = muo.SetMemberIDID(*id)
+// AddHasCustomer adds the "has_Customer" edges to the Customer entity.
+func (muo *MemberUpdateOne) AddHasCustomer(c ...*Customer) *MemberUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
 	}
-	return muo
-}
-
-// SetMemberID sets the "member_id" edge to the Customer entity.
-func (muo *MemberUpdateOne) SetMemberID(c *Customer) *MemberUpdateOne {
-	return muo.SetMemberIDID(c.ID)
+	return muo.AddHasCustomerIDs(ids...)
 }
 
 // Mutation returns the MemberMutation object of the builder.
@@ -389,10 +412,25 @@ func (muo *MemberUpdateOne) Mutation() *MemberMutation {
 	return muo.mutation
 }
 
-// ClearMemberID clears the "member_id" edge to the Customer entity.
-func (muo *MemberUpdateOne) ClearMemberID() *MemberUpdateOne {
-	muo.mutation.ClearMemberID()
+// ClearHasCustomer clears all "has_Customer" edges to the Customer entity.
+func (muo *MemberUpdateOne) ClearHasCustomer() *MemberUpdateOne {
+	muo.mutation.ClearHasCustomer()
 	return muo
+}
+
+// RemoveHasCustomerIDs removes the "has_Customer" edge to Customer entities by IDs.
+func (muo *MemberUpdateOne) RemoveHasCustomerIDs(ids ...int) *MemberUpdateOne {
+	muo.mutation.RemoveHasCustomerIDs(ids...)
+	return muo
+}
+
+// RemoveHasCustomer removes "has_Customer" edges to Customer entities.
+func (muo *MemberUpdateOne) RemoveHasCustomer(c ...*Customer) *MemberUpdateOne {
+	ids := make([]int, len(c))
+	for i := range c {
+		ids[i] = c[i].ID
+	}
+	return muo.RemoveHasCustomerIDs(ids...)
 }
 
 // Where appends a list predicates to the MemberUpdate builder.
@@ -528,12 +566,12 @@ func (muo *MemberUpdateOne) sqlSave(ctx context.Context) (_node *Member, err err
 	if value, ok := muo.mutation.AddedRole(); ok {
 		_spec.AddField(member.FieldRole, field.TypeInt, value)
 	}
-	if muo.mutation.MemberIDCleared() {
+	if muo.mutation.HasCustomerCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   member.MemberIDTable,
-			Columns: []string{member.MemberIDColumn},
+			Table:   member.HasCustomerTable,
+			Columns: []string{member.HasCustomerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),
@@ -541,12 +579,28 @@ func (muo *MemberUpdateOne) sqlSave(ctx context.Context) (_node *Member, err err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := muo.mutation.MemberIDIDs(); len(nodes) > 0 {
+	if nodes := muo.mutation.RemovedHasCustomerIDs(); len(nodes) > 0 && !muo.mutation.HasCustomerCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   member.MemberIDTable,
-			Columns: []string{member.MemberIDColumn},
+			Table:   member.HasCustomerTable,
+			Columns: []string{member.HasCustomerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.HasCustomerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   member.HasCustomerTable,
+			Columns: []string{member.HasCustomerColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),

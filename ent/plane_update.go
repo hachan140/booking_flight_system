@@ -66,19 +66,27 @@ func (pu *PlaneUpdate) SetStatus(pl plane.Status) *PlaneUpdate {
 	return pu
 }
 
-// AddPlaneIDIDs adds the "plane_id" edge to the Flight entity by IDs.
-func (pu *PlaneUpdate) AddPlaneIDIDs(ids ...int) *PlaneUpdate {
-	pu.mutation.AddPlaneIDIDs(ids...)
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (pu *PlaneUpdate) SetNillableStatus(pl *plane.Status) *PlaneUpdate {
+	if pl != nil {
+		pu.SetStatus(*pl)
+	}
 	return pu
 }
 
-// AddPlaneID adds the "plane_id" edges to the Flight entity.
-func (pu *PlaneUpdate) AddPlaneID(f ...*Flight) *PlaneUpdate {
+// AddFlightIDs adds the "flights" edge to the Flight entity by IDs.
+func (pu *PlaneUpdate) AddFlightIDs(ids ...int) *PlaneUpdate {
+	pu.mutation.AddFlightIDs(ids...)
+	return pu
+}
+
+// AddFlights adds the "flights" edges to the Flight entity.
+func (pu *PlaneUpdate) AddFlights(f ...*Flight) *PlaneUpdate {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return pu.AddPlaneIDIDs(ids...)
+	return pu.AddFlightIDs(ids...)
 }
 
 // Mutation returns the PlaneMutation object of the builder.
@@ -86,25 +94,25 @@ func (pu *PlaneUpdate) Mutation() *PlaneMutation {
 	return pu.mutation
 }
 
-// ClearPlaneID clears all "plane_id" edges to the Flight entity.
-func (pu *PlaneUpdate) ClearPlaneID() *PlaneUpdate {
-	pu.mutation.ClearPlaneID()
+// ClearFlights clears all "flights" edges to the Flight entity.
+func (pu *PlaneUpdate) ClearFlights() *PlaneUpdate {
+	pu.mutation.ClearFlights()
 	return pu
 }
 
-// RemovePlaneIDIDs removes the "plane_id" edge to Flight entities by IDs.
-func (pu *PlaneUpdate) RemovePlaneIDIDs(ids ...int) *PlaneUpdate {
-	pu.mutation.RemovePlaneIDIDs(ids...)
+// RemoveFlightIDs removes the "flights" edge to Flight entities by IDs.
+func (pu *PlaneUpdate) RemoveFlightIDs(ids ...int) *PlaneUpdate {
+	pu.mutation.RemoveFlightIDs(ids...)
 	return pu
 }
 
-// RemovePlaneID removes "plane_id" edges to Flight entities.
-func (pu *PlaneUpdate) RemovePlaneID(f ...*Flight) *PlaneUpdate {
+// RemoveFlights removes "flights" edges to Flight entities.
+func (pu *PlaneUpdate) RemoveFlights(f ...*Flight) *PlaneUpdate {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return pu.RemovePlaneIDIDs(ids...)
+	return pu.RemoveFlightIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -179,12 +187,12 @@ func (pu *PlaneUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := pu.mutation.Status(); ok {
 		_spec.SetField(plane.FieldStatus, field.TypeEnum, value)
 	}
-	if pu.mutation.PlaneIDCleared() {
+	if pu.mutation.FlightsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   plane.PlaneIDTable,
-			Columns: []string{plane.PlaneIDColumn},
+			Table:   plane.FlightsTable,
+			Columns: []string{plane.FlightsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
@@ -192,12 +200,12 @@ func (pu *PlaneUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pu.mutation.RemovedPlaneIDIDs(); len(nodes) > 0 && !pu.mutation.PlaneIDCleared() {
+	if nodes := pu.mutation.RemovedFlightsIDs(); len(nodes) > 0 && !pu.mutation.FlightsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   plane.PlaneIDTable,
-			Columns: []string{plane.PlaneIDColumn},
+			Table:   plane.FlightsTable,
+			Columns: []string{plane.FlightsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
@@ -208,12 +216,12 @@ func (pu *PlaneUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := pu.mutation.PlaneIDIDs(); len(nodes) > 0 {
+	if nodes := pu.mutation.FlightsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   plane.PlaneIDTable,
-			Columns: []string{plane.PlaneIDColumn},
+			Table:   plane.FlightsTable,
+			Columns: []string{plane.FlightsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
@@ -282,19 +290,27 @@ func (puo *PlaneUpdateOne) SetStatus(pl plane.Status) *PlaneUpdateOne {
 	return puo
 }
 
-// AddPlaneIDIDs adds the "plane_id" edge to the Flight entity by IDs.
-func (puo *PlaneUpdateOne) AddPlaneIDIDs(ids ...int) *PlaneUpdateOne {
-	puo.mutation.AddPlaneIDIDs(ids...)
+// SetNillableStatus sets the "status" field if the given value is not nil.
+func (puo *PlaneUpdateOne) SetNillableStatus(pl *plane.Status) *PlaneUpdateOne {
+	if pl != nil {
+		puo.SetStatus(*pl)
+	}
 	return puo
 }
 
-// AddPlaneID adds the "plane_id" edges to the Flight entity.
-func (puo *PlaneUpdateOne) AddPlaneID(f ...*Flight) *PlaneUpdateOne {
+// AddFlightIDs adds the "flights" edge to the Flight entity by IDs.
+func (puo *PlaneUpdateOne) AddFlightIDs(ids ...int) *PlaneUpdateOne {
+	puo.mutation.AddFlightIDs(ids...)
+	return puo
+}
+
+// AddFlights adds the "flights" edges to the Flight entity.
+func (puo *PlaneUpdateOne) AddFlights(f ...*Flight) *PlaneUpdateOne {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return puo.AddPlaneIDIDs(ids...)
+	return puo.AddFlightIDs(ids...)
 }
 
 // Mutation returns the PlaneMutation object of the builder.
@@ -302,25 +318,25 @@ func (puo *PlaneUpdateOne) Mutation() *PlaneMutation {
 	return puo.mutation
 }
 
-// ClearPlaneID clears all "plane_id" edges to the Flight entity.
-func (puo *PlaneUpdateOne) ClearPlaneID() *PlaneUpdateOne {
-	puo.mutation.ClearPlaneID()
+// ClearFlights clears all "flights" edges to the Flight entity.
+func (puo *PlaneUpdateOne) ClearFlights() *PlaneUpdateOne {
+	puo.mutation.ClearFlights()
 	return puo
 }
 
-// RemovePlaneIDIDs removes the "plane_id" edge to Flight entities by IDs.
-func (puo *PlaneUpdateOne) RemovePlaneIDIDs(ids ...int) *PlaneUpdateOne {
-	puo.mutation.RemovePlaneIDIDs(ids...)
+// RemoveFlightIDs removes the "flights" edge to Flight entities by IDs.
+func (puo *PlaneUpdateOne) RemoveFlightIDs(ids ...int) *PlaneUpdateOne {
+	puo.mutation.RemoveFlightIDs(ids...)
 	return puo
 }
 
-// RemovePlaneID removes "plane_id" edges to Flight entities.
-func (puo *PlaneUpdateOne) RemovePlaneID(f ...*Flight) *PlaneUpdateOne {
+// RemoveFlights removes "flights" edges to Flight entities.
+func (puo *PlaneUpdateOne) RemoveFlights(f ...*Flight) *PlaneUpdateOne {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return puo.RemovePlaneIDIDs(ids...)
+	return puo.RemoveFlightIDs(ids...)
 }
 
 // Where appends a list predicates to the PlaneUpdate builder.
@@ -425,12 +441,12 @@ func (puo *PlaneUpdateOne) sqlSave(ctx context.Context) (_node *Plane, err error
 	if value, ok := puo.mutation.Status(); ok {
 		_spec.SetField(plane.FieldStatus, field.TypeEnum, value)
 	}
-	if puo.mutation.PlaneIDCleared() {
+	if puo.mutation.FlightsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   plane.PlaneIDTable,
-			Columns: []string{plane.PlaneIDColumn},
+			Table:   plane.FlightsTable,
+			Columns: []string{plane.FlightsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
@@ -438,12 +454,12 @@ func (puo *PlaneUpdateOne) sqlSave(ctx context.Context) (_node *Plane, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := puo.mutation.RemovedPlaneIDIDs(); len(nodes) > 0 && !puo.mutation.PlaneIDCleared() {
+	if nodes := puo.mutation.RemovedFlightsIDs(); len(nodes) > 0 && !puo.mutation.FlightsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   plane.PlaneIDTable,
-			Columns: []string{plane.PlaneIDColumn},
+			Table:   plane.FlightsTable,
+			Columns: []string{plane.FlightsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
@@ -454,12 +470,12 @@ func (puo *PlaneUpdateOne) sqlSave(ctx context.Context) (_node *Plane, err error
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := puo.mutation.PlaneIDIDs(); len(nodes) > 0 {
+	if nodes := puo.mutation.FlightsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   plane.PlaneIDTable,
-			Columns: []string{plane.PlaneIDColumn},
+			Table:   plane.FlightsTable,
+			Columns: []string{plane.FlightsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
