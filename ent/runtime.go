@@ -3,13 +3,13 @@
 package ent
 
 import (
-	"booking-flight-sytem/ent/airport"
-	"booking-flight-sytem/ent/booking"
-	"booking-flight-sytem/ent/customer"
-	"booking-flight-sytem/ent/flight"
-	"booking-flight-sytem/ent/member"
-	"booking-flight-sytem/ent/plane"
-	"booking-flight-sytem/ent/schema"
+	"booking-flight-system/ent/airport"
+	"booking-flight-system/ent/booking"
+	"booking-flight-system/ent/customer"
+	"booking-flight-system/ent/flight"
+	"booking-flight-system/ent/member"
+	"booking-flight-system/ent/plane"
+	"booking-flight-system/ent/schema"
 	"time"
 )
 
@@ -125,10 +125,6 @@ func init() {
 	memberDescFullName := memberFields[5].Descriptor()
 	// member.FullNameValidator is a validator for the "full_name" field. It is called by the builders before save.
 	member.FullNameValidator = memberDescFullName.Validators[0].(func(string) error)
-	// memberDescCid is the schema descriptor for cid field.
-	memberDescCid := memberFields[7].Descriptor()
-	// member.CidValidator is a validator for the "cid" field. It is called by the builders before save.
-	member.CidValidator = memberDescCid.Validators[0].(func(string) error)
 	// memberDescRole is the schema descriptor for role field.
 	memberDescRole := memberFields[8].Descriptor()
 	// member.DefaultRole holds the default value on creation for the role field.

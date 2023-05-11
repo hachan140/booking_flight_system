@@ -1,9 +1,9 @@
 package main
 
 import (
-	"booking-flight-sytem/cmd/api"
-	"booking-flight-sytem/config"
-	"booking-flight-sytem/internal/logger"
+	"booking-flight-system/cmd/api"
+	"booking-flight-system/config"
+	"booking-flight-system/internal/logger"
 	"errors"
 	"fmt"
 	"os"

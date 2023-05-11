@@ -1,0 +1,40 @@
+type Customer implements Node {
+    id: ID!
+    createdAt: Time!
+    updatedAt: Time!
+    email: String!
+    phoneNumber: String!
+    fullName: String!
+    dob: Time!
+    cid: String!
+    memberID: ID
+    hasMember: Member
+    hasFlight: [Flight!]
+}
+
+input CreateCustomerInput {
+    createdAt: Time
+    updatedAt: Time
+    email: String!
+    phoneNumber: String!
+    fullName: String!
+    dob: Time!
+    cid: String!
+    hasMemberID: ID
+    hasFlightIDs: [ID!]
+}
+
+input UpdateCustomerInput {
+    createdAt: Time
+    updatedAt: Time
+    email: String
+    phoneNumber: String
+    fullName: String
+    dob: Time
+    cid: String
+    hasMemberID: ID
+    clearHasMember: Boolean
+    addHasFlightIDs: [ID!]
+    removeHasFlightIDs: [ID!]
+    clearHasFlight: Boolean
+}

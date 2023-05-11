@@ -3,8 +3,8 @@
 package ent
 
 import (
-	"booking-flight-sytem/ent/customer"
-	"booking-flight-sytem/ent/member"
+	"booking-flight-system/ent/customer"
+	"booking-flight-system/ent/member"
 	"context"
 	"errors"
 	"fmt"
@@ -203,11 +203,6 @@ func (mc *MemberCreate) check() error {
 	}
 	if _, ok := mc.mutation.Cid(); !ok {
 		return &ValidationError{Name: "cid", err: errors.New(`ent: missing required field "Member.cid"`)}
-	}
-	if v, ok := mc.mutation.Cid(); ok {
-		if err := member.CidValidator(v); err != nil {
-			return &ValidationError{Name: "cid", err: fmt.Errorf(`ent: validator failed for field "Member.cid": %w`, err)}
-		}
 	}
 	if _, ok := mc.mutation.Role(); !ok {
 		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "Member.role"`)}

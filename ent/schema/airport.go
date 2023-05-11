@@ -1,7 +1,9 @@
 package schema
 
 import (
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"time"
@@ -27,5 +29,12 @@ func (Airport) Fields() []ent.Field {
 func (Airport) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("has_Flight", Flight.Type),
+	}
+}
+
+func (Airport) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.QueryField(),
+		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
 	}
 }

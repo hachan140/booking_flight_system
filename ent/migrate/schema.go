@@ -123,7 +123,7 @@ var (
 		{Name: "phone_number", Type: field.TypeString, Unique: true},
 		{Name: "full_name", Type: field.TypeString},
 		{Name: "dob", Type: field.TypeTime},
-		{Name: "cid", Type: field.TypeString, Unique: true},
+		{Name: "cid", Type: field.TypeString},
 		{Name: "role", Type: field.TypeInt, Default: 1},
 	}
 	// MembersTable holds the schema information for the "members" table.

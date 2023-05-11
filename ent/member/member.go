@@ -82,8 +82,6 @@ var (
 	PhoneNumberValidator func(string) error
 	// FullNameValidator is a validator for the "full_name" field. It is called by the builders before save.
 	FullNameValidator func(string) error
-	// CidValidator is a validator for the "cid" field. It is called by the builders before save.
-	CidValidator func(string) error
 	// DefaultRole holds the default value on creation for the "role" field.
 	DefaultRole int
 )

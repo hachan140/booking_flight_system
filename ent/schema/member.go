@@ -1,7 +1,9 @@
 package schema
 
 import (
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"time"
@@ -22,7 +24,7 @@ func (Member) Fields() []ent.Field {
 		field.String("phone_number").NotEmpty().Unique(),
 		field.String("full_name").NotEmpty(),
 		field.Time("dob"),
-		field.String("cid").NotEmpty().Unique(),
+		field.String("cid"),
 		field.Int("role").Default(1),
 	}
 }
@@ -31,5 +33,12 @@ func (Member) Fields() []ent.Field {
 func (Member) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("has_Customer", Customer.Type),
+	}
+}
+
+func (Member) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.QueryField(),
+		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
 	}
 }

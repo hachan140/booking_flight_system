@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"booking-flight-sytem/internal/util"
+	"booking-flight-system/internal/util"
 	"context"
 
 	"github.com/gin-gonic/gin"

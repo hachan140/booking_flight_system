@@ -1,0 +1,57 @@
+type Flight implements Node {
+    id: ID!
+    createdAt: Time!
+    updatedAt: Time!
+    name: String!
+    departAt: Time!
+    landAt: Time!
+    availableEcSlot: Int!
+    availableBcSlot: Int!
+    status: FlightStatus!
+    planeID: ID
+    airportID: ID
+    customerID: ID
+    hasPlane: Plane
+    hasBooking: [Booking!]
+    hasAirport: Airport
+    hasCustomer: Customer
+}
+
+input CreateFlightInput {
+    createdAt: Time
+    updatedAt: Time
+    name: String!
+    departAt: Time!
+    landAt: Time!
+    availableEcSlot: Int!
+    availableBcSlot: Int!
+    status: FlightStatus
+    hasPlaneID: ID
+    hasBookingIDs: [ID!]
+    hasAirportID: ID
+    hasCustomerID: ID
+}
+enum FlightStatus @goModel(model: "booking-flight-system/ent/flight.Status") {
+    scheduled
+    landed
+}
+
+input UpdateFlightInput {
+    createdAt: Time
+    updatedAt: Time
+    name: String
+    departAt: Time
+    landAt: Time
+    availableEcSlot: Int
+    availableBcSlot: Int
+    status: FlightStatus
+    hasPlaneID: ID
+    clearHasPlane: Boolean
+    addHasBookingIDs: [ID!]
+    removeHasBookingIDs: [ID!]
+    clearHasBooking: Boolean
+    hasAirportID: ID
+    clearHasAirport: Boolean
+    hasCustomerID: ID
+    clearHasCustomer: Boolean
+}

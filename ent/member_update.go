@@ -3,9 +3,9 @@
 package ent
 
 import (
-	"booking-flight-sytem/ent/customer"
-	"booking-flight-sytem/ent/member"
-	"booking-flight-sytem/ent/predicate"
+	"booking-flight-system/ent/customer"
+	"booking-flight-system/ent/member"
+	"booking-flight-system/ent/predicate"
 	"context"
 	"errors"
 	"fmt"
@@ -198,11 +198,6 @@ func (mu *MemberUpdate) check() error {
 	if v, ok := mu.mutation.FullName(); ok {
 		if err := member.FullNameValidator(v); err != nil {
 			return &ValidationError{Name: "full_name", err: fmt.Errorf(`ent: validator failed for field "Member.full_name": %w`, err)}
-		}
-	}
-	if v, ok := mu.mutation.Cid(); ok {
-		if err := member.CidValidator(v); err != nil {
-			return &ValidationError{Name: "cid", err: fmt.Errorf(`ent: validator failed for field "Member.cid": %w`, err)}
 		}
 	}
 	return nil
@@ -497,11 +492,6 @@ func (muo *MemberUpdateOne) check() error {
 	if v, ok := muo.mutation.FullName(); ok {
 		if err := member.FullNameValidator(v); err != nil {
 			return &ValidationError{Name: "full_name", err: fmt.Errorf(`ent: validator failed for field "Member.full_name": %w`, err)}
-		}
-	}
-	if v, ok := muo.mutation.Cid(); ok {
-		if err := member.CidValidator(v); err != nil {
-			return &ValidationError{Name: "cid", err: fmt.Errorf(`ent: validator failed for field "Member.cid": %w`, err)}
 		}
 	}
 	return nil

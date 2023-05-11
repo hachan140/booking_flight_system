@@ -25,8 +25,8 @@ os:
 	@echo ${OSFLAG}
 
 gen:
-	@go run github.com/99designs/gqlgen generate
-	@go generate ./ent
+
+	@go generate .
 
 build:
 	GO111MODULE=on CGO_ENABLED=0 GOOS=$(OSFLAG) GOARCH=$(GOARCH) go build -ldflags "-X main.VERSION=$(VERSION) -X main.COMMIT=$(COMMIT) -X main.DATE=$(DATE) -w -s" -v -o server cmd/main.go

@@ -1,7 +1,9 @@
 package schema
 
 import (
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"time"
@@ -36,5 +38,11 @@ func (Flight) Edges() []ent.Edge {
 		edge.To("has_booking", Booking.Type),
 		edge.From("has_Airport", Airport.Type).Ref("has_Flight").Field("airport_id").Unique(),
 		edge.From("has_Customer", Customer.Type).Ref("has_Flight").Field("customer_id").Unique(),
+	}
+}
+func (Flight) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entgql.QueryField(),
+		entgql.Mutations(entgql.MutationCreate(), entgql.MutationUpdate()),
 	}
 }

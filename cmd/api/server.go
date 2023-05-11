@@ -1,11 +1,13 @@
 package api
 
 import (
-	"booking-flight-sytem/config"
-	"booking-flight-sytem/ent"
-	"booking-flight-sytem/middleware"
+	"booking-flight-system/config"
+	"booking-flight-system/ent"
+	"booking-flight-system/middleware"
+	"booking-flight-system/resolver"
 	"context"
-
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"os"
 	"time"
 
@@ -54,11 +56,8 @@ func NewServerCmd(configs *config.Configurations, logger *zap.Logger) *cobra.Com
 				os.Exit(1)
 			}
 
-			//// GraphQL schema resolver handler.
-			//resolverHandler := handler.NewDefaultServer(resolver.NewSchema(db, validator, validationTranslator, logger))
-			//// Handler for GraphQL Playground
-			//playgroundHandler := playground.Handler("GraphQL Playground", "/graphql")
-
+			resolverHandler := handler.NewDefaultServer(resolver.NewSchema(db, validator, validationTranslator, logger))
+			playgroundHandler := playground.Handler("Booking Flight System", "/graphql")
 			// Handle a method not allowed.
 			gin.SetMode(gin.ReleaseMode)
 			r := gin.New()
@@ -71,26 +70,19 @@ func NewServerCmd(configs *config.Configurations, logger *zap.Logger) *cobra.Com
 				middleware.CorsMiddleware(),
 				middleware.RequestCtxMiddleware(),
 			)
-
-			//// Create a new GraphQL
-			//r.POST("/graphql", func(c *gin.Context) {
-			//	resolverHandler.ServeHTTP(c.Writer, c.Request)
-			//})
-			//
-			//r.OPTIONS("/graphql", func(c *gin.Context) {
-			//	c.Status(200)
-			//})
-			//
-			//// Enable playground for query/testing
-			//r.GET("/", func(c *gin.Context) {
-			//	playgroundHandler.ServeHTTP(c.Writer, c.Request)
-			//})
-			//
-			//// Listen on port 8000
-			//logger.Info("Listening on port: 8000")
-			//if err := r.Run(":8000"); err != nil {
-			//	logger.Error("Get error from run server", zap.Error(err))
-			//}
+			r.POST("/graphql", func(c *gin.Context) {
+				resolverHandler.ServeHTTP(c.Writer, c.Request)
+			})
+			r.OPTIONS("/graphql", func(c *gin.Context) {
+				c.Status(200)
+			})
+			r.GET("/", func(c *gin.Context) {
+				playgroundHandler.ServeHTTP(c.Writer, c.Request)
+			})
+			logger.Info("Listening on port: 8080")
+			if err := r.Run(":8080"); err != nil {
+				logger.Error("get error from run server", zap.Error(err))
+			}
 		},
 	}
 }
