@@ -8,6 +8,7 @@ import (
 	"booking-flight-system/ent"
 	graphql1 "booking-flight-system/graphql"
 	"context"
+	"fmt"
 )
 
 // SignUp is the resolver for the signUp field.
@@ -19,7 +20,31 @@ func (r *mutationResolver) SignUp(ctx context.Context, input *ent.CreateMemberIn
 		SetCid(input.Cid).Save(ctx)
 }
 
+// LogIn is the resolver for the LogIn field.
+func (r *mutationResolver) LogIn(ctx context.Context, input *ent.LoginInput) (*ent.Member, error) {
+	panic(fmt.Errorf("not implemented: LogIn - LogIn"))
+}
+
+// UpdateMember is the resolver for the UpdateMember field.
+func (r *mutationResolver) UpdateMember(ctx context.Context, input *ent.UpdateMemberInput) (*ent.Member, error) {
+	panic(fmt.Errorf("not implemented: UpdateMember - UpdateMember"))
+}
+
+// FindMemberByUsername is the resolver for the FindMemberByUsername field.
+func (r *queryResolver) FindMemberByUsername(ctx context.Context, username string) (*ent.Member, error) {
+	panic(fmt.Errorf("not implemented: FindMemberByUsername - FindMemberByUsername"))
+}
+
+// ListMembers is the resolver for the ListMembers field.
+func (r *queryResolver) ListMembers(ctx context.Context) ([]*ent.Member, error) {
+	panic(fmt.Errorf("not implemented: ListMembers - ListMembers"))
+}
+
 // Mutation returns graphql1.MutationResolver implementation.
 func (r *Resolver) Mutation() graphql1.MutationResolver { return &mutationResolver{r} }
 
+// Query returns graphql1.QueryResolver implementation.
+func (r *Resolver) Query() graphql1.QueryResolver { return &queryResolver{r} }
+
 type mutationResolver struct{ *Resolver }
+type queryResolver struct{ *Resolver }

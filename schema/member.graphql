@@ -39,6 +39,20 @@ input UpdateMemberInput {
     clearHasCustomer: Boolean
 }
 
-type Mutation{
-    signUp(input:CreateMemberInput): Member!
+input LoginInput{
+    email: String
+    password: String
 }
+
+type Mutation{
+    SignUp(input:CreateMemberInput): Member!
+    LogIn(input:LoginInput):Member!
+    UpdateMember(input: UpdateMemberInput): Member!
+
+}
+
+type Query{
+    FindMemberByUsername(username: String!): Member!
+    ListMembers: [Member]
+}
+

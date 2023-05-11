@@ -38,3 +38,6 @@ input UpdateCustomerInput {
     removeHasFlightIDs: [ID!]
     clearHasFlight: Boolean
 }
+
+
+

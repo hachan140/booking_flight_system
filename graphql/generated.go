@@ -41,6 +41,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Mutation() MutationResolver
+	Query() QueryResolver
 }
 
 type DirectiveRoot struct {
@@ -114,7 +115,9 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		SignUp func(childComplexity int, input *ent.CreateMemberInput) int
+		LogIn        func(childComplexity int, input *ent.LoginInput) int
+		SignUp       func(childComplexity int, input *ent.CreateMemberInput) int
+		UpdateMember func(childComplexity int, input *ent.UpdateMemberInput) int
 	}
 
 	PageInfo struct {
@@ -134,11 +137,19 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		FindMemberByUsername func(childComplexity int, username string) int
+		ListMembers          func(childComplexity int) int
 	}
 }
 
 type MutationResolver interface {
 	SignUp(ctx context.Context, input *ent.CreateMemberInput) (*ent.Member, error)
+	LogIn(ctx context.Context, input *ent.LoginInput) (*ent.Member, error)
+	UpdateMember(ctx context.Context, input *ent.UpdateMemberInput) (*ent.Member, error)
+}
+type QueryResolver interface {
+	FindMemberByUsername(ctx context.Context, username string) (*ent.Member, error)
+	ListMembers(ctx context.Context) ([]*ent.Member, error)
 }
 
 type executableSchema struct {
@@ -513,17 +524,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Member.UpdatedAt(childComplexity), true
 
-	case "Mutation.signUp":
+	case "Mutation.LogIn":
+		if e.complexity.Mutation.LogIn == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_LogIn_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.LogIn(childComplexity, args["input"].(*ent.LoginInput)), true
+
+	case "Mutation.SignUp":
 		if e.complexity.Mutation.SignUp == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_signUp_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_SignUp_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
 		return e.complexity.Mutation.SignUp(childComplexity, args["input"].(*ent.CreateMemberInput)), true
+
+	case "Mutation.UpdateMember":
+		if e.complexity.Mutation.UpdateMember == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_UpdateMember_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateMember(childComplexity, args["input"].(*ent.UpdateMemberInput)), true
 
 	case "PageInfo.endCursor":
 		if e.complexity.PageInfo.EndCursor == nil {
@@ -595,6 +630,25 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Plane.Status(childComplexity), true
 
+	case "Query.FindMemberByUsername":
+		if e.complexity.Query.FindMemberByUsername == nil {
+			break
+		}
+
+		args, err := ec.field_Query_FindMemberByUsername_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FindMemberByUsername(childComplexity, args["username"].(string)), true
+
+	case "Query.ListMembers":
+		if e.complexity.Query.ListMembers == nil {
+			break
+		}
+
+		return e.complexity.Query.ListMembers(childComplexity), true
+
 	}
 	return 0, false
 }
@@ -609,6 +663,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateFlightInput,
 		ec.unmarshalInputCreateMemberInput,
 		ec.unmarshalInputCreatePlaneInput,
+		ec.unmarshalInputLoginInput,
 		ec.unmarshalInputUpdateAirportInput,
 		ec.unmarshalInputUpdateBookingInput,
 		ec.unmarshalInputUpdateCustomerInput,
@@ -787,7 +842,11 @@ input UpdateCustomerInput {
     addHasFlightIDs: [ID!]
     removeHasFlightIDs: [ID!]
     clearHasFlight: Boolean
-}`, BuiltIn: false},
+}
+
+
+
+`, BuiltIn: false},
 	{Name: "../schema/flight.graphql", Input: `type Flight implements Node {
     id: ID!
     createdAt: Time!
@@ -886,9 +945,24 @@ input UpdateMemberInput {
     clearHasCustomer: Boolean
 }
 
+input LoginInput{
+    email: String
+    password: String
+}
+
 type Mutation{
-    signUp(input:CreateMemberInput): Member!
-}`, BuiltIn: false},
+    SignUp(input:CreateMemberInput): Member!
+    LogIn(input:LoginInput):Member!
+    UpdateMember(input: UpdateMemberInput): Member!
+
+}
+
+type Query{
+    FindMemberByUsername(username: String!): Member!
+    ListMembers: [Member]
+}
+
+`, BuiltIn: false},
 	{Name: "../schema/plane.graphql", Input: `type Plane implements Node {
     id: ID!
     name: String!
@@ -919,6 +993,8 @@ input CreatePlaneInput {
     status: PlaneStatus
     flightIDs: [ID!]
 }
+
+
 `, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
@@ -927,7 +1003,22 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Mutation_signUp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_LogIn_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *ent.LoginInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOLoginInput2ᚖbookingᚑflightᚑsystemᚋentᚐLoginInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_SignUp_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 *ent.CreateMemberInput
@@ -939,6 +1030,36 @@ func (ec *executionContext) field_Mutation_signUp_args(ctx context.Context, rawA
 		}
 	}
 	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_UpdateMember_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *ent.UpdateMemberInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOUpdateMemberInput2ᚖbookingᚑflightᚑsystemᚋentᚐUpdateMemberInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_FindMemberByUsername_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["username"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["username"] = arg0
 	return args, nil
 }
 
@@ -3415,8 +3536,8 @@ func (ec *executionContext) fieldContext_Member_hasCustomer(ctx context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _Mutation_signUp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_signUp(ctx, field)
+func (ec *executionContext) _Mutation_SignUp(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_SignUp(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3446,7 +3567,7 @@ func (ec *executionContext) _Mutation_signUp(ctx context.Context, field graphql.
 	return ec.marshalNMember2ᚖbookingᚑflightᚑsystemᚋentᚐMember(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Mutation_signUp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Mutation_SignUp(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Mutation",
 		Field:      field,
@@ -3485,7 +3606,161 @@ func (ec *executionContext) fieldContext_Mutation_signUp(ctx context.Context, fi
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_signUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Mutation_SignUp_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_LogIn(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_LogIn(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().LogIn(rctx, fc.Args["input"].(*ent.LoginInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Member)
+	fc.Result = res
+	return ec.marshalNMember2ᚖbookingᚑflightᚑsystemᚋentᚐMember(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_LogIn(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Member_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Member_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Member_updatedAt(ctx, field)
+			case "email":
+				return ec.fieldContext_Member_email(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_Member_phoneNumber(ctx, field)
+			case "fullName":
+				return ec.fieldContext_Member_fullName(ctx, field)
+			case "dob":
+				return ec.fieldContext_Member_dob(ctx, field)
+			case "cid":
+				return ec.fieldContext_Member_cid(ctx, field)
+			case "role":
+				return ec.fieldContext_Member_role(ctx, field)
+			case "hasCustomer":
+				return ec.fieldContext_Member_hasCustomer(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Member", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_LogIn_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_UpdateMember(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_UpdateMember(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateMember(rctx, fc.Args["input"].(*ent.UpdateMemberInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Member)
+	fc.Result = res
+	return ec.marshalNMember2ᚖbookingᚑflightᚑsystemᚋentᚐMember(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_UpdateMember(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Member_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Member_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Member_updatedAt(ctx, field)
+			case "email":
+				return ec.fieldContext_Member_email(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_Member_phoneNumber(ctx, field)
+			case "fullName":
+				return ec.fieldContext_Member_fullName(ctx, field)
+			case "dob":
+				return ec.fieldContext_Member_dob(ctx, field)
+			case "cid":
+				return ec.fieldContext_Member_cid(ctx, field)
+			case "role":
+				return ec.fieldContext_Member_role(ctx, field)
+			case "hasCustomer":
+				return ec.fieldContext_Member_hasCustomer(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Member", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_UpdateMember_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -3952,6 +4227,146 @@ func (ec *executionContext) fieldContext_Plane_flights(ctx context.Context, fiel
 				return ec.fieldContext_Flight_hasCustomer(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Flight", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_FindMemberByUsername(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_FindMemberByUsername(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().FindMemberByUsername(rctx, fc.Args["username"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Member)
+	fc.Result = res
+	return ec.marshalNMember2ᚖbookingᚑflightᚑsystemᚋentᚐMember(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_FindMemberByUsername(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Member_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Member_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Member_updatedAt(ctx, field)
+			case "email":
+				return ec.fieldContext_Member_email(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_Member_phoneNumber(ctx, field)
+			case "fullName":
+				return ec.fieldContext_Member_fullName(ctx, field)
+			case "dob":
+				return ec.fieldContext_Member_dob(ctx, field)
+			case "cid":
+				return ec.fieldContext_Member_cid(ctx, field)
+			case "role":
+				return ec.fieldContext_Member_role(ctx, field)
+			case "hasCustomer":
+				return ec.fieldContext_Member_hasCustomer(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Member", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_FindMemberByUsername_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_ListMembers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_ListMembers(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().ListMembers(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Member)
+	fc.Result = res
+	return ec.marshalOMember2ᚕᚖbookingᚑflightᚑsystemᚋentᚐMember(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_ListMembers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Member_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Member_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Member_updatedAt(ctx, field)
+			case "email":
+				return ec.fieldContext_Member_email(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_Member_phoneNumber(ctx, field)
+			case "fullName":
+				return ec.fieldContext_Member_fullName(ctx, field)
+			case "dob":
+				return ec.fieldContext_Member_dob(ctx, field)
+			case "cid":
+				return ec.fieldContext_Member_cid(ctx, field)
+			case "role":
+				return ec.fieldContext_Member_role(ctx, field)
+			case "hasCustomer":
+				return ec.fieldContext_Member_hasCustomer(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Member", field.Name)
 		},
 	}
 	return fc, nil
@@ -6402,6 +6817,44 @@ func (ec *executionContext) unmarshalInputCreatePlaneInput(ctx context.Context, 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputLoginInput(ctx context.Context, obj interface{}) (ent.LoginInput, error) {
+	var it ent.LoginInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"email", "password"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "email":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Email = data
+		case "password":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Password = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateAirportInput(ctx context.Context, obj interface{}) (ent.UpdateAirportInput, error) {
 	var it ent.UpdateAirportInput
 	asMap := map[string]interface{}{}
@@ -7683,10 +8136,28 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "signUp":
+		case "SignUp":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_signUp(ctx, field)
+				return ec._Mutation_SignUp(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "LogIn":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_LogIn(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "UpdateMember":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_UpdateMember(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -7838,6 +8309,49 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "FindMemberByUsername":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_FindMemberByUsername(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "ListMembers":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_ListMembers(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "__type":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -8962,6 +9476,55 @@ func (ec *executionContext) marshalOInt2ᚖint64(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalOLoginInput2ᚖbookingᚑflightᚑsystemᚋentᚐLoginInput(ctx context.Context, v interface{}) (*ent.LoginInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputLoginInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOMember2ᚕᚖbookingᚑflightᚑsystemᚋentᚐMember(ctx context.Context, sel ast.SelectionSet, v []*ent.Member) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOMember2ᚖbookingᚑflightᚑsystemᚋentᚐMember(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
 func (ec *executionContext) marshalOMember2ᚖbookingᚑflightᚑsystemᚋentᚐMember(ctx context.Context, sel ast.SelectionSet, v *ent.Member) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -9060,6 +9623,14 @@ func (ec *executionContext) marshalOTime2ᚖtimeᚐTime(ctx context.Context, sel
 	}
 	res := graphql.MarshalTime(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOUpdateMemberInput2ᚖbookingᚑflightᚑsystemᚋentᚐUpdateMemberInput(ctx context.Context, v interface{}) (*ent.UpdateMemberInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputUpdateMemberInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {
