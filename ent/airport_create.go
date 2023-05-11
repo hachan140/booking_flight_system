@@ -67,13 +67,13 @@ func (ac *AirportCreate) SetLong(f float64) *AirportCreate {
 	return ac
 }
 
-// AddHasFlightIDs adds the "has_Flight" edge to the Flight entity by IDs.
+// AddHasFlightIDs adds the "has_flight" edge to the Flight entity by IDs.
 func (ac *AirportCreate) AddHasFlightIDs(ids ...int) *AirportCreate {
 	ac.mutation.AddHasFlightIDs(ids...)
 	return ac
 }
 
-// AddHasFlight adds the "has_Flight" edges to the Flight entity.
+// AddHasFlight adds the "has_flight" edges to the Flight entity.
 func (ac *AirportCreate) AddHasFlight(f ...*Flight) *AirportCreate {
 	ids := make([]int, len(f))
 	for i := range f {

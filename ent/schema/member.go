@@ -23,8 +23,8 @@ func (Member) Fields() []ent.Field {
 		field.String("password").Sensitive(),
 		field.String("phone_number").NotEmpty().Unique(),
 		field.String("full_name").NotEmpty(),
-		field.Time("dob"),
-		field.String("cid"),
+		field.Time("dob").Optional(),
+		field.String("cid").Unique(),
 		field.Int("role").Default(1),
 	}
 }
@@ -32,7 +32,7 @@ func (Member) Fields() []ent.Field {
 // Edges of the Member.
 func (Member) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("has_Customer", Customer.Type),
+		edge.To("has_customer", Customer.Type).Unique(),
 	}
 }
 

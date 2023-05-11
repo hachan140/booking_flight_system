@@ -35,8 +35,8 @@ type Airport struct {
 
 // AirportEdges holds the relations/edges for other nodes in the graph.
 type AirportEdges struct {
-	// HasFlight holds the value of the has_Flight edge.
-	HasFlight []*Flight `json:"has_Flight,omitempty"`
+	// HasFlight holds the value of the has_flight edge.
+	HasFlight []*Flight `json:"has_flight,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
@@ -52,7 +52,7 @@ func (e AirportEdges) HasFlightOrErr() ([]*Flight, error) {
 	if e.loadedTypes[0] {
 		return e.HasFlight, nil
 	}
-	return nil, &NotLoadedError{edge: "has_Flight"}
+	return nil, &NotLoadedError{edge: "has_flight"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -134,7 +134,7 @@ func (a *Airport) Value(name string) (ent.Value, error) {
 	return a.selectValues.Get(name)
 }
 
-// QueryHasFlight queries the "has_Flight" edge of the Airport entity.
+// QueryHasFlight queries the "has_flight" edge of the Airport entity.
 func (a *Airport) QueryHasFlight() *FlightQuery {
 	return NewAirportClient(a.config).QueryHasFlight(a)
 }

@@ -416,16 +416,16 @@ func (c *FlightUpdateOne) SetInput(i UpdateFlightInput) *FlightUpdateOne {
 
 // CreateMemberInput represents a mutation input for creating members.
 type CreateMemberInput struct {
-	CreatedAt      *time.Time
-	UpdatedAt      *time.Time
-	Email          string
-	Password       string
-	PhoneNumber    string
-	FullName       string
-	Dob            time.Time
-	Cid            string
-	Role           *int
-	HasCustomerIDs []int
+	CreatedAt     *time.Time
+	UpdatedAt     *time.Time
+	Email         string
+	Password      string
+	PhoneNumber   string
+	FullName      string
+	Dob           *time.Time
+	Cid           string
+	Role          *int
+	HasCustomerID *int
 }
 
 // Mutate applies the CreateMemberInput on the MemberMutation builder.
@@ -440,13 +440,15 @@ func (i *CreateMemberInput) Mutate(m *MemberMutation) {
 	m.SetPassword(i.Password)
 	m.SetPhoneNumber(i.PhoneNumber)
 	m.SetFullName(i.FullName)
-	m.SetDob(i.Dob)
+	if v := i.Dob; v != nil {
+		m.SetDob(*v)
+	}
 	m.SetCid(i.Cid)
 	if v := i.Role; v != nil {
 		m.SetRole(*v)
 	}
-	if v := i.HasCustomerIDs; len(v) > 0 {
-		m.AddHasCustomerIDs(v...)
+	if v := i.HasCustomerID; v != nil {
+		m.SetHasCustomerID(*v)
 	}
 }
 
@@ -458,18 +460,18 @@ func (c *MemberCreate) SetInput(i CreateMemberInput) *MemberCreate {
 
 // UpdateMemberInput represents a mutation input for updating members.
 type UpdateMemberInput struct {
-	CreatedAt            *time.Time
-	UpdatedAt            *time.Time
-	Email                *string
-	Password             *string
-	PhoneNumber          *string
-	FullName             *string
-	Dob                  *time.Time
-	Cid                  *string
-	Role                 *int
-	ClearHasCustomer     bool
-	AddHasCustomerIDs    []int
-	RemoveHasCustomerIDs []int
+	CreatedAt        *time.Time
+	UpdatedAt        *time.Time
+	Email            *string
+	Password         *string
+	PhoneNumber      *string
+	FullName         *string
+	ClearDob         bool
+	Dob              *time.Time
+	Cid              *string
+	Role             *int
+	ClearHasCustomer bool
+	HasCustomerID    *int
 }
 
 // Mutate applies the UpdateMemberInput on the MemberMutation builder.
@@ -492,6 +494,9 @@ func (i *UpdateMemberInput) Mutate(m *MemberMutation) {
 	if v := i.FullName; v != nil {
 		m.SetFullName(*v)
 	}
+	if i.ClearDob {
+		m.ClearDob()
+	}
 	if v := i.Dob; v != nil {
 		m.SetDob(*v)
 	}
@@ -504,11 +509,8 @@ func (i *UpdateMemberInput) Mutate(m *MemberMutation) {
 	if i.ClearHasCustomer {
 		m.ClearHasCustomer()
 	}
-	if v := i.AddHasCustomerIDs; len(v) > 0 {
-		m.AddHasCustomerIDs(v...)
-	}
-	if v := i.RemoveHasCustomerIDs; len(v) > 0 {
-		m.RemoveHasCustomerIDs(v...)
+	if v := i.HasCustomerID; v != nil {
+		m.SetHasCustomerID(*v)
 	}
 }
 

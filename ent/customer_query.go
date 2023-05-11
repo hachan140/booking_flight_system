@@ -65,7 +65,7 @@ func (cq *CustomerQuery) Order(o ...customer.OrderOption) *CustomerQuery {
 	return cq
 }
 
-// QueryHasMember chains the current query on the "has_Member" edge.
+// QueryHasMember chains the current query on the "has_member" edge.
 func (cq *CustomerQuery) QueryHasMember() *MemberQuery {
 	query := (&MemberClient{config: cq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
@@ -79,7 +79,7 @@ func (cq *CustomerQuery) QueryHasMember() *MemberQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(customer.Table, customer.FieldID, selector),
 			sqlgraph.To(member.Table, member.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, customer.HasMemberTable, customer.HasMemberColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, customer.HasMemberTable, customer.HasMemberColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(cq.driver.Dialect(), step)
 		return fromU, nil
@@ -87,7 +87,7 @@ func (cq *CustomerQuery) QueryHasMember() *MemberQuery {
 	return query
 }
 
-// QueryHasFlight chains the current query on the "has_Flight" edge.
+// QueryHasFlight chains the current query on the "has_flight" edge.
 func (cq *CustomerQuery) QueryHasFlight() *FlightQuery {
 	query := (&FlightClient{config: cq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
@@ -310,7 +310,7 @@ func (cq *CustomerQuery) Clone() *CustomerQuery {
 }
 
 // WithHasMember tells the query-builder to eager-load the nodes that are connected to
-// the "has_Member" edge. The optional arguments are used to configure the query builder of the edge.
+// the "has_member" edge. The optional arguments are used to configure the query builder of the edge.
 func (cq *CustomerQuery) WithHasMember(opts ...func(*MemberQuery)) *CustomerQuery {
 	query := (&MemberClient{config: cq.config}).Query()
 	for _, opt := range opts {
@@ -321,7 +321,7 @@ func (cq *CustomerQuery) WithHasMember(opts ...func(*MemberQuery)) *CustomerQuer
 }
 
 // WithHasFlight tells the query-builder to eager-load the nodes that are connected to
-// the "has_Flight" edge. The optional arguments are used to configure the query builder of the edge.
+// the "has_flight" edge. The optional arguments are used to configure the query builder of the edge.
 func (cq *CustomerQuery) WithHasFlight(opts ...func(*FlightQuery)) *CustomerQuery {
 	query := (&FlightClient{config: cq.config}).Query()
 	for _, opt := range opts {
@@ -610,7 +610,7 @@ func (cq *CustomerQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// WithNamedHasFlight tells the query-builder to eager-load the nodes that are connected to the "has_Flight"
+// WithNamedHasFlight tells the query-builder to eager-load the nodes that are connected to the "has_flight"
 // edge with the given name. The optional arguments are used to configure the query builder of the edge.
 func (cq *CustomerQuery) WithNamedHasFlight(name string, opts ...func(*FlightQuery)) *CustomerQuery {
 	query := (&FlightClient{config: cq.config}).Query()

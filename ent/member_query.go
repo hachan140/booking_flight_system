@@ -19,14 +19,13 @@ import (
 // MemberQuery is the builder for querying Member entities.
 type MemberQuery struct {
 	config
-	ctx                  *QueryContext
-	order                []member.OrderOption
-	inters               []Interceptor
-	predicates           []predicate.Member
-	withHasCustomer      *CustomerQuery
-	modifiers            []func(*sql.Selector)
-	loadTotal            []func(context.Context, []*Member) error
-	withNamedHasCustomer map[string]*CustomerQuery
+	ctx             *QueryContext
+	order           []member.OrderOption
+	inters          []Interceptor
+	predicates      []predicate.Member
+	withHasCustomer *CustomerQuery
+	modifiers       []func(*sql.Selector)
+	loadTotal       []func(context.Context, []*Member) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -63,7 +62,7 @@ func (mq *MemberQuery) Order(o ...member.OrderOption) *MemberQuery {
 	return mq
 }
 
-// QueryHasCustomer chains the current query on the "has_Customer" edge.
+// QueryHasCustomer chains the current query on the "has_customer" edge.
 func (mq *MemberQuery) QueryHasCustomer() *CustomerQuery {
 	query := (&CustomerClient{config: mq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
@@ -77,7 +76,7 @@ func (mq *MemberQuery) QueryHasCustomer() *CustomerQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(member.Table, member.FieldID, selector),
 			sqlgraph.To(customer.Table, customer.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, member.HasCustomerTable, member.HasCustomerColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, member.HasCustomerTable, member.HasCustomerColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
 		return fromU, nil
@@ -285,7 +284,7 @@ func (mq *MemberQuery) Clone() *MemberQuery {
 }
 
 // WithHasCustomer tells the query-builder to eager-load the nodes that are connected to
-// the "has_Customer" edge. The optional arguments are used to configure the query builder of the edge.
+// the "has_customer" edge. The optional arguments are used to configure the query builder of the edge.
 func (mq *MemberQuery) WithHasCustomer(opts ...func(*CustomerQuery)) *MemberQuery {
 	query := (&CustomerClient{config: mq.config}).Query()
 	for _, opt := range opts {
@@ -399,16 +398,8 @@ func (mq *MemberQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Membe
 		return nodes, nil
 	}
 	if query := mq.withHasCustomer; query != nil {
-		if err := mq.loadHasCustomer(ctx, query, nodes,
-			func(n *Member) { n.Edges.HasCustomer = []*Customer{} },
-			func(n *Member, e *Customer) { n.Edges.HasCustomer = append(n.Edges.HasCustomer, e) }); err != nil {
-			return nil, err
-		}
-	}
-	for name, query := range mq.withNamedHasCustomer {
-		if err := mq.loadHasCustomer(ctx, query, nodes,
-			func(n *Member) { n.appendNamedHasCustomer(name) },
-			func(n *Member, e *Customer) { n.appendNamedHasCustomer(name, e) }); err != nil {
+		if err := mq.loadHasCustomer(ctx, query, nodes, nil,
+			func(n *Member, e *Customer) { n.Edges.HasCustomer = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -426,9 +417,6 @@ func (mq *MemberQuery) loadHasCustomer(ctx context.Context, query *CustomerQuery
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
 	}
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(customer.FieldMemberID)
@@ -533,20 +521,6 @@ func (mq *MemberQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector.Limit(*limit)
 	}
 	return selector
-}
-
-// WithNamedHasCustomer tells the query-builder to eager-load the nodes that are connected to the "has_Customer"
-// edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (mq *MemberQuery) WithNamedHasCustomer(name string, opts ...func(*CustomerQuery)) *MemberQuery {
-	query := (&CustomerClient{config: mq.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	if mq.withNamedHasCustomer == nil {
-		mq.withNamedHasCustomer = make(map[string]*CustomerQuery)
-	}
-	mq.withNamedHasCustomer[name] = query
-	return mq
 }
 
 // MemberGroupBy is the group-by builder for Member entities.

@@ -3,6 +3,7 @@ package api
 import (
 	"booking-flight-system/config"
 	"booking-flight-system/ent"
+	"booking-flight-system/jwt"
 	"booking-flight-system/middleware"
 	"booking-flight-system/resolver"
 	"context"
@@ -37,6 +38,7 @@ func NewServerCmd(configs *config.Configurations, logger *zap.Logger) *cobra.Com
 			}
 			defer db.Close()
 
+			db = db.Debug()
 			// Run the automation migration tool
 			if err := db.Schema.Create(context.Background()); err != nil {
 				logger.Error("Failed to creating db schema from the automation migration tool", zap.Error(err))
@@ -56,7 +58,9 @@ func NewServerCmd(configs *config.Configurations, logger *zap.Logger) *cobra.Com
 				os.Exit(1)
 			}
 
-			resolverHandler := handler.NewDefaultServer(resolver.NewSchema(db, validator, validationTranslator, logger))
+			jwtService := jwt.NewJWTService(configs.JWT)
+
+			resolverHandler := handler.NewDefaultServer(resolver.NewSchema(db, validator, validationTranslator, logger, jwtService))
 			playgroundHandler := playground.Handler("Booking Flight System", "/graphql")
 			// Handle a method not allowed.
 			gin.SetMode(gin.ReleaseMode)
@@ -69,6 +73,7 @@ func NewServerCmd(configs *config.Configurations, logger *zap.Logger) *cobra.Com
 				ginzap.RecoveryWithZap(logger, true),
 				middleware.CorsMiddleware(),
 				middleware.RequestCtxMiddleware(),
+				middleware.ExtractJWT(jwtService),
 			)
 			r.POST("/graphql", func(c *gin.Context) {
 				resolverHandler.ServeHTTP(c.Writer, c.Request)

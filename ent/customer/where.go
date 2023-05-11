@@ -505,18 +505,18 @@ func MemberIDNotNil() predicate.Customer {
 	return predicate.Customer(sql.FieldNotNull(FieldMemberID))
 }
 
-// HasHasMember applies the HasEdge predicate on the "has_Member" edge.
+// HasHasMember applies the HasEdge predicate on the "has_member" edge.
 func HasHasMember() predicate.Customer {
 	return predicate.Customer(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, HasMemberTable, HasMemberColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, HasMemberTable, HasMemberColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasHasMemberWith applies the HasEdge predicate on the "has_Member" edge with a given conditions (other predicates).
+// HasHasMemberWith applies the HasEdge predicate on the "has_member" edge with a given conditions (other predicates).
 func HasHasMemberWith(preds ...predicate.Member) predicate.Customer {
 	return predicate.Customer(func(s *sql.Selector) {
 		step := newHasMemberStep()
@@ -528,7 +528,7 @@ func HasHasMemberWith(preds ...predicate.Member) predicate.Customer {
 	})
 }
 
-// HasHasFlight applies the HasEdge predicate on the "has_Flight" edge.
+// HasHasFlight applies the HasEdge predicate on the "has_flight" edge.
 func HasHasFlight() predicate.Customer {
 	return predicate.Customer(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
@@ -539,7 +539,7 @@ func HasHasFlight() predicate.Customer {
 	})
 }
 
-// HasHasFlightWith applies the HasEdge predicate on the "has_Flight" edge with a given conditions (other predicates).
+// HasHasFlightWith applies the HasEdge predicate on the "has_flight" edge with a given conditions (other predicates).
 func HasHasFlightWith(preds ...predicate.Flight) predicate.Customer {
 	return predicate.Customer(func(s *sql.Selector) {
 		step := newHasFlightStep()

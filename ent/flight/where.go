@@ -566,7 +566,7 @@ func HasHasBookingWith(preds ...predicate.Booking) predicate.Flight {
 	})
 }
 
-// HasHasAirport applies the HasEdge predicate on the "has_Airport" edge.
+// HasHasAirport applies the HasEdge predicate on the "has_airport" edge.
 func HasHasAirport() predicate.Flight {
 	return predicate.Flight(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
@@ -577,7 +577,7 @@ func HasHasAirport() predicate.Flight {
 	})
 }
 
-// HasHasAirportWith applies the HasEdge predicate on the "has_Airport" edge with a given conditions (other predicates).
+// HasHasAirportWith applies the HasEdge predicate on the "has_airport" edge with a given conditions (other predicates).
 func HasHasAirportWith(preds ...predicate.Airport) predicate.Flight {
 	return predicate.Flight(func(s *sql.Selector) {
 		step := newHasAirportStep()
@@ -589,7 +589,7 @@ func HasHasAirportWith(preds ...predicate.Airport) predicate.Flight {
 	})
 }
 
-// HasHasCustomer applies the HasEdge predicate on the "has_Customer" edge.
+// HasHasCustomer applies the HasEdge predicate on the "has_customer" edge.
 func HasHasCustomer() predicate.Flight {
 	return predicate.Flight(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
@@ -600,7 +600,7 @@ func HasHasCustomer() predicate.Flight {
 	})
 }
 
-// HasHasCustomerWith applies the HasEdge predicate on the "has_Customer" edge with a given conditions (other predicates).
+// HasHasCustomerWith applies the HasEdge predicate on the "has_customer" edge with a given conditions (other predicates).
 func HasHasCustomerWith(preds ...predicate.Customer) predicate.Flight {
 	return predicate.Flight(func(s *sql.Selector) {
 		step := newHasCustomerStep()

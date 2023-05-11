@@ -1,58 +1,10 @@
-type Member implements Node {
-    id: ID!
-    createdAt: Time!
-    updatedAt: Time!
-    email: String!
-    phoneNumber: String!
-    fullName: String!
-    dob: Time!
-    cid: String!
-    role: Int!
-    hasCustomer: [Customer!]
-}
-
-input CreateMemberInput {
-    createdAt: Time
-    updatedAt: Time
-    email: String!
-    password: String!
-    phoneNumber: String!
-    fullName: String!
-    dob: Time!
-    cid: String!
-    role: Int
-    hasCustomerIDs: [ID!]
-}
-
-input UpdateMemberInput {
-    createdAt: Time
-    updatedAt: Time
-    email: String
-    password: String
-    phoneNumber: String
-    fullName: String
-    dob: Time
-    cid: String
-    role: Int
-    addHasCustomerIDs: [ID!]
-    removeHasCustomerIDs: [ID!]
-    clearHasCustomer: Boolean
-}
-
-input LoginInput{
-    email: String
-    password: String
+type Token {
+    token: String!
+    expired_at: Time!
 }
 
 type Mutation{
-    SignUp(input:CreateMemberInput): Member!
-    LogIn(input:LoginInput):Member!
-    UpdateMember(input: UpdateMemberInput): Member!
-
+    sign_up(input:CreateMemberInput!): Member!
+    login(email: String!, password: String!): Token!
+    self: Member!
 }
-
-type Query{
-    FindMemberByUsername(username: String!): Member!
-    ListMembers: [Member]
-}
-

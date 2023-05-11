@@ -42,10 +42,10 @@ type Customer struct {
 
 // CustomerEdges holds the relations/edges for other nodes in the graph.
 type CustomerEdges struct {
-	// HasMember holds the value of the has_Member edge.
-	HasMember *Member `json:"has_Member,omitempty"`
-	// HasFlight holds the value of the has_Flight edge.
-	HasFlight []*Flight `json:"has_Flight,omitempty"`
+	// HasMember holds the value of the has_member edge.
+	HasMember *Member `json:"has_member,omitempty"`
+	// HasFlight holds the value of the has_flight edge.
+	HasFlight []*Flight `json:"has_flight,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
@@ -65,7 +65,7 @@ func (e CustomerEdges) HasMemberOrErr() (*Member, error) {
 		}
 		return e.HasMember, nil
 	}
-	return nil, &NotLoadedError{edge: "has_Member"}
+	return nil, &NotLoadedError{edge: "has_member"}
 }
 
 // HasFlightOrErr returns the HasFlight value or an error if the edge
@@ -74,7 +74,7 @@ func (e CustomerEdges) HasFlightOrErr() ([]*Flight, error) {
 	if e.loadedTypes[1] {
 		return e.HasFlight, nil
 	}
-	return nil, &NotLoadedError{edge: "has_Flight"}
+	return nil, &NotLoadedError{edge: "has_flight"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -170,12 +170,12 @@ func (c *Customer) Value(name string) (ent.Value, error) {
 	return c.selectValues.Get(name)
 }
 
-// QueryHasMember queries the "has_Member" edge of the Customer entity.
+// QueryHasMember queries the "has_member" edge of the Customer entity.
 func (c *Customer) QueryHasMember() *MemberQuery {
 	return NewCustomerClient(c.config).QueryHasMember(c)
 }
 
-// QueryHasFlight queries the "has_Flight" edge of the Customer entity.
+// QueryHasFlight queries the "has_flight" edge of the Customer entity.
 func (c *Customer) QueryHasFlight() *FlightQuery {
 	return NewCustomerClient(c.config).QueryHasFlight(c)
 }

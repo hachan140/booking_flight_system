@@ -3,6 +3,7 @@ package resolver
 import (
 	"booking-flight-system/ent"
 	generated "booking-flight-system/graphql"
+	"booking-flight-system/jwt"
 
 	"booking-flight-system/internal/util"
 	"fmt"
@@ -22,11 +23,24 @@ type Resolver struct {
 	validator            *validator.Validate
 	validationTranslator ut.Translator
 	logger               *zap.Logger
+	jwtService           *jwt.Service
 }
 
-func NewSchema(client *ent.Client, validator *validator.Validate, validationTranslator ut.Translator, logger *zap.Logger) graphql.ExecutableSchema {
+func NewSchema(
+	client *ent.Client,
+	validator *validator.Validate,
+	validationTranslator ut.Translator,
+	logger *zap.Logger,
+	service *jwt.Service,
+) graphql.ExecutableSchema {
 	return generated.NewExecutableSchema(generated.Config{
-		Resolvers: &Resolver{client: client, validator: validator, validationTranslator: validationTranslator, logger: logger},
+		Resolvers: &Resolver{
+			client:               client,
+			validator:            validator,
+			validationTranslator: validationTranslator,
+			logger:               logger,
+			jwtService:           service,
+		},
 	})
 }
 

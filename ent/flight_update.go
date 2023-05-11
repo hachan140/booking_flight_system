@@ -204,13 +204,13 @@ func (fu *FlightUpdate) AddHasBooking(b ...*Booking) *FlightUpdate {
 	return fu.AddHasBookingIDs(ids...)
 }
 
-// SetHasAirportID sets the "has_Airport" edge to the Airport entity by ID.
+// SetHasAirportID sets the "has_airport" edge to the Airport entity by ID.
 func (fu *FlightUpdate) SetHasAirportID(id int) *FlightUpdate {
 	fu.mutation.SetHasAirportID(id)
 	return fu
 }
 
-// SetNillableHasAirportID sets the "has_Airport" edge to the Airport entity by ID if the given value is not nil.
+// SetNillableHasAirportID sets the "has_airport" edge to the Airport entity by ID if the given value is not nil.
 func (fu *FlightUpdate) SetNillableHasAirportID(id *int) *FlightUpdate {
 	if id != nil {
 		fu = fu.SetHasAirportID(*id)
@@ -218,18 +218,18 @@ func (fu *FlightUpdate) SetNillableHasAirportID(id *int) *FlightUpdate {
 	return fu
 }
 
-// SetHasAirport sets the "has_Airport" edge to the Airport entity.
+// SetHasAirport sets the "has_airport" edge to the Airport entity.
 func (fu *FlightUpdate) SetHasAirport(a *Airport) *FlightUpdate {
 	return fu.SetHasAirportID(a.ID)
 }
 
-// SetHasCustomerID sets the "has_Customer" edge to the Customer entity by ID.
+// SetHasCustomerID sets the "has_customer" edge to the Customer entity by ID.
 func (fu *FlightUpdate) SetHasCustomerID(id int) *FlightUpdate {
 	fu.mutation.SetHasCustomerID(id)
 	return fu
 }
 
-// SetNillableHasCustomerID sets the "has_Customer" edge to the Customer entity by ID if the given value is not nil.
+// SetNillableHasCustomerID sets the "has_customer" edge to the Customer entity by ID if the given value is not nil.
 func (fu *FlightUpdate) SetNillableHasCustomerID(id *int) *FlightUpdate {
 	if id != nil {
 		fu = fu.SetHasCustomerID(*id)
@@ -237,7 +237,7 @@ func (fu *FlightUpdate) SetNillableHasCustomerID(id *int) *FlightUpdate {
 	return fu
 }
 
-// SetHasCustomer sets the "has_Customer" edge to the Customer entity.
+// SetHasCustomer sets the "has_customer" edge to the Customer entity.
 func (fu *FlightUpdate) SetHasCustomer(c *Customer) *FlightUpdate {
 	return fu.SetHasCustomerID(c.ID)
 }
@@ -274,13 +274,13 @@ func (fu *FlightUpdate) RemoveHasBooking(b ...*Booking) *FlightUpdate {
 	return fu.RemoveHasBookingIDs(ids...)
 }
 
-// ClearHasAirport clears the "has_Airport" edge to the Airport entity.
+// ClearHasAirport clears the "has_airport" edge to the Airport entity.
 func (fu *FlightUpdate) ClearHasAirport() *FlightUpdate {
 	fu.mutation.ClearHasAirport()
 	return fu
 }
 
-// ClearHasCustomer clears the "has_Customer" edge to the Customer entity.
+// ClearHasCustomer clears the "has_customer" edge to the Customer entity.
 func (fu *FlightUpdate) ClearHasCustomer() *FlightUpdate {
 	fu.mutation.ClearHasCustomer()
 	return fu
@@ -703,13 +703,13 @@ func (fuo *FlightUpdateOne) AddHasBooking(b ...*Booking) *FlightUpdateOne {
 	return fuo.AddHasBookingIDs(ids...)
 }
 
-// SetHasAirportID sets the "has_Airport" edge to the Airport entity by ID.
+// SetHasAirportID sets the "has_airport" edge to the Airport entity by ID.
 func (fuo *FlightUpdateOne) SetHasAirportID(id int) *FlightUpdateOne {
 	fuo.mutation.SetHasAirportID(id)
 	return fuo
 }
 
-// SetNillableHasAirportID sets the "has_Airport" edge to the Airport entity by ID if the given value is not nil.
+// SetNillableHasAirportID sets the "has_airport" edge to the Airport entity by ID if the given value is not nil.
 func (fuo *FlightUpdateOne) SetNillableHasAirportID(id *int) *FlightUpdateOne {
 	if id != nil {
 		fuo = fuo.SetHasAirportID(*id)
@@ -717,18 +717,18 @@ func (fuo *FlightUpdateOne) SetNillableHasAirportID(id *int) *FlightUpdateOne {
 	return fuo
 }
 
-// SetHasAirport sets the "has_Airport" edge to the Airport entity.
+// SetHasAirport sets the "has_airport" edge to the Airport entity.
 func (fuo *FlightUpdateOne) SetHasAirport(a *Airport) *FlightUpdateOne {
 	return fuo.SetHasAirportID(a.ID)
 }
 
-// SetHasCustomerID sets the "has_Customer" edge to the Customer entity by ID.
+// SetHasCustomerID sets the "has_customer" edge to the Customer entity by ID.
 func (fuo *FlightUpdateOne) SetHasCustomerID(id int) *FlightUpdateOne {
 	fuo.mutation.SetHasCustomerID(id)
 	return fuo
 }
 
-// SetNillableHasCustomerID sets the "has_Customer" edge to the Customer entity by ID if the given value is not nil.
+// SetNillableHasCustomerID sets the "has_customer" edge to the Customer entity by ID if the given value is not nil.
 func (fuo *FlightUpdateOne) SetNillableHasCustomerID(id *int) *FlightUpdateOne {
 	if id != nil {
 		fuo = fuo.SetHasCustomerID(*id)
@@ -736,7 +736,7 @@ func (fuo *FlightUpdateOne) SetNillableHasCustomerID(id *int) *FlightUpdateOne {
 	return fuo
 }
 
-// SetHasCustomer sets the "has_Customer" edge to the Customer entity.
+// SetHasCustomer sets the "has_customer" edge to the Customer entity.
 func (fuo *FlightUpdateOne) SetHasCustomer(c *Customer) *FlightUpdateOne {
 	return fuo.SetHasCustomerID(c.ID)
 }
@@ -773,13 +773,13 @@ func (fuo *FlightUpdateOne) RemoveHasBooking(b ...*Booking) *FlightUpdateOne {
 	return fuo.RemoveHasBookingIDs(ids...)
 }
 
-// ClearHasAirport clears the "has_Airport" edge to the Airport entity.
+// ClearHasAirport clears the "has_airport" edge to the Airport entity.
 func (fuo *FlightUpdateOne) ClearHasAirport() *FlightUpdateOne {
 	fuo.mutation.ClearHasAirport()
 	return fuo
 }
 
-// ClearHasCustomer clears the "has_Customer" edge to the Customer entity.
+// ClearHasCustomer clears the "has_customer" edge to the Customer entity.
 func (fuo *FlightUpdateOne) ClearHasCustomer() *FlightUpdateOne {
 	fuo.mutation.ClearHasCustomer()
 	return fuo

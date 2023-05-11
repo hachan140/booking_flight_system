@@ -6,45 +6,47 @@ package resolver
 
 import (
 	"booking-flight-system/ent"
+	"booking-flight-system/ent/member"
 	graphql1 "booking-flight-system/graphql"
 	"context"
-	"fmt"
+	"errors"
 )
 
-// SignUp is the resolver for the signUp field.
-func (r *mutationResolver) SignUp(ctx context.Context, input *ent.CreateMemberInput) (*ent.Member, error) {
-	return r.client.Member.Create().SetEmail(input.Email).
-		SetPassword(input.Password).
-		SetFullName(input.FullName).
-		SetDob(input.Dob).
-		SetCid(input.Cid).Save(ctx)
+// SignUp is the resolver for the SignUp field.
+func (r *mutationResolver) SignUp(ctx context.Context, input ent.CreateMemberInput) (*ent.Member, error) {
+	return r.client.Member.Create().SetInput(input).Save(ctx)
 }
 
-// LogIn is the resolver for the LogIn field.
-func (r *mutationResolver) LogIn(ctx context.Context, input *ent.LoginInput) (*ent.Member, error) {
-	panic(fmt.Errorf("not implemented: LogIn - LogIn"))
+// Login is the resolver for the Login field.
+func (r *mutationResolver) Login(ctx context.Context, email string, password string) (*ent.Token, error) {
+	user, err := r.client.Member.Query().Where(member.Email(email), member.Password(password)).Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+	token, expAt, err := r.jwtService.GenerateToken(*user)
+	if err != nil {
+		return nil, err
+	}
+	return &ent.Token{
+		Token:     token,
+		ExpiredAt: expAt,
+	}, nil
 }
 
-// UpdateMember is the resolver for the UpdateMember field.
-func (r *mutationResolver) UpdateMember(ctx context.Context, input *ent.UpdateMemberInput) (*ent.Member, error) {
-	panic(fmt.Errorf("not implemented: UpdateMember - UpdateMember"))
-}
-
-// FindMemberByUsername is the resolver for the FindMemberByUsername field.
-func (r *queryResolver) FindMemberByUsername(ctx context.Context, username string) (*ent.Member, error) {
-	panic(fmt.Errorf("not implemented: FindMemberByUsername - FindMemberByUsername"))
-}
-
-// ListMembers is the resolver for the ListMembers field.
-func (r *queryResolver) ListMembers(ctx context.Context) ([]*ent.Member, error) {
-	panic(fmt.Errorf("not implemented: ListMembers - ListMembers"))
+// Self is the resolver for the Self field.
+func (r *mutationResolver) Self(ctx context.Context) (*ent.Member, error) {
+	email, ok := ctx.Value("user_email").(string)
+	if !ok {
+		return nil, errors.New("not logged in")
+	}
+	user, err := r.client.Member.Query().Where(member.Email(email)).Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 // Mutation returns graphql1.MutationResolver implementation.
 func (r *Resolver) Mutation() graphql1.MutationResolver { return &mutationResolver{r} }
 
-// Query returns graphql1.QueryResolver implementation.
-func (r *Resolver) Query() graphql1.QueryResolver { return &queryResolver{r} }
-
 type mutationResolver struct{ *Resolver }
-type queryResolver struct{ *Resolver }

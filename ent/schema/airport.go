@@ -28,7 +28,7 @@ func (Airport) Fields() []ent.Field {
 // Edges of the Airport.
 func (Airport) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("has_Flight", Flight.Type),
+		edge.To("has_flight", Flight.Type),
 	}
 }
 

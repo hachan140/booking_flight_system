@@ -108,6 +108,9 @@ func newAirportPaginateArgs(rv map[string]any) *airportPaginateArgs {
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
 	}
+	if v, ok := rv[whereField].(*AirportWhereInput); ok {
+		args.opts = append(args.opts, WithAirportFilter(v.Filter))
+	}
 	return args
 }
 
@@ -205,6 +208,9 @@ func newBookingPaginateArgs(rv map[string]any) *bookingPaginateArgs {
 	}
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*BookingWhereInput); ok {
+		args.opts = append(args.opts, WithBookingFilter(v.Filter))
 	}
 	return args
 }
@@ -330,6 +336,9 @@ func newCustomerPaginateArgs(rv map[string]any) *customerPaginateArgs {
 	}
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*CustomerWhereInput); ok {
+		args.opts = append(args.opts, WithCustomerFilter(v.Filter))
 	}
 	return args
 }
@@ -499,6 +508,9 @@ func newFlightPaginateArgs(rv map[string]any) *flightPaginateArgs {
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
 	}
+	if v, ok := rv[whereField].(*FlightWhereInput); ok {
+		args.opts = append(args.opts, WithFlightFilter(v.Filter))
+	}
 	return args
 }
 
@@ -532,9 +544,7 @@ func (m *MemberQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			m.WithNamedHasCustomer(alias, func(wq *CustomerQuery) {
-				*wq = *query
-			})
+			m.withHasCustomer = query
 		case "createdAt":
 			if _, ok := fieldSeen[member.FieldCreatedAt]; !ok {
 				selectedFields = append(selectedFields, member.FieldCreatedAt)
@@ -609,6 +619,9 @@ func newMemberPaginateArgs(rv map[string]any) *memberPaginateArgs {
 	}
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*MemberWhereInput); ok {
+		args.opts = append(args.opts, WithMemberFilter(v.Filter))
 	}
 	return args
 }
@@ -700,6 +713,9 @@ func newPlanePaginateArgs(rv map[string]any) *planePaginateArgs {
 	}
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[whereField].(*PlaneWhereInput); ok {
+		args.opts = append(args.opts, WithPlaneFilter(v.Filter))
 	}
 	return args
 }

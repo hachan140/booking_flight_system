@@ -305,7 +305,7 @@ func LongLTE(v float64) predicate.Airport {
 	return predicate.Airport(sql.FieldLTE(FieldLong, v))
 }
 
-// HasHasFlight applies the HasEdge predicate on the "has_Flight" edge.
+// HasHasFlight applies the HasEdge predicate on the "has_flight" edge.
 func HasHasFlight() predicate.Airport {
 	return predicate.Airport(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
@@ -316,7 +316,7 @@ func HasHasFlight() predicate.Airport {
 	})
 }
 
-// HasHasFlightWith applies the HasEdge predicate on the "has_Flight" edge with a given conditions (other predicates).
+// HasHasFlightWith applies the HasEdge predicate on the "has_flight" edge with a given conditions (other predicates).
 func HasHasFlightWith(preds ...predicate.Flight) predicate.Airport {
 	return predicate.Airport(func(s *sql.Selector) {
 		step := newHasFlightStep()

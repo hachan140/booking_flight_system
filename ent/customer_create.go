@@ -94,13 +94,13 @@ func (cc *CustomerCreate) SetNillableMemberID(i *int) *CustomerCreate {
 	return cc
 }
 
-// SetHasMemberID sets the "has_Member" edge to the Member entity by ID.
+// SetHasMemberID sets the "has_member" edge to the Member entity by ID.
 func (cc *CustomerCreate) SetHasMemberID(id int) *CustomerCreate {
 	cc.mutation.SetHasMemberID(id)
 	return cc
 }
 
-// SetNillableHasMemberID sets the "has_Member" edge to the Member entity by ID if the given value is not nil.
+// SetNillableHasMemberID sets the "has_member" edge to the Member entity by ID if the given value is not nil.
 func (cc *CustomerCreate) SetNillableHasMemberID(id *int) *CustomerCreate {
 	if id != nil {
 		cc = cc.SetHasMemberID(*id)
@@ -108,18 +108,18 @@ func (cc *CustomerCreate) SetNillableHasMemberID(id *int) *CustomerCreate {
 	return cc
 }
 
-// SetHasMember sets the "has_Member" edge to the Member entity.
+// SetHasMember sets the "has_member" edge to the Member entity.
 func (cc *CustomerCreate) SetHasMember(m *Member) *CustomerCreate {
 	return cc.SetHasMemberID(m.ID)
 }
 
-// AddHasFlightIDs adds the "has_Flight" edge to the Flight entity by IDs.
+// AddHasFlightIDs adds the "has_flight" edge to the Flight entity by IDs.
 func (cc *CustomerCreate) AddHasFlightIDs(ids ...int) *CustomerCreate {
 	cc.mutation.AddHasFlightIDs(ids...)
 	return cc
 }
 
-// AddHasFlight adds the "has_Flight" edges to the Flight entity.
+// AddHasFlight adds the "has_flight" edges to the Flight entity.
 func (cc *CustomerCreate) AddHasFlight(f ...*Flight) *CustomerCreate {
 	ids := make([]int, len(f))
 	for i := range f {
@@ -272,7 +272,7 @@ func (cc *CustomerCreate) createSpec() (*Customer, *sqlgraph.CreateSpec) {
 	}
 	if nodes := cc.mutation.HasMemberIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   customer.HasMemberTable,
 			Columns: []string{customer.HasMemberColumn},

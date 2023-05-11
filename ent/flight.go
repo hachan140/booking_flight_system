@@ -54,10 +54,10 @@ type FlightEdges struct {
 	HasPlane *Plane `json:"has_plane,omitempty"`
 	// HasBooking holds the value of the has_booking edge.
 	HasBooking []*Booking `json:"has_booking,omitempty"`
-	// HasAirport holds the value of the has_Airport edge.
-	HasAirport *Airport `json:"has_Airport,omitempty"`
-	// HasCustomer holds the value of the has_Customer edge.
-	HasCustomer *Customer `json:"has_Customer,omitempty"`
+	// HasAirport holds the value of the has_airport edge.
+	HasAirport *Airport `json:"has_airport,omitempty"`
+	// HasCustomer holds the value of the has_customer edge.
+	HasCustomer *Customer `json:"has_customer,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
@@ -99,7 +99,7 @@ func (e FlightEdges) HasAirportOrErr() (*Airport, error) {
 		}
 		return e.HasAirport, nil
 	}
-	return nil, &NotLoadedError{edge: "has_Airport"}
+	return nil, &NotLoadedError{edge: "has_airport"}
 }
 
 // HasCustomerOrErr returns the HasCustomer value or an error if the edge
@@ -112,7 +112,7 @@ func (e FlightEdges) HasCustomerOrErr() (*Customer, error) {
 		}
 		return e.HasCustomer, nil
 	}
-	return nil, &NotLoadedError{edge: "has_Customer"}
+	return nil, &NotLoadedError{edge: "has_customer"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -236,12 +236,12 @@ func (f *Flight) QueryHasBooking() *BookingQuery {
 	return NewFlightClient(f.config).QueryHasBooking(f)
 }
 
-// QueryHasAirport queries the "has_Airport" edge of the Flight entity.
+// QueryHasAirport queries the "has_airport" edge of the Flight entity.
 func (f *Flight) QueryHasAirport() *AirportQuery {
 	return NewFlightClient(f.config).QueryHasAirport(f)
 }
 
-// QueryHasCustomer queries the "has_Customer" edge of the Flight entity.
+// QueryHasCustomer queries the "has_customer" edge of the Flight entity.
 func (f *Flight) QueryHasCustomer() *CustomerQuery {
 	return NewFlightClient(f.config).QueryHasCustomer(f)
 }

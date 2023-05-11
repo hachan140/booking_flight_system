@@ -79,6 +79,14 @@ func (mc *MemberCreate) SetDob(t time.Time) *MemberCreate {
 	return mc
 }
 
+// SetNillableDob sets the "dob" field if the given value is not nil.
+func (mc *MemberCreate) SetNillableDob(t *time.Time) *MemberCreate {
+	if t != nil {
+		mc.SetDob(*t)
+	}
+	return mc
+}
+
 // SetCid sets the "cid" field.
 func (mc *MemberCreate) SetCid(s string) *MemberCreate {
 	mc.mutation.SetCid(s)
@@ -99,19 +107,23 @@ func (mc *MemberCreate) SetNillableRole(i *int) *MemberCreate {
 	return mc
 }
 
-// AddHasCustomerIDs adds the "has_Customer" edge to the Customer entity by IDs.
-func (mc *MemberCreate) AddHasCustomerIDs(ids ...int) *MemberCreate {
-	mc.mutation.AddHasCustomerIDs(ids...)
+// SetHasCustomerID sets the "has_customer" edge to the Customer entity by ID.
+func (mc *MemberCreate) SetHasCustomerID(id int) *MemberCreate {
+	mc.mutation.SetHasCustomerID(id)
 	return mc
 }
 
-// AddHasCustomer adds the "has_Customer" edges to the Customer entity.
-func (mc *MemberCreate) AddHasCustomer(c ...*Customer) *MemberCreate {
-	ids := make([]int, len(c))
-	for i := range c {
-		ids[i] = c[i].ID
+// SetNillableHasCustomerID sets the "has_customer" edge to the Customer entity by ID if the given value is not nil.
+func (mc *MemberCreate) SetNillableHasCustomerID(id *int) *MemberCreate {
+	if id != nil {
+		mc = mc.SetHasCustomerID(*id)
 	}
-	return mc.AddHasCustomerIDs(ids...)
+	return mc
+}
+
+// SetHasCustomer sets the "has_customer" edge to the Customer entity.
+func (mc *MemberCreate) SetHasCustomer(c *Customer) *MemberCreate {
+	return mc.SetHasCustomerID(c.ID)
 }
 
 // Mutation returns the MemberMutation object of the builder.
@@ -198,9 +210,6 @@ func (mc *MemberCreate) check() error {
 			return &ValidationError{Name: "full_name", err: fmt.Errorf(`ent: validator failed for field "Member.full_name": %w`, err)}
 		}
 	}
-	if _, ok := mc.mutation.Dob(); !ok {
-		return &ValidationError{Name: "dob", err: errors.New(`ent: missing required field "Member.dob"`)}
-	}
 	if _, ok := mc.mutation.Cid(); !ok {
 		return &ValidationError{Name: "cid", err: errors.New(`ent: missing required field "Member.cid"`)}
 	}
@@ -271,7 +280,7 @@ func (mc *MemberCreate) createSpec() (*Member, *sqlgraph.CreateSpec) {
 	}
 	if nodes := mc.mutation.HasCustomerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   member.HasCustomerTable,
 			Columns: []string{member.HasCustomerColumn},

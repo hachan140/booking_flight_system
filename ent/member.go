@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"booking-flight-system/ent/customer"
 	"booking-flight-system/ent/member"
 	"fmt"
 	"strings"
@@ -43,24 +44,26 @@ type Member struct {
 
 // MemberEdges holds the relations/edges for other nodes in the graph.
 type MemberEdges struct {
-	// HasCustomer holds the value of the has_Customer edge.
-	HasCustomer []*Customer `json:"has_Customer,omitempty"`
+	// HasCustomer holds the value of the has_customer edge.
+	HasCustomer *Customer `json:"has_customer,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 	// totalCount holds the count of the edges above.
 	totalCount [1]map[string]int
-
-	namedHasCustomer map[string][]*Customer
 }
 
 // HasCustomerOrErr returns the HasCustomer value or an error if the edge
-// was not loaded in eager-loading.
-func (e MemberEdges) HasCustomerOrErr() ([]*Customer, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e MemberEdges) HasCustomerOrErr() (*Customer, error) {
 	if e.loadedTypes[0] {
+		if e.HasCustomer == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: customer.Label}
+		}
 		return e.HasCustomer, nil
 	}
-	return nil, &NotLoadedError{edge: "has_Customer"}
+	return nil, &NotLoadedError{edge: "has_customer"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -162,7 +165,7 @@ func (m *Member) Value(name string) (ent.Value, error) {
 	return m.selectValues.Get(name)
 }
 
-// QueryHasCustomer queries the "has_Customer" edge of the Member entity.
+// QueryHasCustomer queries the "has_customer" edge of the Member entity.
 func (m *Member) QueryHasCustomer() *CustomerQuery {
 	return NewMemberClient(m.config).QueryHasCustomer(m)
 }
@@ -217,30 +220,6 @@ func (m *Member) String() string {
 	builder.WriteString(fmt.Sprintf("%v", m.Role))
 	builder.WriteByte(')')
 	return builder.String()
-}
-
-// NamedHasCustomer returns the HasCustomer named value or an error if the edge was not
-// loaded in eager-loading with this name.
-func (m *Member) NamedHasCustomer(name string) ([]*Customer, error) {
-	if m.Edges.namedHasCustomer == nil {
-		return nil, &NotLoadedError{edge: name}
-	}
-	nodes, ok := m.Edges.namedHasCustomer[name]
-	if !ok {
-		return nil, &NotLoadedError{edge: name}
-	}
-	return nodes, nil
-}
-
-func (m *Member) appendNamedHasCustomer(name string, edges ...*Customer) {
-	if m.Edges.namedHasCustomer == nil {
-		m.Edges.namedHasCustomer = make(map[string][]*Customer)
-	}
-	if len(edges) == 0 {
-		m.Edges.namedHasCustomer[name] = []*Customer{}
-	} else {
-		m.Edges.namedHasCustomer[name] = append(m.Edges.namedHasCustomer[name], edges...)
-	}
 }
 
 // Members is a parsable slice of Member.

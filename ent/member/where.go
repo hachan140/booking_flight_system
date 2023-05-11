@@ -480,6 +480,16 @@ func DobLTE(v time.Time) predicate.Member {
 	return predicate.Member(sql.FieldLTE(FieldDob, v))
 }
 
+// DobIsNil applies the IsNil predicate on the "dob" field.
+func DobIsNil() predicate.Member {
+	return predicate.Member(sql.FieldIsNull(FieldDob))
+}
+
+// DobNotNil applies the NotNil predicate on the "dob" field.
+func DobNotNil() predicate.Member {
+	return predicate.Member(sql.FieldNotNull(FieldDob))
+}
+
 // CidEQ applies the EQ predicate on the "cid" field.
 func CidEQ(v string) predicate.Member {
 	return predicate.Member(sql.FieldEQ(FieldCid, v))
@@ -585,18 +595,18 @@ func RoleLTE(v int) predicate.Member {
 	return predicate.Member(sql.FieldLTE(FieldRole, v))
 }
 
-// HasHasCustomer applies the HasEdge predicate on the "has_Customer" edge.
+// HasHasCustomer applies the HasEdge predicate on the "has_customer" edge.
 func HasHasCustomer() predicate.Member {
 	return predicate.Member(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, HasCustomerTable, HasCustomerColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, HasCustomerTable, HasCustomerColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasHasCustomerWith applies the HasEdge predicate on the "has_Customer" edge with a given conditions (other predicates).
+// HasHasCustomerWith applies the HasEdge predicate on the "has_customer" edge with a given conditions (other predicates).
 func HasHasCustomerWith(preds ...predicate.Customer) predicate.Member {
 	return predicate.Member(func(s *sql.Selector) {
 		step := newHasCustomerStep()

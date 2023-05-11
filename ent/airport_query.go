@@ -63,7 +63,7 @@ func (aq *AirportQuery) Order(o ...airport.OrderOption) *AirportQuery {
 	return aq
 }
 
-// QueryHasFlight chains the current query on the "has_Flight" edge.
+// QueryHasFlight chains the current query on the "has_flight" edge.
 func (aq *AirportQuery) QueryHasFlight() *FlightQuery {
 	query := (&FlightClient{config: aq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
@@ -285,7 +285,7 @@ func (aq *AirportQuery) Clone() *AirportQuery {
 }
 
 // WithHasFlight tells the query-builder to eager-load the nodes that are connected to
-// the "has_Flight" edge. The optional arguments are used to configure the query builder of the edge.
+// the "has_flight" edge. The optional arguments are used to configure the query builder of the edge.
 func (aq *AirportQuery) WithHasFlight(opts ...func(*FlightQuery)) *AirportQuery {
 	query := (&FlightClient{config: aq.config}).Query()
 	for _, opt := range opts {
@@ -535,7 +535,7 @@ func (aq *AirportQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// WithNamedHasFlight tells the query-builder to eager-load the nodes that are connected to the "has_Flight"
+// WithNamedHasFlight tells the query-builder to eager-load the nodes that are connected to the "has_flight"
 // edge with the given name. The optional arguments are used to configure the query builder of the edge.
 func (aq *AirportQuery) WithNamedHasFlight(name string, opts ...func(*FlightQuery)) *AirportQuery {
 	query := (&FlightClient{config: aq.config}).Query()

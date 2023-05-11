@@ -1,2 +1,4 @@
 postgres:
   connectionString: $POSTGRES_CONNECTION_STRING
+jwt:
+  secretKey: $JWT_SECRET_KEY

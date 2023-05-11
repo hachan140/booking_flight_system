@@ -33,15 +33,15 @@ const (
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
 	// EdgeHasCustomer holds the string denoting the has_customer edge name in mutations.
-	EdgeHasCustomer = "has_Customer"
+	EdgeHasCustomer = "has_customer"
 	// Table holds the table name of the member in the database.
 	Table = "members"
-	// HasCustomerTable is the table that holds the has_Customer relation/edge.
+	// HasCustomerTable is the table that holds the has_customer relation/edge.
 	HasCustomerTable = "customers"
 	// HasCustomerInverseTable is the table name for the Customer entity.
 	// It exists in this package in order to avoid circular dependency with the "customer" package.
 	HasCustomerInverseTable = "customers"
-	// HasCustomerColumn is the table column denoting the has_Customer relation/edge.
+	// HasCustomerColumn is the table column denoting the has_customer relation/edge.
 	HasCustomerColumn = "member_id"
 )
 
@@ -139,23 +139,16 @@ func ByRole(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRole, opts...).ToFunc()
 }
 
-// ByHasCustomerCount orders the results by has_Customer count.
-func ByHasCustomerCount(opts ...sql.OrderTermOption) OrderOption {
+// ByHasCustomerField orders the results by has_customer field.
+func ByHasCustomerField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newHasCustomerStep(), opts...)
-	}
-}
-
-// ByHasCustomer orders the results by has_Customer terms.
-func ByHasCustomer(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newHasCustomerStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newHasCustomerStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newHasCustomerStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(HasCustomerInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, HasCustomerTable, HasCustomerColumn),
+		sqlgraph.Edge(sqlgraph.O2O, false, HasCustomerTable, HasCustomerColumn),
 	)
 }

@@ -81,13 +81,13 @@ func (au *AirportUpdate) AddLong(f float64) *AirportUpdate {
 	return au
 }
 
-// AddHasFlightIDs adds the "has_Flight" edge to the Flight entity by IDs.
+// AddHasFlightIDs adds the "has_flight" edge to the Flight entity by IDs.
 func (au *AirportUpdate) AddHasFlightIDs(ids ...int) *AirportUpdate {
 	au.mutation.AddHasFlightIDs(ids...)
 	return au
 }
 
-// AddHasFlight adds the "has_Flight" edges to the Flight entity.
+// AddHasFlight adds the "has_flight" edges to the Flight entity.
 func (au *AirportUpdate) AddHasFlight(f ...*Flight) *AirportUpdate {
 	ids := make([]int, len(f))
 	for i := range f {
@@ -101,19 +101,19 @@ func (au *AirportUpdate) Mutation() *AirportMutation {
 	return au.mutation
 }
 
-// ClearHasFlight clears all "has_Flight" edges to the Flight entity.
+// ClearHasFlight clears all "has_flight" edges to the Flight entity.
 func (au *AirportUpdate) ClearHasFlight() *AirportUpdate {
 	au.mutation.ClearHasFlight()
 	return au
 }
 
-// RemoveHasFlightIDs removes the "has_Flight" edge to Flight entities by IDs.
+// RemoveHasFlightIDs removes the "has_flight" edge to Flight entities by IDs.
 func (au *AirportUpdate) RemoveHasFlightIDs(ids ...int) *AirportUpdate {
 	au.mutation.RemoveHasFlightIDs(ids...)
 	return au
 }
 
-// RemoveHasFlight removes "has_Flight" edges to Flight entities.
+// RemoveHasFlight removes "has_flight" edges to Flight entities.
 func (au *AirportUpdate) RemoveHasFlight(f ...*Flight) *AirportUpdate {
 	ids := make([]int, len(f))
 	for i := range f {
@@ -328,13 +328,13 @@ func (auo *AirportUpdateOne) AddLong(f float64) *AirportUpdateOne {
 	return auo
 }
 
-// AddHasFlightIDs adds the "has_Flight" edge to the Flight entity by IDs.
+// AddHasFlightIDs adds the "has_flight" edge to the Flight entity by IDs.
 func (auo *AirportUpdateOne) AddHasFlightIDs(ids ...int) *AirportUpdateOne {
 	auo.mutation.AddHasFlightIDs(ids...)
 	return auo
 }
 
-// AddHasFlight adds the "has_Flight" edges to the Flight entity.
+// AddHasFlight adds the "has_flight" edges to the Flight entity.
 func (auo *AirportUpdateOne) AddHasFlight(f ...*Flight) *AirportUpdateOne {
 	ids := make([]int, len(f))
 	for i := range f {
@@ -348,19 +348,19 @@ func (auo *AirportUpdateOne) Mutation() *AirportMutation {
 	return auo.mutation
 }
 
-// ClearHasFlight clears all "has_Flight" edges to the Flight entity.
+// ClearHasFlight clears all "has_flight" edges to the Flight entity.
 func (auo *AirportUpdateOne) ClearHasFlight() *AirportUpdateOne {
 	auo.mutation.ClearHasFlight()
 	return auo
 }
 
-// RemoveHasFlightIDs removes the "has_Flight" edge to Flight entities by IDs.
+// RemoveHasFlightIDs removes the "has_flight" edge to Flight entities by IDs.
 func (auo *AirportUpdateOne) RemoveHasFlightIDs(ids ...int) *AirportUpdateOne {
 	auo.mutation.RemoveHasFlightIDs(ids...)
 	return auo
 }
 
-// RemoveHasFlight removes "has_Flight" edges to Flight entities.
+// RemoveHasFlight removes "has_flight" edges to Flight entities.
 func (auo *AirportUpdateOne) RemoveHasFlight(f ...*Flight) *AirportUpdateOne {
 	ids := make([]int, len(f))
 	for i := range f {

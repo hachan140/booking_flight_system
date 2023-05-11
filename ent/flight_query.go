@@ -113,7 +113,7 @@ func (fq *FlightQuery) QueryHasBooking() *BookingQuery {
 	return query
 }
 
-// QueryHasAirport chains the current query on the "has_Airport" edge.
+// QueryHasAirport chains the current query on the "has_airport" edge.
 func (fq *FlightQuery) QueryHasAirport() *AirportQuery {
 	query := (&AirportClient{config: fq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
@@ -135,7 +135,7 @@ func (fq *FlightQuery) QueryHasAirport() *AirportQuery {
 	return query
 }
 
-// QueryHasCustomer chains the current query on the "has_Customer" edge.
+// QueryHasCustomer chains the current query on the "has_customer" edge.
 func (fq *FlightQuery) QueryHasCustomer() *CustomerQuery {
 	query := (&CustomerClient{config: fq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
@@ -382,7 +382,7 @@ func (fq *FlightQuery) WithHasBooking(opts ...func(*BookingQuery)) *FlightQuery 
 }
 
 // WithHasAirport tells the query-builder to eager-load the nodes that are connected to
-// the "has_Airport" edge. The optional arguments are used to configure the query builder of the edge.
+// the "has_airport" edge. The optional arguments are used to configure the query builder of the edge.
 func (fq *FlightQuery) WithHasAirport(opts ...func(*AirportQuery)) *FlightQuery {
 	query := (&AirportClient{config: fq.config}).Query()
 	for _, opt := range opts {
@@ -393,7 +393,7 @@ func (fq *FlightQuery) WithHasAirport(opts ...func(*AirportQuery)) *FlightQuery 
 }
 
 // WithHasCustomer tells the query-builder to eager-load the nodes that are connected to
-// the "has_Customer" edge. The optional arguments are used to configure the query builder of the edge.
+// the "has_customer" edge. The optional arguments are used to configure the query builder of the edge.
 func (fq *FlightQuery) WithHasCustomer(opts ...func(*CustomerQuery)) *FlightQuery {
 	query := (&CustomerClient{config: fq.config}).Query()
 	for _, opt := range opts {

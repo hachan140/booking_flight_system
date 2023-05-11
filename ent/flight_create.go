@@ -172,13 +172,13 @@ func (fc *FlightCreate) AddHasBooking(b ...*Booking) *FlightCreate {
 	return fc.AddHasBookingIDs(ids...)
 }
 
-// SetHasAirportID sets the "has_Airport" edge to the Airport entity by ID.
+// SetHasAirportID sets the "has_airport" edge to the Airport entity by ID.
 func (fc *FlightCreate) SetHasAirportID(id int) *FlightCreate {
 	fc.mutation.SetHasAirportID(id)
 	return fc
 }
 
-// SetNillableHasAirportID sets the "has_Airport" edge to the Airport entity by ID if the given value is not nil.
+// SetNillableHasAirportID sets the "has_airport" edge to the Airport entity by ID if the given value is not nil.
 func (fc *FlightCreate) SetNillableHasAirportID(id *int) *FlightCreate {
 	if id != nil {
 		fc = fc.SetHasAirportID(*id)
@@ -186,18 +186,18 @@ func (fc *FlightCreate) SetNillableHasAirportID(id *int) *FlightCreate {
 	return fc
 }
 
-// SetHasAirport sets the "has_Airport" edge to the Airport entity.
+// SetHasAirport sets the "has_airport" edge to the Airport entity.
 func (fc *FlightCreate) SetHasAirport(a *Airport) *FlightCreate {
 	return fc.SetHasAirportID(a.ID)
 }
 
-// SetHasCustomerID sets the "has_Customer" edge to the Customer entity by ID.
+// SetHasCustomerID sets the "has_customer" edge to the Customer entity by ID.
 func (fc *FlightCreate) SetHasCustomerID(id int) *FlightCreate {
 	fc.mutation.SetHasCustomerID(id)
 	return fc
 }
 
-// SetNillableHasCustomerID sets the "has_Customer" edge to the Customer entity by ID if the given value is not nil.
+// SetNillableHasCustomerID sets the "has_customer" edge to the Customer entity by ID if the given value is not nil.
 func (fc *FlightCreate) SetNillableHasCustomerID(id *int) *FlightCreate {
 	if id != nil {
 		fc = fc.SetHasCustomerID(*id)
@@ -205,7 +205,7 @@ func (fc *FlightCreate) SetNillableHasCustomerID(id *int) *FlightCreate {
 	return fc
 }
 
-// SetHasCustomer sets the "has_Customer" edge to the Customer entity.
+// SetHasCustomer sets the "has_customer" edge to the Customer entity.
 func (fc *FlightCreate) SetHasCustomer(c *Customer) *FlightCreate {
 	return fc.SetHasCustomerID(c.ID)
 }

@@ -56,7 +56,7 @@ var (
 		{Name: "full_name", Type: field.TypeString},
 		{Name: "dob", Type: field.TypeTime},
 		{Name: "cid", Type: field.TypeString, Unique: true},
-		{Name: "member_id", Type: field.TypeInt, Nullable: true},
+		{Name: "member_id", Type: field.TypeInt, Unique: true, Nullable: true},
 	}
 	// CustomersTable holds the schema information for the "customers" table.
 	CustomersTable = &schema.Table{
@@ -65,7 +65,7 @@ var (
 		PrimaryKey: []*schema.Column{CustomersColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "customers_members_has_Customer",
+				Symbol:     "customers_members_has_customer",
 				Columns:    []*schema.Column{CustomersColumns[8]},
 				RefColumns: []*schema.Column{MembersColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -94,13 +94,13 @@ var (
 		PrimaryKey: []*schema.Column{FlightsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "flights_airports_has_Flight",
+				Symbol:     "flights_airports_has_flight",
 				Columns:    []*schema.Column{FlightsColumns[9]},
 				RefColumns: []*schema.Column{AirportsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "flights_customers_has_Flight",
+				Symbol:     "flights_customers_has_flight",
 				Columns:    []*schema.Column{FlightsColumns[10]},
 				RefColumns: []*schema.Column{CustomersColumns[0]},
 				OnDelete:   schema.SetNull,
@@ -122,8 +122,8 @@ var (
 		{Name: "password", Type: field.TypeString},
 		{Name: "phone_number", Type: field.TypeString, Unique: true},
 		{Name: "full_name", Type: field.TypeString},
-		{Name: "dob", Type: field.TypeTime},
-		{Name: "cid", Type: field.TypeString},
+		{Name: "dob", Type: field.TypeTime, Nullable: true},
+		{Name: "cid", Type: field.TypeString, Unique: true},
 		{Name: "role", Type: field.TypeInt, Default: 1},
 	}
 	// MembersTable holds the schema information for the "members" table.

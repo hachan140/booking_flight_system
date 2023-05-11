@@ -36,8 +36,8 @@ func (Flight) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("has_plane", Plane.Type).Ref("flights").Field("plane_id").Unique(),
 		edge.To("has_booking", Booking.Type),
-		edge.From("has_Airport", Airport.Type).Ref("has_Flight").Field("airport_id").Unique(),
-		edge.From("has_Customer", Customer.Type).Ref("has_Flight").Field("customer_id").Unique(),
+		edge.From("has_airport", Airport.Type).Ref("has_flight").Field("airport_id").Unique(),
+		edge.From("has_customer", Customer.Type).Ref("has_flight").Field("customer_id").Unique(),
 	}
 }
 func (Flight) Annotations() []schema.Annotation {

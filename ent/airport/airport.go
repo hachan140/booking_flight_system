@@ -25,15 +25,15 @@ const (
 	// FieldLong holds the string denoting the long field in the database.
 	FieldLong = "long"
 	// EdgeHasFlight holds the string denoting the has_flight edge name in mutations.
-	EdgeHasFlight = "has_Flight"
+	EdgeHasFlight = "has_flight"
 	// Table holds the table name of the airport in the database.
 	Table = "airports"
-	// HasFlightTable is the table that holds the has_Flight relation/edge.
+	// HasFlightTable is the table that holds the has_flight relation/edge.
 	HasFlightTable = "flights"
 	// HasFlightInverseTable is the table name for the Flight entity.
 	// It exists in this package in order to avoid circular dependency with the "flight" package.
 	HasFlightInverseTable = "flights"
-	// HasFlightColumn is the table column denoting the has_Flight relation/edge.
+	// HasFlightColumn is the table column denoting the has_flight relation/edge.
 	HasFlightColumn = "airport_id"
 )
 
@@ -105,14 +105,14 @@ func ByLong(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLong, opts...).ToFunc()
 }
 
-// ByHasFlightCount orders the results by has_Flight count.
+// ByHasFlightCount orders the results by has_flight count.
 func ByHasFlightCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborsCount(s, newHasFlightStep(), opts...)
 	}
 }
 
-// ByHasFlight orders the results by has_Flight terms.
+// ByHasFlight orders the results by has_flight terms.
 func ByHasFlight(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newHasFlightStep(), append([]sql.OrderTerm{term}, terms...)...)

@@ -100,13 +100,13 @@ func (cu *CustomerUpdate) ClearMemberID() *CustomerUpdate {
 	return cu
 }
 
-// SetHasMemberID sets the "has_Member" edge to the Member entity by ID.
+// SetHasMemberID sets the "has_member" edge to the Member entity by ID.
 func (cu *CustomerUpdate) SetHasMemberID(id int) *CustomerUpdate {
 	cu.mutation.SetHasMemberID(id)
 	return cu
 }
 
-// SetNillableHasMemberID sets the "has_Member" edge to the Member entity by ID if the given value is not nil.
+// SetNillableHasMemberID sets the "has_member" edge to the Member entity by ID if the given value is not nil.
 func (cu *CustomerUpdate) SetNillableHasMemberID(id *int) *CustomerUpdate {
 	if id != nil {
 		cu = cu.SetHasMemberID(*id)
@@ -114,18 +114,18 @@ func (cu *CustomerUpdate) SetNillableHasMemberID(id *int) *CustomerUpdate {
 	return cu
 }
 
-// SetHasMember sets the "has_Member" edge to the Member entity.
+// SetHasMember sets the "has_member" edge to the Member entity.
 func (cu *CustomerUpdate) SetHasMember(m *Member) *CustomerUpdate {
 	return cu.SetHasMemberID(m.ID)
 }
 
-// AddHasFlightIDs adds the "has_Flight" edge to the Flight entity by IDs.
+// AddHasFlightIDs adds the "has_flight" edge to the Flight entity by IDs.
 func (cu *CustomerUpdate) AddHasFlightIDs(ids ...int) *CustomerUpdate {
 	cu.mutation.AddHasFlightIDs(ids...)
 	return cu
 }
 
-// AddHasFlight adds the "has_Flight" edges to the Flight entity.
+// AddHasFlight adds the "has_flight" edges to the Flight entity.
 func (cu *CustomerUpdate) AddHasFlight(f ...*Flight) *CustomerUpdate {
 	ids := make([]int, len(f))
 	for i := range f {
@@ -139,25 +139,25 @@ func (cu *CustomerUpdate) Mutation() *CustomerMutation {
 	return cu.mutation
 }
 
-// ClearHasMember clears the "has_Member" edge to the Member entity.
+// ClearHasMember clears the "has_member" edge to the Member entity.
 func (cu *CustomerUpdate) ClearHasMember() *CustomerUpdate {
 	cu.mutation.ClearHasMember()
 	return cu
 }
 
-// ClearHasFlight clears all "has_Flight" edges to the Flight entity.
+// ClearHasFlight clears all "has_flight" edges to the Flight entity.
 func (cu *CustomerUpdate) ClearHasFlight() *CustomerUpdate {
 	cu.mutation.ClearHasFlight()
 	return cu
 }
 
-// RemoveHasFlightIDs removes the "has_Flight" edge to Flight entities by IDs.
+// RemoveHasFlightIDs removes the "has_flight" edge to Flight entities by IDs.
 func (cu *CustomerUpdate) RemoveHasFlightIDs(ids ...int) *CustomerUpdate {
 	cu.mutation.RemoveHasFlightIDs(ids...)
 	return cu
 }
 
-// RemoveHasFlight removes "has_Flight" edges to Flight entities.
+// RemoveHasFlight removes "has_flight" edges to Flight entities.
 func (cu *CustomerUpdate) RemoveHasFlight(f ...*Flight) *CustomerUpdate {
 	ids := make([]int, len(f))
 	for i := range f {
@@ -262,7 +262,7 @@ func (cu *CustomerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if cu.mutation.HasMemberCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   customer.HasMemberTable,
 			Columns: []string{customer.HasMemberColumn},
@@ -275,7 +275,7 @@ func (cu *CustomerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := cu.mutation.HasMemberIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   customer.HasMemberTable,
 			Columns: []string{customer.HasMemberColumn},
@@ -424,13 +424,13 @@ func (cuo *CustomerUpdateOne) ClearMemberID() *CustomerUpdateOne {
 	return cuo
 }
 
-// SetHasMemberID sets the "has_Member" edge to the Member entity by ID.
+// SetHasMemberID sets the "has_member" edge to the Member entity by ID.
 func (cuo *CustomerUpdateOne) SetHasMemberID(id int) *CustomerUpdateOne {
 	cuo.mutation.SetHasMemberID(id)
 	return cuo
 }
 
-// SetNillableHasMemberID sets the "has_Member" edge to the Member entity by ID if the given value is not nil.
+// SetNillableHasMemberID sets the "has_member" edge to the Member entity by ID if the given value is not nil.
 func (cuo *CustomerUpdateOne) SetNillableHasMemberID(id *int) *CustomerUpdateOne {
 	if id != nil {
 		cuo = cuo.SetHasMemberID(*id)
@@ -438,18 +438,18 @@ func (cuo *CustomerUpdateOne) SetNillableHasMemberID(id *int) *CustomerUpdateOne
 	return cuo
 }
 
-// SetHasMember sets the "has_Member" edge to the Member entity.
+// SetHasMember sets the "has_member" edge to the Member entity.
 func (cuo *CustomerUpdateOne) SetHasMember(m *Member) *CustomerUpdateOne {
 	return cuo.SetHasMemberID(m.ID)
 }
 
-// AddHasFlightIDs adds the "has_Flight" edge to the Flight entity by IDs.
+// AddHasFlightIDs adds the "has_flight" edge to the Flight entity by IDs.
 func (cuo *CustomerUpdateOne) AddHasFlightIDs(ids ...int) *CustomerUpdateOne {
 	cuo.mutation.AddHasFlightIDs(ids...)
 	return cuo
 }
 
-// AddHasFlight adds the "has_Flight" edges to the Flight entity.
+// AddHasFlight adds the "has_flight" edges to the Flight entity.
 func (cuo *CustomerUpdateOne) AddHasFlight(f ...*Flight) *CustomerUpdateOne {
 	ids := make([]int, len(f))
 	for i := range f {
@@ -463,25 +463,25 @@ func (cuo *CustomerUpdateOne) Mutation() *CustomerMutation {
 	return cuo.mutation
 }
 
-// ClearHasMember clears the "has_Member" edge to the Member entity.
+// ClearHasMember clears the "has_member" edge to the Member entity.
 func (cuo *CustomerUpdateOne) ClearHasMember() *CustomerUpdateOne {
 	cuo.mutation.ClearHasMember()
 	return cuo
 }
 
-// ClearHasFlight clears all "has_Flight" edges to the Flight entity.
+// ClearHasFlight clears all "has_flight" edges to the Flight entity.
 func (cuo *CustomerUpdateOne) ClearHasFlight() *CustomerUpdateOne {
 	cuo.mutation.ClearHasFlight()
 	return cuo
 }
 
-// RemoveHasFlightIDs removes the "has_Flight" edge to Flight entities by IDs.
+// RemoveHasFlightIDs removes the "has_flight" edge to Flight entities by IDs.
 func (cuo *CustomerUpdateOne) RemoveHasFlightIDs(ids ...int) *CustomerUpdateOne {
 	cuo.mutation.RemoveHasFlightIDs(ids...)
 	return cuo
 }
 
-// RemoveHasFlight removes "has_Flight" edges to Flight entities.
+// RemoveHasFlight removes "has_flight" edges to Flight entities.
 func (cuo *CustomerUpdateOne) RemoveHasFlight(f ...*Flight) *CustomerUpdateOne {
 	ids := make([]int, len(f))
 	for i := range f {
@@ -616,7 +616,7 @@ func (cuo *CustomerUpdateOne) sqlSave(ctx context.Context) (_node *Customer, err
 	}
 	if cuo.mutation.HasMemberCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   customer.HasMemberTable,
 			Columns: []string{customer.HasMemberColumn},
@@ -629,7 +629,7 @@ func (cuo *CustomerUpdateOne) sqlSave(ctx context.Context) (_node *Customer, err
 	}
 	if nodes := cuo.mutation.HasMemberIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   customer.HasMemberTable,
 			Columns: []string{customer.HasMemberColumn},

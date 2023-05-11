@@ -84,16 +84,12 @@ func (f *Flight) HasCustomer(ctx context.Context) (*Customer, error) {
 	return result, MaskNotFound(err)
 }
 
-func (m *Member) HasCustomer(ctx context.Context) (result []*Customer, err error) {
-	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = m.NamedHasCustomer(graphql.GetFieldContext(ctx).Field.Alias)
-	} else {
-		result, err = m.Edges.HasCustomerOrErr()
-	}
+func (m *Member) HasCustomer(ctx context.Context) (*Customer, error) {
+	result, err := m.Edges.HasCustomerOrErr()
 	if IsNotLoaded(err) {
-		result, err = m.QueryHasCustomer().All(ctx)
+		result, err = m.QueryHasCustomer().Only(ctx)
 	}
-	return result, err
+	return result, MaskNotFound(err)
 }
 
 func (pl *Plane) Flights(ctx context.Context) (result []*Flight, err error) {

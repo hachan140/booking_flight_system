@@ -2,7 +2,11 @@
 
 package ent
 
-type LoginInput struct {
-	Email    *string `json:"email,omitempty"`
-	Password *string `json:"password,omitempty"`
+import (
+	"time"
+)
+
+type Token struct {
+	Token     string    `json:"token"`
+	ExpiredAt time.Time `json:"expired_at"`
 }

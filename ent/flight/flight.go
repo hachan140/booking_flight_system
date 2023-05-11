@@ -44,9 +44,9 @@ const (
 	// EdgeHasBooking holds the string denoting the has_booking edge name in mutations.
 	EdgeHasBooking = "has_booking"
 	// EdgeHasAirport holds the string denoting the has_airport edge name in mutations.
-	EdgeHasAirport = "has_Airport"
+	EdgeHasAirport = "has_airport"
 	// EdgeHasCustomer holds the string denoting the has_customer edge name in mutations.
-	EdgeHasCustomer = "has_Customer"
+	EdgeHasCustomer = "has_customer"
 	// Table holds the table name of the flight in the database.
 	Table = "flights"
 	// HasPlaneTable is the table that holds the has_plane relation/edge.
@@ -63,19 +63,19 @@ const (
 	HasBookingInverseTable = "bookings"
 	// HasBookingColumn is the table column denoting the has_booking relation/edge.
 	HasBookingColumn = "flight_id"
-	// HasAirportTable is the table that holds the has_Airport relation/edge.
+	// HasAirportTable is the table that holds the has_airport relation/edge.
 	HasAirportTable = "flights"
 	// HasAirportInverseTable is the table name for the Airport entity.
 	// It exists in this package in order to avoid circular dependency with the "airport" package.
 	HasAirportInverseTable = "airports"
-	// HasAirportColumn is the table column denoting the has_Airport relation/edge.
+	// HasAirportColumn is the table column denoting the has_airport relation/edge.
 	HasAirportColumn = "airport_id"
-	// HasCustomerTable is the table that holds the has_Customer relation/edge.
+	// HasCustomerTable is the table that holds the has_customer relation/edge.
 	HasCustomerTable = "flights"
 	// HasCustomerInverseTable is the table name for the Customer entity.
 	// It exists in this package in order to avoid circular dependency with the "customer" package.
 	HasCustomerInverseTable = "customers"
-	// HasCustomerColumn is the table column denoting the has_Customer relation/edge.
+	// HasCustomerColumn is the table column denoting the has_customer relation/edge.
 	HasCustomerColumn = "customer_id"
 )
 
@@ -226,14 +226,14 @@ func ByHasBooking(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByHasAirportField orders the results by has_Airport field.
+// ByHasAirportField orders the results by has_airport field.
 func ByHasAirportField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newHasAirportStep(), sql.OrderByField(field, opts...))
 	}
 }
 
-// ByHasCustomerField orders the results by has_Customer field.
+// ByHasCustomerField orders the results by has_customer field.
 func ByHasCustomerField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newHasCustomerStep(), sql.OrderByField(field, opts...))
