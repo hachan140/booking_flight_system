@@ -43,7 +43,7 @@ func (r *queryResolver) Flights(ctx context.Context) ([]*ent.Flight, error) {
 
 // Members is the resolver for the members field.
 func (r *queryResolver) Members(ctx context.Context) ([]*ent.Member, error) {
-	panic(fmt.Errorf("not implemented: Members - members"))
+	return r.client.Member.Query().All(ctx)
 }
 
 // Planes is the resolver for the planes field.

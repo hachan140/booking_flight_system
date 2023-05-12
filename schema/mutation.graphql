@@ -4,7 +4,15 @@ type Token {
 }
 
 type Mutation{
+    #MEMBER
     sign_up(input:CreateMemberInput!): Member!
     login(email: String!, password: String!): Token!
     self: Member!
+    delete_by_id(id: Int!): String
+    find_member_by_name(name: String!): [Member]
+    change_password(oldPassword: String!, newPassword: String!): String
+    update_member_profile(input: UpdateMemberInput): Member!
+
+
 }
+

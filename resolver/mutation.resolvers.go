@@ -11,6 +11,7 @@ import (
 	"booking-flight-system/helper"
 	"context"
 	"errors"
+	"fmt"
 )
 
 // SignUp is the resolver for the sign_up field.
@@ -43,6 +44,54 @@ func (r *mutationResolver) Self(ctx context.Context) (*ent.Member, error) {
 		return nil, errors.New("not logged in")
 	}
 	user, err := r.client.Member.Query().Where(member.Email(email)).Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+// DeleteByID is the resolver for the delete_by_id field.
+func (r *mutationResolver) DeleteByID(ctx context.Context, id int) (*string, error) {
+	message := "delete success"
+	if err := r.client.Member.DeleteOneID(id).Exec(ctx); err != nil {
+		return nil, err
+	}
+	return &message, nil
+}
+
+// FindMemberByName is the resolver for the find_member_by_name field.
+func (r *mutationResolver) FindMemberByName(ctx context.Context, name string) ([]*ent.Member, error) {
+	panic(fmt.Errorf("not implemented: FindMemberByName - find_member_by_name"))
+}
+
+// ChangePassword is the resolver for the change_password field.
+func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword string, newPassword string) (*string, error) {
+	message := "success"
+	user, err := r.Self(ctx)
+	if err != nil {
+		return nil, errors.New("can't change password")
+	}
+	if helper.SHA256Hashing(oldPassword) != user.Password {
+		return nil, errors.New("password doesn't match")
+	}
+	user, err = user.Update().SetPassword(helper.SHA256Hashing(newPassword)).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &message, nil
+}
+
+// UpdateMemberProfile is the resolver for the update_member_profile field.
+func (r *mutationResolver) UpdateMemberProfile(ctx context.Context, input *ent.UpdateMemberInput) (*ent.Member, error) {
+	user, err := r.Self(ctx)
+	if err != nil {
+		return nil, errors.New("can't update member")
+	}
+	user, err = user.Update().
+		SetFullName(*input.FullName).
+		SetCid(*input.Cid).
+		SetPhoneNumber(*input.PhoneNumber).
+		SetDob(*input.Dob).Save(ctx)
 	if err != nil {
 		return nil, err
 	}
