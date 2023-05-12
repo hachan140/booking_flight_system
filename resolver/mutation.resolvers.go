@@ -98,6 +98,45 @@ func (r *mutationResolver) UpdateMemberProfile(ctx context.Context, input *ent.U
 	return user, nil
 }
 
+// CreateAirport is the resolver for the create_airport field.
+func (r *mutationResolver) CreateAirport(ctx context.Context, input ent.CreateAirportInput) (*ent.Airport, error) {
+	return r.client.Airport.Create().SetInput(input).Save(ctx)
+}
+
+// UpdateAirport is the resolver for the update_airport field.
+func (r *mutationResolver) UpdateAirport(ctx context.Context, id int, input ent.UpdateAirportInput) (*ent.Airport, error) {
+	airport, err := r.FindAirportByID(ctx, id)
+	if err != nil {
+		return nil, errors.New("can't find airport")
+	}
+	airport, err = airport.Update().SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return airport, nil
+}
+
+// DeleteAirport is the resolver for the delete_airport field.
+func (r *mutationResolver) DeleteAirport(ctx context.Context, id int) (*string, error) {
+	message := "success"
+	if _, err := r.FindAirportByID(ctx, id); err != nil {
+		return nil, errors.New("can't find airport")
+	}
+	if err := r.client.Airport.DeleteOneID(id).Exec(ctx); err != nil {
+		return nil, err
+	}
+	return &message, nil
+}
+
+// FindAirportByID is the resolver for the find_airport_by_id field.
+func (r *mutationResolver) FindAirportByID(ctx context.Context, id int) (*ent.Airport, error) {
+	airport, err := r.client.Airport.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return airport, nil
+}
+
 // Mutation returns graphql1.MutationResolver implementation.
 func (r *Resolver) Mutation() graphql1.MutationResolver { return &mutationResolver{r} }
 
