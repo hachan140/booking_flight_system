@@ -12,28 +12,28 @@ import (
 	"errors"
 )
 
-// SignUp is the resolver for the SignUp field.
+// SignUp is the resolver for the sign_up field.
 func (r *mutationResolver) SignUp(ctx context.Context, input ent.CreateMemberInput) (*ent.Member, error) {
 	return r.client.Member.Create().SetInput(input).Save(ctx)
 }
 
-// Login is the resolver for the Login field.
+// Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, email string, password string) (*ent.Token, error) {
 	user, err := r.client.Member.Query().Where(member.Email(email), member.Password(password)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
-	token, expAt, err := r.jwtService.GenerateToken(*user)
+	token, exp, err := r.jwtService.GenerateToken(*user)
 	if err != nil {
 		return nil, err
 	}
 	return &ent.Token{
 		Token:     token,
-		ExpiredAt: expAt,
+		ExpiredAt: exp,
 	}, nil
 }
 
-// Self is the resolver for the Self field.
+// Self is the resolver for the self field.
 func (r *mutationResolver) Self(ctx context.Context) (*ent.Member, error) {
 	email, ok := ctx.Value("user_email").(string)
 	if !ok {

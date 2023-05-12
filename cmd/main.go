@@ -50,7 +50,7 @@ func initEnv() {
 	}
 	err := godotenv.Load()
 	if err != nil {
-		fmt.Printf("init env has failed failed with error: %v\n", err)
+		fmt.Printf("init env has failed with error: %v\n", err)
 		os.Exit(1)
 	}
 }
@@ -67,7 +67,7 @@ func initConfig() *config.Configurations {
 	// Expand environment variables inside the config file
 	b, err := os.ReadFile(configFile)
 	if err != nil {
-		fmt.Printf("read config has failed failed with error: %v\n", err)
+		fmt.Printf("read config has failed with error: %v\n", err)
 		os.Exit(1)
 	}
 

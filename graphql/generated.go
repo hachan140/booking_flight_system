@@ -1680,7 +1680,7 @@ input UpdatePlaneInput {
   clearFlights: Boolean
 }
 `, BuiltIn: false},
-	{Name: "../schema/member.graphql", Input: `type Token {
+	{Name: "../schema/mutation.graphql", Input: `type Token {
     token: String!
     expired_at: Time!
 }
