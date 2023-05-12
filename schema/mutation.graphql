@@ -13,6 +13,10 @@ type Mutation{
     change_password(oldPassword: String!, newPassword: String!): String
     update_member_profile(input: UpdateMemberInput): Member!
 
-
+    #AIRPORT
+    create_airport(input:CreateAirportInput!): Airport!
+    update_airport(id: Int!, input:UpdateAirportInput!): Airport!
+    delete_airport(id: Int!): String
+    find_airport_by_id(id: Int!): Airport!
 }
 
