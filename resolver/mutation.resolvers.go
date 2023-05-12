@@ -8,18 +8,21 @@ import (
 	"booking-flight-system/ent"
 	"booking-flight-system/ent/member"
 	graphql1 "booking-flight-system/graphql"
+	"booking-flight-system/helper"
 	"context"
 	"errors"
 )
 
 // SignUp is the resolver for the sign_up field.
 func (r *mutationResolver) SignUp(ctx context.Context, input ent.CreateMemberInput) (*ent.Member, error) {
+	input.Password = helper.SHA256Hashing(input.Password)
 	return r.client.Member.Create().SetInput(input).Save(ctx)
 }
 
 // Login is the resolver for the login field.
 func (r *mutationResolver) Login(ctx context.Context, email string, password string) (*ent.Token, error) {
-	user, err := r.client.Member.Query().Where(member.Email(email), member.Password(password)).Only(ctx)
+	hashPass := helper.SHA256Hashing(password)
+	user, err := r.client.Member.Query().Where(member.Email(email), member.Password(hashPass)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
