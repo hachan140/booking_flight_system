@@ -18,5 +18,12 @@ type Mutation{
     update_airport(id: Int!, input:UpdateAirportInput!): Airport!
     delete_airport(id: Int!): String
     find_airport_by_id(id: Int!): Airport!
+
+    #PLANE
+    create_plane(input:CreatePlaneInput!): Plane!
+    update_plane(id:Int!, input: UpdatePlaneInput!): Plane!
+    delete_plane(id:Int!): String
+    find_plane_by_id(id: Int!): Plane!
+
 }
 

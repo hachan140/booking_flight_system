@@ -19,7 +19,7 @@ func (Airport) Fields() []ent.Field {
 	return []ent.Field{
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
-		field.String("name").NotEmpty(),
+		field.String("name").NotEmpty().Unique(),
 		field.Float("lat").Positive().Nillable(),
 		field.Float("long").Positive().Nillable(),
 	}

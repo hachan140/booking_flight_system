@@ -137,6 +137,38 @@ func (r *mutationResolver) FindAirportByID(ctx context.Context, id int) (*ent.Ai
 	return airport, nil
 }
 
+// CreatePlane is the resolver for the create_plane field.
+func (r *mutationResolver) CreatePlane(ctx context.Context, input ent.CreatePlaneInput) (*ent.Plane, error) {
+	return r.client.Plane.Create().SetInput(input).Save(ctx)
+}
+
+// UpdatePlane is the resolver for the update_plane field.
+func (r *mutationResolver) UpdatePlane(ctx context.Context, id int, input ent.UpdatePlaneInput) (*ent.Plane, error) {
+	plane, err := r.client.Plane.UpdateOneID(id).SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return plane, nil
+}
+
+// DeletePlane is the resolver for the delete_plane field.
+func (r *mutationResolver) DeletePlane(ctx context.Context, id int) (*string, error) {
+	message := "delete success!"
+	if err := r.client.Plane.DeleteOneID(id).Exec(ctx); err != nil {
+		return nil, err
+	}
+	return &message, nil
+}
+
+// FindPlaneByID is the resolver for the find_plane_by_id field.
+func (r *mutationResolver) FindPlaneByID(ctx context.Context, id int) (*ent.Plane, error) {
+	plane, err := r.client.Plane.Get(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return plane, nil
+}
+
 // Mutation returns graphql1.MutationResolver implementation.
 func (r *Resolver) Mutation() graphql1.MutationResolver { return &mutationResolver{r} }
 
