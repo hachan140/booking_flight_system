@@ -144,7 +144,11 @@ func (r *mutationResolver) CreatePlane(ctx context.Context, input ent.CreatePlan
 
 // UpdatePlane is the resolver for the update_plane field.
 func (r *mutationResolver) UpdatePlane(ctx context.Context, id int, input ent.UpdatePlaneInput) (*ent.Plane, error) {
-	return nil, nil
+	plane, err := r.client.Plane.UpdateOneID(id).SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return plane, nil
 }
 
 // DeletePlane is the resolver for the delete_plane field.
