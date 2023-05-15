@@ -833,7 +833,8 @@ type BookingMutation struct {
 	created_at          *time.Time
 	updated_at          *time.Time
 	code                *string
-	status              *string
+	status              *booking.Status
+	seat_type           *booking.SeatType
 	clearedFields       map[string]struct{}
 	has_flight          *int
 	clearedhas_flight   bool
@@ -1051,12 +1052,12 @@ func (m *BookingMutation) ResetCode() {
 }
 
 // SetStatus sets the "status" field.
-func (m *BookingMutation) SetStatus(s string) {
-	m.status = &s
+func (m *BookingMutation) SetStatus(b booking.Status) {
+	m.status = &b
 }
 
 // Status returns the value of the "status" field in the mutation.
-func (m *BookingMutation) Status() (r string, exists bool) {
+func (m *BookingMutation) Status() (r booking.Status, exists bool) {
 	v := m.status
 	if v == nil {
 		return
@@ -1067,7 +1068,7 @@ func (m *BookingMutation) Status() (r string, exists bool) {
 // OldStatus returns the old "status" field's value of the Booking entity.
 // If the Booking object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *BookingMutation) OldStatus(ctx context.Context) (v string, err error) {
+func (m *BookingMutation) OldStatus(ctx context.Context) (v booking.Status, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
 	}
@@ -1084,6 +1085,42 @@ func (m *BookingMutation) OldStatus(ctx context.Context) (v string, err error) {
 // ResetStatus resets all changes to the "status" field.
 func (m *BookingMutation) ResetStatus() {
 	m.status = nil
+}
+
+// SetSeatType sets the "seat_type" field.
+func (m *BookingMutation) SetSeatType(bt booking.SeatType) {
+	m.seat_type = &bt
+}
+
+// SeatType returns the value of the "seat_type" field in the mutation.
+func (m *BookingMutation) SeatType() (r booking.SeatType, exists bool) {
+	v := m.seat_type
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSeatType returns the old "seat_type" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldSeatType(ctx context.Context) (v booking.SeatType, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSeatType is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSeatType requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSeatType: %w", err)
+	}
+	return oldValue.SeatType, nil
+}
+
+// ResetSeatType resets all changes to the "seat_type" field.
+func (m *BookingMutation) ResetSeatType() {
+	m.seat_type = nil
 }
 
 // SetCustomerID sets the "customer_id" field.
@@ -1296,7 +1333,7 @@ func (m *BookingMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *BookingMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 7)
 	if m.created_at != nil {
 		fields = append(fields, booking.FieldCreatedAt)
 	}
@@ -1308,6 +1345,9 @@ func (m *BookingMutation) Fields() []string {
 	}
 	if m.status != nil {
 		fields = append(fields, booking.FieldStatus)
+	}
+	if m.seat_type != nil {
+		fields = append(fields, booking.FieldSeatType)
 	}
 	if m.has_customer != nil {
 		fields = append(fields, booking.FieldCustomerID)
@@ -1331,6 +1371,8 @@ func (m *BookingMutation) Field(name string) (ent.Value, bool) {
 		return m.Code()
 	case booking.FieldStatus:
 		return m.Status()
+	case booking.FieldSeatType:
+		return m.SeatType()
 	case booking.FieldCustomerID:
 		return m.CustomerID()
 	case booking.FieldFlightID:
@@ -1352,6 +1394,8 @@ func (m *BookingMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldCode(ctx)
 	case booking.FieldStatus:
 		return m.OldStatus(ctx)
+	case booking.FieldSeatType:
+		return m.OldSeatType(ctx)
 	case booking.FieldCustomerID:
 		return m.OldCustomerID(ctx)
 	case booking.FieldFlightID:
@@ -1387,11 +1431,18 @@ func (m *BookingMutation) SetField(name string, value ent.Value) error {
 		m.SetCode(v)
 		return nil
 	case booking.FieldStatus:
-		v, ok := value.(string)
+		v, ok := value.(booking.Status)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetStatus(v)
+		return nil
+	case booking.FieldSeatType:
+		v, ok := value.(booking.SeatType)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSeatType(v)
 		return nil
 	case booking.FieldCustomerID:
 		v, ok := value.(int)
@@ -1485,6 +1536,9 @@ func (m *BookingMutation) ResetField(name string) error {
 		return nil
 	case booking.FieldStatus:
 		m.ResetStatus()
+		return nil
+	case booking.FieldSeatType:
+		m.ResetSeatType()
 		return nil
 	case booking.FieldCustomerID:
 		m.ResetCustomerID()
@@ -1921,9 +1975,22 @@ func (m *CustomerMutation) OldDob(ctx context.Context) (v time.Time, err error) 
 	return oldValue.Dob, nil
 }
 
+// ClearDob clears the value of the "dob" field.
+func (m *CustomerMutation) ClearDob() {
+	m.dob = nil
+	m.clearedFields[customer.FieldDob] = struct{}{}
+}
+
+// DobCleared returns if the "dob" field was cleared in this mutation.
+func (m *CustomerMutation) DobCleared() bool {
+	_, ok := m.clearedFields[customer.FieldDob]
+	return ok
+}
+
 // ResetDob resets all changes to the "dob" field.
 func (m *CustomerMutation) ResetDob() {
 	m.dob = nil
+	delete(m.clearedFields, customer.FieldDob)
 }
 
 // SetCid sets the "cid" field.
@@ -2310,6 +2377,9 @@ func (m *CustomerMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *CustomerMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(customer.FieldDob) {
+		fields = append(fields, customer.FieldDob)
+	}
 	if m.FieldCleared(customer.FieldMemberID) {
 		fields = append(fields, customer.FieldMemberID)
 	}
@@ -2327,6 +2397,9 @@ func (m *CustomerMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *CustomerMutation) ClearField(name string) error {
 	switch name {
+	case customer.FieldDob:
+		m.ClearDob()
+		return nil
 	case customer.FieldMemberID:
 		m.ClearMemberID()
 		return nil

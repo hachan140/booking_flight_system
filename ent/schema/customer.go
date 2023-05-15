@@ -22,7 +22,7 @@ func (Customer) Fields() []ent.Field {
 		field.String("email").NotEmpty().Unique(),
 		field.String("phone_number").NotEmpty().Unique(),
 		field.String("full_name").NotEmpty(),
-		field.Time("dob"),
+		field.Time("dob").Optional(),
 		field.String("cid").NotEmpty().Unique(),
 		field.Int("member_id").Optional(),
 	}

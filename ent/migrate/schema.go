@@ -29,7 +29,8 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "code", Type: field.TypeString, Unique: true},
-		{Name: "status", Type: field.TypeString},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"success", "cancel"}},
+		{Name: "seat_type", Type: field.TypeEnum, Enums: []string{"ec", "bc"}},
 		{Name: "customer_id", Type: field.TypeInt, Nullable: true},
 		{Name: "flight_id", Type: field.TypeInt, Nullable: true},
 	}
@@ -41,13 +42,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "bookings_customers_has_booking",
-				Columns:    []*schema.Column{BookingsColumns[5]},
+				Columns:    []*schema.Column{BookingsColumns[6]},
 				RefColumns: []*schema.Column{CustomersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "bookings_flights_has_booking",
-				Columns:    []*schema.Column{BookingsColumns[6]},
+				Columns:    []*schema.Column{BookingsColumns[7]},
 				RefColumns: []*schema.Column{FlightsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -61,7 +62,7 @@ var (
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "phone_number", Type: field.TypeString, Unique: true},
 		{Name: "full_name", Type: field.TypeString},
-		{Name: "dob", Type: field.TypeTime},
+		{Name: "dob", Type: field.TypeTime, Nullable: true},
 		{Name: "cid", Type: field.TypeString, Unique: true},
 		{Name: "member_id", Type: field.TypeInt, Unique: true, Nullable: true},
 	}
@@ -89,7 +90,7 @@ var (
 		{Name: "land_at", Type: field.TypeTime},
 		{Name: "available_ec_slot", Type: field.TypeInt},
 		{Name: "available_bc_slot", Type: field.TypeInt},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"scheduled", "landed"}, Default: "landed"},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"flying", "scheduled", "canceled", "landed"}, Default: "landed"},
 		{Name: "from_airport_id", Type: field.TypeInt, Nullable: true},
 		{Name: "to_airport_id", Type: field.TypeInt, Nullable: true},
 		{Name: "plane_id", Type: field.TypeInt, Nullable: true},
@@ -147,7 +148,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "economy_class_slots", Type: field.TypeInt64, Default: 0},
 		{Name: "business_class_slots", Type: field.TypeInt64, Default: 0},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"free"}, Default: "free"},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"booked", "free"}, Default: "free"},
 	}
 	// PlanesTable holds the schema information for the "planes" table.
 	PlanesTable = &schema.Table{

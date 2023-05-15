@@ -57,8 +57,14 @@ func (bc *BookingCreate) SetCode(s string) *BookingCreate {
 }
 
 // SetStatus sets the "status" field.
-func (bc *BookingCreate) SetStatus(s string) *BookingCreate {
-	bc.mutation.SetStatus(s)
+func (bc *BookingCreate) SetStatus(b booking.Status) *BookingCreate {
+	bc.mutation.SetStatus(b)
+	return bc
+}
+
+// SetSeatType sets the "seat_type" field.
+func (bc *BookingCreate) SetSeatType(bt booking.SeatType) *BookingCreate {
+	bc.mutation.SetSeatType(bt)
 	return bc
 }
 
@@ -192,6 +198,19 @@ func (bc *BookingCreate) check() error {
 	if _, ok := bc.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Booking.status"`)}
 	}
+	if v, ok := bc.mutation.Status(); ok {
+		if err := booking.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Booking.status": %w`, err)}
+		}
+	}
+	if _, ok := bc.mutation.SeatType(); !ok {
+		return &ValidationError{Name: "seat_type", err: errors.New(`ent: missing required field "Booking.seat_type"`)}
+	}
+	if v, ok := bc.mutation.SeatType(); ok {
+		if err := booking.SeatTypeValidator(v); err != nil {
+			return &ValidationError{Name: "seat_type", err: fmt.Errorf(`ent: validator failed for field "Booking.seat_type": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -231,8 +250,12 @@ func (bc *BookingCreate) createSpec() (*Booking, *sqlgraph.CreateSpec) {
 		_node.Code = value
 	}
 	if value, ok := bc.mutation.Status(); ok {
-		_spec.SetField(booking.FieldStatus, field.TypeString, value)
+		_spec.SetField(booking.FieldStatus, field.TypeEnum, value)
 		_node.Status = value
+	}
+	if value, ok := bc.mutation.SeatType(); ok {
+		_spec.SetField(booking.FieldSeatType, field.TypeEnum, value)
+		_node.SeatType = value
 	}
 	if nodes := bc.mutation.HasFlightIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

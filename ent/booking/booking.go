@@ -3,6 +3,9 @@
 package booking
 
 import (
+	"fmt"
+	"io"
+	"strconv"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -22,6 +25,8 @@ const (
 	FieldCode = "code"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldSeatType holds the string denoting the seat_type field in the database.
+	FieldSeatType = "seat_type"
 	// FieldCustomerID holds the string denoting the customer_id field in the database.
 	FieldCustomerID = "customer_id"
 	// FieldFlightID holds the string denoting the flight_id field in the database.
@@ -55,6 +60,7 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldCode,
 	FieldStatus,
+	FieldSeatType,
 	FieldCustomerID,
 	FieldFlightID,
 }
@@ -79,6 +85,52 @@ var (
 	// CodeValidator is a validator for the "code" field. It is called by the builders before save.
 	CodeValidator func(string) error
 )
+
+// Status defines the type for the "status" enum field.
+type Status string
+
+// Status values.
+const (
+	StatusSuccess Status = "success"
+	StatusCancel  Status = "cancel"
+)
+
+func (s Status) String() string {
+	return string(s)
+}
+
+// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
+func StatusValidator(s Status) error {
+	switch s {
+	case StatusSuccess, StatusCancel:
+		return nil
+	default:
+		return fmt.Errorf("booking: invalid enum value for status field: %q", s)
+	}
+}
+
+// SeatType defines the type for the "seat_type" enum field.
+type SeatType string
+
+// SeatType values.
+const (
+	SeatTypeEc SeatType = "ec"
+	SeatTypeBc SeatType = "bc"
+)
+
+func (st SeatType) String() string {
+	return string(st)
+}
+
+// SeatTypeValidator is a validator for the "seat_type" field enum values. It is called by the builders before save.
+func SeatTypeValidator(st SeatType) error {
+	switch st {
+	case SeatTypeEc, SeatTypeBc:
+		return nil
+	default:
+		return fmt.Errorf("booking: invalid enum value for seat_type field: %q", st)
+	}
+}
 
 // OrderOption defines the ordering options for the Booking queries.
 type OrderOption func(*sql.Selector)
@@ -106,6 +158,11 @@ func ByCode(opts ...sql.OrderTermOption) OrderOption {
 // ByStatus orders the results by the status field.
 func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// BySeatType orders the results by the seat_type field.
+func BySeatType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSeatType, opts...).ToFunc()
 }
 
 // ByCustomerID orders the results by the customer_id field.
@@ -144,4 +201,40 @@ func newHasCustomerStep() *sqlgraph.Step {
 		sqlgraph.To(HasCustomerInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, HasCustomerTable, HasCustomerColumn),
 	)
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e Status) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *Status) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = Status(str)
+	if err := StatusValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid Status", str)
+	}
+	return nil
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e SeatType) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *SeatType) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = SeatType(str)
+	if err := SeatTypeValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid SeatType", str)
+	}
+	return nil
 }

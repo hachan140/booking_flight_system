@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"booking-flight-system/ent/booking"
 	"booking-flight-system/ent/flight"
 	"booking-flight-system/ent/plane"
 	"time"
@@ -113,7 +114,8 @@ type CreateBookingInput struct {
 	CreatedAt     *time.Time
 	UpdatedAt     *time.Time
 	Code          string
-	Status        string
+	Status        booking.Status
+	SeatType      booking.SeatType
 	HasFlightID   *int
 	HasCustomerID *int
 }
@@ -128,6 +130,7 @@ func (i *CreateBookingInput) Mutate(m *BookingMutation) {
 	}
 	m.SetCode(i.Code)
 	m.SetStatus(i.Status)
+	m.SetSeatType(i.SeatType)
 	if v := i.HasFlightID; v != nil {
 		m.SetHasFlightID(*v)
 	}
@@ -147,7 +150,8 @@ type UpdateBookingInput struct {
 	CreatedAt        *time.Time
 	UpdatedAt        *time.Time
 	Code             *string
-	Status           *string
+	Status           *booking.Status
+	SeatType         *booking.SeatType
 	ClearHasFlight   bool
 	HasFlightID      *int
 	ClearHasCustomer bool
@@ -167,6 +171,9 @@ func (i *UpdateBookingInput) Mutate(m *BookingMutation) {
 	}
 	if v := i.Status; v != nil {
 		m.SetStatus(*v)
+	}
+	if v := i.SeatType; v != nil {
+		m.SetSeatType(*v)
 	}
 	if i.ClearHasFlight {
 		m.ClearHasFlight()
@@ -201,7 +208,7 @@ type CreateCustomerInput struct {
 	Email         string
 	PhoneNumber   string
 	FullName      string
-	Dob           time.Time
+	Dob           *time.Time
 	Cid           string
 	HasMemberID   *int
 	HasBookingIDs []int
@@ -218,7 +225,9 @@ func (i *CreateCustomerInput) Mutate(m *CustomerMutation) {
 	m.SetEmail(i.Email)
 	m.SetPhoneNumber(i.PhoneNumber)
 	m.SetFullName(i.FullName)
-	m.SetDob(i.Dob)
+	if v := i.Dob; v != nil {
+		m.SetDob(*v)
+	}
 	m.SetCid(i.Cid)
 	if v := i.HasMemberID; v != nil {
 		m.SetHasMemberID(*v)
@@ -241,6 +250,7 @@ type UpdateCustomerInput struct {
 	Email               *string
 	PhoneNumber         *string
 	FullName            *string
+	ClearDob            bool
 	Dob                 *time.Time
 	Cid                 *string
 	ClearHasMember      bool
@@ -266,6 +276,9 @@ func (i *UpdateCustomerInput) Mutate(m *CustomerMutation) {
 	}
 	if v := i.FullName; v != nil {
 		m.SetFullName(*v)
+	}
+	if i.ClearDob {
+		m.ClearDob()
 	}
 	if v := i.Dob; v != nil {
 		m.SetDob(*v)

@@ -57,8 +57,14 @@ func (bu *BookingUpdate) SetCode(s string) *BookingUpdate {
 }
 
 // SetStatus sets the "status" field.
-func (bu *BookingUpdate) SetStatus(s string) *BookingUpdate {
-	bu.mutation.SetStatus(s)
+func (bu *BookingUpdate) SetStatus(b booking.Status) *BookingUpdate {
+	bu.mutation.SetStatus(b)
+	return bu
+}
+
+// SetSeatType sets the "seat_type" field.
+func (bu *BookingUpdate) SetSeatType(bt booking.SeatType) *BookingUpdate {
+	bu.mutation.SetSeatType(bt)
 	return bu
 }
 
@@ -200,6 +206,16 @@ func (bu *BookingUpdate) check() error {
 			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Booking.code": %w`, err)}
 		}
 	}
+	if v, ok := bu.mutation.Status(); ok {
+		if err := booking.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Booking.status": %w`, err)}
+		}
+	}
+	if v, ok := bu.mutation.SeatType(); ok {
+		if err := booking.SeatTypeValidator(v); err != nil {
+			return &ValidationError{Name: "seat_type", err: fmt.Errorf(`ent: validator failed for field "Booking.seat_type": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -225,7 +241,10 @@ func (bu *BookingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		_spec.SetField(booking.FieldCode, field.TypeString, value)
 	}
 	if value, ok := bu.mutation.Status(); ok {
-		_spec.SetField(booking.FieldStatus, field.TypeString, value)
+		_spec.SetField(booking.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := bu.mutation.SeatType(); ok {
+		_spec.SetField(booking.FieldSeatType, field.TypeEnum, value)
 	}
 	if bu.mutation.HasFlightCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -332,8 +351,14 @@ func (buo *BookingUpdateOne) SetCode(s string) *BookingUpdateOne {
 }
 
 // SetStatus sets the "status" field.
-func (buo *BookingUpdateOne) SetStatus(s string) *BookingUpdateOne {
-	buo.mutation.SetStatus(s)
+func (buo *BookingUpdateOne) SetStatus(b booking.Status) *BookingUpdateOne {
+	buo.mutation.SetStatus(b)
+	return buo
+}
+
+// SetSeatType sets the "seat_type" field.
+func (buo *BookingUpdateOne) SetSeatType(bt booking.SeatType) *BookingUpdateOne {
+	buo.mutation.SetSeatType(bt)
 	return buo
 }
 
@@ -488,6 +513,16 @@ func (buo *BookingUpdateOne) check() error {
 			return &ValidationError{Name: "code", err: fmt.Errorf(`ent: validator failed for field "Booking.code": %w`, err)}
 		}
 	}
+	if v, ok := buo.mutation.Status(); ok {
+		if err := booking.StatusValidator(v); err != nil {
+			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Booking.status": %w`, err)}
+		}
+	}
+	if v, ok := buo.mutation.SeatType(); ok {
+		if err := booking.SeatTypeValidator(v); err != nil {
+			return &ValidationError{Name: "seat_type", err: fmt.Errorf(`ent: validator failed for field "Booking.seat_type": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -530,7 +565,10 @@ func (buo *BookingUpdateOne) sqlSave(ctx context.Context) (_node *Booking, err e
 		_spec.SetField(booking.FieldCode, field.TypeString, value)
 	}
 	if value, ok := buo.mutation.Status(); ok {
-		_spec.SetField(booking.FieldStatus, field.TypeString, value)
+		_spec.SetField(booking.FieldStatus, field.TypeEnum, value)
+	}
+	if value, ok := buo.mutation.SeatType(); ok {
+		_spec.SetField(booking.FieldSeatType, field.TypeEnum, value)
 	}
 	if buo.mutation.HasFlightCleared() {
 		edge := &sqlgraph.EdgeSpec{

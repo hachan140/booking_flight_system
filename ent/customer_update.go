@@ -74,6 +74,20 @@ func (cu *CustomerUpdate) SetDob(t time.Time) *CustomerUpdate {
 	return cu
 }
 
+// SetNillableDob sets the "dob" field if the given value is not nil.
+func (cu *CustomerUpdate) SetNillableDob(t *time.Time) *CustomerUpdate {
+	if t != nil {
+		cu.SetDob(*t)
+	}
+	return cu
+}
+
+// ClearDob clears the value of the "dob" field.
+func (cu *CustomerUpdate) ClearDob() *CustomerUpdate {
+	cu.mutation.ClearDob()
+	return cu
+}
+
 // SetCid sets the "cid" field.
 func (cu *CustomerUpdate) SetCid(s string) *CustomerUpdate {
 	cu.mutation.SetCid(s)
@@ -257,6 +271,9 @@ func (cu *CustomerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := cu.mutation.Dob(); ok {
 		_spec.SetField(customer.FieldDob, field.TypeTime, value)
 	}
+	if cu.mutation.DobCleared() {
+		_spec.ClearField(customer.FieldDob, field.TypeTime)
+	}
 	if value, ok := cu.mutation.Cid(); ok {
 		_spec.SetField(customer.FieldCid, field.TypeString, value)
 	}
@@ -395,6 +412,20 @@ func (cuo *CustomerUpdateOne) SetFullName(s string) *CustomerUpdateOne {
 // SetDob sets the "dob" field.
 func (cuo *CustomerUpdateOne) SetDob(t time.Time) *CustomerUpdateOne {
 	cuo.mutation.SetDob(t)
+	return cuo
+}
+
+// SetNillableDob sets the "dob" field if the given value is not nil.
+func (cuo *CustomerUpdateOne) SetNillableDob(t *time.Time) *CustomerUpdateOne {
+	if t != nil {
+		cuo.SetDob(*t)
+	}
+	return cuo
+}
+
+// ClearDob clears the value of the "dob" field.
+func (cuo *CustomerUpdateOne) ClearDob() *CustomerUpdateOne {
+	cuo.mutation.ClearDob()
 	return cuo
 }
 
@@ -610,6 +641,9 @@ func (cuo *CustomerUpdateOne) sqlSave(ctx context.Context) (_node *Customer, err
 	}
 	if value, ok := cuo.mutation.Dob(); ok {
 		_spec.SetField(customer.FieldDob, field.TypeTime, value)
+	}
+	if cuo.mutation.DobCleared() {
+		_spec.ClearField(customer.FieldDob, field.TypeTime)
 	}
 	if value, ok := cuo.mutation.Cid(); ok {
 		_spec.SetField(customer.FieldCid, field.TypeString, value)

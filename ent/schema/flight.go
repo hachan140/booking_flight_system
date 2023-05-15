@@ -24,7 +24,7 @@ func (Flight) Fields() []ent.Field {
 		field.Time("land_at"),
 		field.Int("available_ec_slot").Nillable(),
 		field.Int("available_bc_slot").Nillable(),
-		field.Enum("status").NamedValues("flying", "scheduled", "canceled", "landed").Default("landed"),
+		field.Enum("status").Values("flying", "scheduled", "canceled", "landed").Default("landed"),
 		field.Int("plane_id").Optional(),
 		field.Int("from_airport_id").Optional(),
 		field.Int("to_airport_id").Optional(),
@@ -40,6 +40,7 @@ func (Flight) Edges() []ent.Edge {
 		edge.From("to_airport", Airport.Type).Ref("to_flight").Field("to_airport_id").Unique(),
 	}
 }
+
 func (Flight) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entgql.QueryField(),

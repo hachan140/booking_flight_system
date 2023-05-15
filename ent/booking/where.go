@@ -70,11 +70,6 @@ func Code(v string) predicate.Booking {
 	return predicate.Booking(sql.FieldEQ(FieldCode, v))
 }
 
-// Status applies equality check predicate on the "status" field. It's identical to StatusEQ.
-func Status(v string) predicate.Booking {
-	return predicate.Booking(sql.FieldEQ(FieldStatus, v))
-}
-
 // CustomerID applies equality check predicate on the "customer_id" field. It's identical to CustomerIDEQ.
 func CustomerID(v int) predicate.Booking {
 	return predicate.Booking(sql.FieldEQ(FieldCustomerID, v))
@@ -231,68 +226,43 @@ func CodeContainsFold(v string) predicate.Booking {
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.
-func StatusEQ(v string) predicate.Booking {
+func StatusEQ(v Status) predicate.Booking {
 	return predicate.Booking(sql.FieldEQ(FieldStatus, v))
 }
 
 // StatusNEQ applies the NEQ predicate on the "status" field.
-func StatusNEQ(v string) predicate.Booking {
+func StatusNEQ(v Status) predicate.Booking {
 	return predicate.Booking(sql.FieldNEQ(FieldStatus, v))
 }
 
 // StatusIn applies the In predicate on the "status" field.
-func StatusIn(vs ...string) predicate.Booking {
+func StatusIn(vs ...Status) predicate.Booking {
 	return predicate.Booking(sql.FieldIn(FieldStatus, vs...))
 }
 
 // StatusNotIn applies the NotIn predicate on the "status" field.
-func StatusNotIn(vs ...string) predicate.Booking {
+func StatusNotIn(vs ...Status) predicate.Booking {
 	return predicate.Booking(sql.FieldNotIn(FieldStatus, vs...))
 }
 
-// StatusGT applies the GT predicate on the "status" field.
-func StatusGT(v string) predicate.Booking {
-	return predicate.Booking(sql.FieldGT(FieldStatus, v))
+// SeatTypeEQ applies the EQ predicate on the "seat_type" field.
+func SeatTypeEQ(v SeatType) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldSeatType, v))
 }
 
-// StatusGTE applies the GTE predicate on the "status" field.
-func StatusGTE(v string) predicate.Booking {
-	return predicate.Booking(sql.FieldGTE(FieldStatus, v))
+// SeatTypeNEQ applies the NEQ predicate on the "seat_type" field.
+func SeatTypeNEQ(v SeatType) predicate.Booking {
+	return predicate.Booking(sql.FieldNEQ(FieldSeatType, v))
 }
 
-// StatusLT applies the LT predicate on the "status" field.
-func StatusLT(v string) predicate.Booking {
-	return predicate.Booking(sql.FieldLT(FieldStatus, v))
+// SeatTypeIn applies the In predicate on the "seat_type" field.
+func SeatTypeIn(vs ...SeatType) predicate.Booking {
+	return predicate.Booking(sql.FieldIn(FieldSeatType, vs...))
 }
 
-// StatusLTE applies the LTE predicate on the "status" field.
-func StatusLTE(v string) predicate.Booking {
-	return predicate.Booking(sql.FieldLTE(FieldStatus, v))
-}
-
-// StatusContains applies the Contains predicate on the "status" field.
-func StatusContains(v string) predicate.Booking {
-	return predicate.Booking(sql.FieldContains(FieldStatus, v))
-}
-
-// StatusHasPrefix applies the HasPrefix predicate on the "status" field.
-func StatusHasPrefix(v string) predicate.Booking {
-	return predicate.Booking(sql.FieldHasPrefix(FieldStatus, v))
-}
-
-// StatusHasSuffix applies the HasSuffix predicate on the "status" field.
-func StatusHasSuffix(v string) predicate.Booking {
-	return predicate.Booking(sql.FieldHasSuffix(FieldStatus, v))
-}
-
-// StatusEqualFold applies the EqualFold predicate on the "status" field.
-func StatusEqualFold(v string) predicate.Booking {
-	return predicate.Booking(sql.FieldEqualFold(FieldStatus, v))
-}
-
-// StatusContainsFold applies the ContainsFold predicate on the "status" field.
-func StatusContainsFold(v string) predicate.Booking {
-	return predicate.Booking(sql.FieldContainsFold(FieldStatus, v))
+// SeatTypeNotIn applies the NotIn predicate on the "seat_type" field.
+func SeatTypeNotIn(vs ...SeatType) predicate.Booking {
+	return predicate.Booking(sql.FieldNotIn(FieldSeatType, vs...))
 }
 
 // CustomerIDEQ applies the EQ predicate on the "customer_id" field.

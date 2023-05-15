@@ -7,5 +7,20 @@ input CreateFlight {
     toID: Int!
     fromID: Int!
     planeID: Int!
+}
 
+input UpdateFlightStatus{
+    status: FlightStatus!
+}
+
+input UpdateFlightSlot{
+    available_ec_slots: Int!
+    available_bc_slots: Int!
+}
+
+input SearchFlight{
+    depart_at: String!
+    dest_at: String!
+    from_date: String!
+    to_date: String!
 }

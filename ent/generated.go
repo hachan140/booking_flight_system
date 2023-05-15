@@ -3,6 +3,8 @@
 package ent
 
 import (
+	"booking-flight-system/ent/booking"
+	"booking-flight-system/ent/flight"
 	"time"
 )
 
@@ -17,7 +19,52 @@ type CreateFlight struct {
 	PlaneID         int       `json:"planeID"`
 }
 
+type CustomerBooking struct {
+	SeatType   booking.SeatType `json:"seatType"`
+	FlightID   string           `json:"flight_id"`
+	CustomerID string           `json:"customer_id"`
+	Status     *booking.Status  `json:"status,omitempty"`
+}
+
+type CustomerInput struct {
+	Email       string     `json:"email"`
+	PhoneNumber string     `json:"phoneNumber"`
+	FullName    string     `json:"fullName"`
+	Dob         *time.Time `json:"dob,omitempty"`
+	Cid         string     `json:"cid"`
+}
+
+type MemberBooking struct {
+	SeatType booking.SeatType `json:"seatType"`
+	FlightID string           `json:"flight_id"`
+	MemberID string           `json:"member_id"`
+	Status   *booking.Status  `json:"status,omitempty"`
+}
+
+type SearchBooking struct {
+	FlightID    *string    `json:"flight_id,omitempty"`
+	DepartAt    *time.Time `json:"depart_at,omitempty"`
+	FromAirport *string    `json:"from_airport,omitempty"`
+	ToAirport   *string    `json:"to_airport,omitempty"`
+}
+
+type SearchFlight struct {
+	DepartAt string `json:"depart_at"`
+	DestAt   string `json:"dest_at"`
+	FromDate string `json:"from_date"`
+	ToDate   string `json:"to_date"`
+}
+
 type Token struct {
 	Token     string    `json:"token"`
 	ExpiredAt time.Time `json:"expired_at"`
+}
+
+type UpdateFlightSlot struct {
+	AvailableEcSlots int `json:"available_ec_slots"`
+	AvailableBcSlots int `json:"available_bc_slots"`
+}
+
+type UpdateFlightStatus struct {
+	Status flight.Status `json:"status"`
 }

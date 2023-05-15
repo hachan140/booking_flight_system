@@ -410,6 +410,16 @@ func DobLTE(v time.Time) predicate.Customer {
 	return predicate.Customer(sql.FieldLTE(FieldDob, v))
 }
 
+// DobIsNil applies the IsNil predicate on the "dob" field.
+func DobIsNil() predicate.Customer {
+	return predicate.Customer(sql.FieldIsNull(FieldDob))
+}
+
+// DobNotNil applies the NotNil predicate on the "dob" field.
+func DobNotNil() predicate.Customer {
+	return predicate.Customer(sql.FieldNotNull(FieldDob))
+}
+
 // CidEQ applies the EQ predicate on the "cid" field.
 func CidEQ(v string) predicate.Customer {
 	return predicate.Customer(sql.FieldEQ(FieldCid, v))

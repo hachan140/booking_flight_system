@@ -20,7 +20,8 @@ func (Booking) Fields() []ent.Field {
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.String("code").NotEmpty().Unique(),
-		field.String("status"),
+		field.Enum("status").Values("success", "cancel"),
+		field.Enum("seat_type").Values("ec", "bc"),
 		field.Int("customer_id").Optional(),
 		field.Int("flight_id").Optional(),
 	}

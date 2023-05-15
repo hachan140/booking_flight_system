@@ -26,7 +26,9 @@ type Booking struct {
 	// Code holds the value of the "code" field.
 	Code string `json:"code,omitempty"`
 	// Status holds the value of the "status" field.
-	Status string `json:"status,omitempty"`
+	Status booking.Status `json:"status,omitempty"`
+	// SeatType holds the value of the "seat_type" field.
+	SeatType booking.SeatType `json:"seat_type,omitempty"`
 	// CustomerID holds the value of the "customer_id" field.
 	CustomerID int `json:"customer_id,omitempty"`
 	// FlightID holds the value of the "flight_id" field.
@@ -83,7 +85,7 @@ func (*Booking) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case booking.FieldID, booking.FieldCustomerID, booking.FieldFlightID:
 			values[i] = new(sql.NullInt64)
-		case booking.FieldCode, booking.FieldStatus:
+		case booking.FieldCode, booking.FieldStatus, booking.FieldSeatType:
 			values[i] = new(sql.NullString)
 		case booking.FieldCreatedAt, booking.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -130,7 +132,13 @@ func (b *Booking) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
-				b.Status = value.String
+				b.Status = booking.Status(value.String)
+			}
+		case booking.FieldSeatType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field seat_type", values[i])
+			} else if value.Valid {
+				b.SeatType = booking.SeatType(value.String)
 			}
 		case booking.FieldCustomerID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -200,7 +208,10 @@ func (b *Booking) String() string {
 	builder.WriteString(b.Code)
 	builder.WriteString(", ")
 	builder.WriteString("status=")
-	builder.WriteString(b.Status)
+	builder.WriteString(fmt.Sprintf("%v", b.Status))
+	builder.WriteString(", ")
+	builder.WriteString("seat_type=")
+	builder.WriteString(fmt.Sprintf("%v", b.SeatType))
 	builder.WriteString(", ")
 	builder.WriteString("customer_id=")
 	builder.WriteString(fmt.Sprintf("%v", b.CustomerID))

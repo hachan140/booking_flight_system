@@ -1,0 +1,7 @@
+input CustomerInput{
+    email: String!
+    phoneNumber: String!
+    fullName: String!
+    dob: Time
+    cid: String!
+}

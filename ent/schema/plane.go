@@ -22,7 +22,7 @@ func (Plane) Fields() []ent.Field {
 		field.String("name").NotEmpty(),
 		field.Int64("economy_class_slots").Default(0),
 		field.Int64("business_class_slots").Default(0),
-		field.Enum("status").NamedValues("booked", "free").Default("free"),
+		field.Enum("status").Values("booked", "free").Default("free"),
 	}
 }
 

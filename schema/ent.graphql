@@ -89,11 +89,22 @@ type Booking implements Node {
   createdAt: Time!
   updatedAt: Time!
   code: String!
-  status: String!
+  status: BookingStatus!
+  seatType: BookingSeatType!
   customerID: ID
   flightID: ID
   hasFlight: Flight
   hasCustomer: Customer
+}
+"""BookingSeatType is enum for the field seat_type"""
+enum BookingSeatType @goModel(model: "booking-flight-system/ent/booking.SeatType") {
+  ec
+  bc
+}
+"""BookingStatus is enum for the field status"""
+enum BookingStatus @goModel(model: "booking-flight-system/ent/booking.Status") {
+  success
+  cancel
 }
 """
 BookingWhereInput is used for filtering Booking objects.
@@ -145,19 +156,15 @@ input BookingWhereInput {
   codeEqualFold: String
   codeContainsFold: String
   """status field predicates"""
-  status: String
-  statusNEQ: String
-  statusIn: [String!]
-  statusNotIn: [String!]
-  statusGT: String
-  statusGTE: String
-  statusLT: String
-  statusLTE: String
-  statusContains: String
-  statusHasPrefix: String
-  statusHasSuffix: String
-  statusEqualFold: String
-  statusContainsFold: String
+  status: BookingStatus
+  statusNEQ: BookingStatus
+  statusIn: [BookingStatus!]
+  statusNotIn: [BookingStatus!]
+  """seat_type field predicates"""
+  seatType: BookingSeatType
+  seatTypeNEQ: BookingSeatType
+  seatTypeIn: [BookingSeatType!]
+  seatTypeNotIn: [BookingSeatType!]
   """customer_id field predicates"""
   customerID: ID
   customerIDNEQ: ID
@@ -200,7 +207,8 @@ input CreateBookingInput {
   createdAt: Time
   updatedAt: Time
   code: String!
-  status: String!
+  status: BookingStatus!
+  seatType: BookingSeatType!
   hasFlightID: ID
   hasCustomerID: ID
 }
@@ -214,7 +222,7 @@ input CreateCustomerInput {
   email: String!
   phoneNumber: String!
   fullName: String!
-  dob: Time!
+  dob: Time
   cid: String!
   hasMemberID: ID
   hasBookingIDs: [ID!]
@@ -278,7 +286,7 @@ type Customer implements Node {
   email: String!
   phoneNumber: String!
   fullName: String!
-  dob: Time!
+  dob: Time
   cid: String!
   memberID: ID
   hasMember: Member
@@ -370,6 +378,8 @@ input CustomerWhereInput {
   dobGTE: Time
   dobLT: Time
   dobLTE: Time
+  dobIsNil: Boolean
+  dobNotNil: Boolean
   """cid field predicates"""
   cid: String
   cidNEQ: String
@@ -418,7 +428,9 @@ type Flight implements Node {
 }
 """FlightStatus is enum for the field status"""
 enum FlightStatus @goModel(model: "booking-flight-system/ent/flight.Status") {
+  flying
   scheduled
+  canceled
   landed
 }
 """
@@ -713,6 +725,7 @@ type Plane implements Node {
 }
 """PlaneStatus is enum for the field status"""
 enum PlaneStatus @goModel(model: "booking-flight-system/ent/plane.Status") {
+  booked
   free
 }
 """
@@ -836,7 +849,8 @@ input UpdateBookingInput {
   createdAt: Time
   updatedAt: Time
   code: String
-  status: String
+  status: BookingStatus
+  seatType: BookingSeatType
   hasFlightID: ID
   clearHasFlight: Boolean
   hasCustomerID: ID
@@ -853,6 +867,7 @@ input UpdateCustomerInput {
   phoneNumber: String
   fullName: String
   dob: Time
+  clearDob: Boolean
   cid: String
   hasMemberID: ID
   clearHasMember: Boolean

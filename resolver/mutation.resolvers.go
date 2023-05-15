@@ -6,6 +6,9 @@ package resolver
 
 import (
 	"booking-flight-system/ent"
+	"booking-flight-system/ent/booking"
+	"booking-flight-system/ent/booking-flight-system/ent/airport"
+	"booking-flight-system/ent/flight"
 	"booking-flight-system/ent/member"
 	graphql1 "booking-flight-system/graphql"
 	"booking-flight-system/helper"
@@ -13,12 +16,18 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 // SignUp is the resolver for the sign_up field.
 func (r *mutationResolver) SignUp(ctx context.Context, input ent.CreateMemberInput) (*ent.Member, error) {
 	input.Password = helper.SHA256Hashing(input.Password)
-	return r.client.Member.Create().SetInput(input).Save(ctx)
+	member, err := r.client.Member.Create().SetInput(input).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	r.client.Customer.Create().SetEmail(input.Email).SetPhoneNumber(input.PhoneNumber).SetFullName(input.FullName).SetCid(input.Cid).SetMemberID(member.ID).Save(ctx)
+	return member, nil
 }
 
 // Login is the resolver for the login field.
@@ -103,6 +112,15 @@ func (r *mutationResolver) UpdateMemberProfile(ctx context.Context, input *ent.U
 	return user, nil
 }
 
+// FindMemberByEmail is the resolver for the find_member_by_email field.
+func (r *mutationResolver) FindMemberByEmail(ctx context.Context, email string) (*ent.Member, error) {
+	member, err := r.client.Member.Query().Where(member.EmailEQ(email)).Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return member, nil
+}
+
 // CreateAirport is the resolver for the create_airport field.
 func (r *mutationResolver) CreateAirport(ctx context.Context, input ent.CreateAirportInput) (*ent.Airport, error) {
 	return r.client.Airport.Create().SetInput(input).Save(ctx)
@@ -140,6 +158,15 @@ func (r *mutationResolver) FindAirportByID(ctx context.Context, id int) (*ent.Ai
 		return nil, err
 	}
 	return airport, nil
+}
+
+// FindAirportByName is the resolver for the find_airport_by_name field.
+func (r *mutationResolver) FindAirportByName(ctx context.Context, name string) (*ent.Airport, error) {
+	a, err := r.client.Airport.Query().Where(airport.NameEqualFold(name)).Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return a, nil
 }
 
 // CreatePlane is the resolver for the create_plane field.
@@ -181,12 +208,15 @@ func (r *mutationResolver) CreateFlight(ctx context.Context, input ent.CreateFli
 		return nil, err
 	}
 	return r.client.Flight.Create().SetName(input.Name).SetDepartAt(input.DepartAt).SetLandAt(input.LandAt).SetToAirportID(input.ToID).SetFromAirportID(input.FromID).SetPlaneID(input.PlaneID).SetAvailableBcSlot(int(plane.BusinessClassSlots)).SetAvailableEcSlot(int(plane.EconomyClassSlots)).Save(ctx)
-
 }
 
 // CancelFlight is the resolver for the cancel_flight field.
-func (r *mutationResolver) CancelFlight(ctx context.Context) (*string, error) {
-	panic(fmt.Errorf("not implemented: CancelFlight - cancel_flight"))
+func (r *mutationResolver) CancelFlight(ctx context.Context, id int) (*string, error) {
+	message := "cancel flight successfully"
+	flight, _ := r.FindFlightByID(ctx, id)
+	flight.Update().SetStatus("cancel").Save(ctx)
+	r.client.Booking.Update().Where(booking.FlightID(id)).SetStatus("cancel")
+	return &message, nil
 }
 
 // UpdateFlightSlot is the resolver for the update_flight_slot field.
@@ -195,13 +225,64 @@ func (r *mutationResolver) UpdateFlightSlot(ctx context.Context) (*ent.Flight, e
 }
 
 // UpdateFlightStatus is the resolver for the update_flight_status field.
-func (r *mutationResolver) UpdateFlightStatus(ctx context.Context, status string) (*ent.Flight, error) {
-	panic(fmt.Errorf("not implemented: UpdateFlightStatus - update_flight_status"))
+func (r *mutationResolver) UpdateFlightStatus(ctx context.Context, id int, input *ent.UpdateFlightStatus) (*ent.Flight, error) {
+	flight, err := r.FindFlightByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	flight.Update().SetStatus(input.Status).Save(ctx)
+	return flight, err
 }
 
 // SearchFlight is the resolver for the search_flight field.
-func (r *mutationResolver) SearchFlight(ctx context.Context, departAt string, destAt string) ([]*ent.Flight, error) {
-	panic(fmt.Errorf("not implemented: SearchFlight - search_flight"))
+func (r *mutationResolver) SearchFlight(ctx context.Context, input ent.SearchFlight) ([]*ent.Flight, error) {
+	depart, _ := r.FindAirportByName(ctx, input.DepartAt)
+	des, _ := r.FindAirportByName(ctx, input.DestAt)
+	fromDate, err := time.Parse("dd-mm-yyyy", input.FromDate)
+	if err != nil {
+		return nil, err
+	}
+	toDate, err := time.Parse("dd-mm-yyyy", input.ToDate)
+	flights, err := r.client.Flight.Query().Where(flight.And(flight.FromAirportIDEQ(depart.ID),
+		flight.ToAirportIDEQ(des.ID),
+		flight.DepartAtIn(fromDate),
+		flight.LandAtIn(toDate)),
+	).All(ctx)
+	return flights, nil
+}
+
+// FindFlightByID is the resolver for the find_flight_by_id field.
+func (r *mutationResolver) FindFlightByID(ctx context.Context, id int) (*ent.Flight, error) {
+	flight, err := r.client.Flight.Get(ctx, id)
+	if err != nil {
+		return nil, errors.New("can't find flight")
+	}
+	return flight, nil
+}
+
+// CreateCustomer is the resolver for the create_customer field.
+func (r *mutationResolver) CreateCustomer(ctx context.Context, input ent.CustomerInput) (*ent.Customer, error) {
+	return r.client.Customer.Create().SetEmail(input.Email).SetPhoneNumber(input.PhoneNumber).SetCid(input.Cid).SetFullName(input.FullName).Save(ctx)
+}
+
+// CreateCustomerBooking is the resolver for the create_customer_booking field.
+func (r *mutationResolver) CreateCustomerBooking(ctx context.Context, input ent.CustomerBooking) (*ent.Booking, error) {
+	//booking, err := r.client.Booking.Create().SetStatus(booking.StatusSuccess).SetFlightID(input.FlightID).Save(ctx)
+}
+
+// CreateMemberBooking is the resolver for the create_member_booking field.
+func (r *mutationResolver) CreateMemberBooking(ctx context.Context, input ent.MemberBooking) (*ent.Booking, error) {
+	panic(fmt.Errorf("not implemented: CreateMemberBooking - create_member_booking"))
+}
+
+// ViewBookingHistory is the resolver for the view_booking_history field.
+func (r *mutationResolver) ViewBookingHistory(ctx context.Context) ([]*ent.Booking, error) {
+	panic(fmt.Errorf("not implemented: ViewBookingHistory - view_booking_history"))
+}
+
+// SearchBooking is the resolver for the search_booking field.
+func (r *mutationResolver) SearchBooking(ctx context.Context, input ent.SearchBooking) ([]*ent.Booking, error) {
+	panic(fmt.Errorf("not implemented: SearchBooking - search_booking"))
 }
 
 // Mutation returns graphql1.MutationResolver implementation.

@@ -426,19 +426,16 @@ type BookingWhereInput struct {
 	CodeContainsFold *string  `json:"codeContainsFold,omitempty"`
 
 	// "status" field predicates.
-	Status             *string  `json:"status,omitempty"`
-	StatusNEQ          *string  `json:"statusNEQ,omitempty"`
-	StatusIn           []string `json:"statusIn,omitempty"`
-	StatusNotIn        []string `json:"statusNotIn,omitempty"`
-	StatusGT           *string  `json:"statusGT,omitempty"`
-	StatusGTE          *string  `json:"statusGTE,omitempty"`
-	StatusLT           *string  `json:"statusLT,omitempty"`
-	StatusLTE          *string  `json:"statusLTE,omitempty"`
-	StatusContains     *string  `json:"statusContains,omitempty"`
-	StatusHasPrefix    *string  `json:"statusHasPrefix,omitempty"`
-	StatusHasSuffix    *string  `json:"statusHasSuffix,omitempty"`
-	StatusEqualFold    *string  `json:"statusEqualFold,omitempty"`
-	StatusContainsFold *string  `json:"statusContainsFold,omitempty"`
+	Status      *booking.Status  `json:"status,omitempty"`
+	StatusNEQ   *booking.Status  `json:"statusNEQ,omitempty"`
+	StatusIn    []booking.Status `json:"statusIn,omitempty"`
+	StatusNotIn []booking.Status `json:"statusNotIn,omitempty"`
+
+	// "seat_type" field predicates.
+	SeatType      *booking.SeatType  `json:"seatType,omitempty"`
+	SeatTypeNEQ   *booking.SeatType  `json:"seatTypeNEQ,omitempty"`
+	SeatTypeIn    []booking.SeatType `json:"seatTypeIn,omitempty"`
+	SeatTypeNotIn []booking.SeatType `json:"seatTypeNotIn,omitempty"`
 
 	// "customer_id" field predicates.
 	CustomerID       *int  `json:"customerID,omitempty"`
@@ -659,32 +656,17 @@ func (i *BookingWhereInput) P() (predicate.Booking, error) {
 	if len(i.StatusNotIn) > 0 {
 		predicates = append(predicates, booking.StatusNotIn(i.StatusNotIn...))
 	}
-	if i.StatusGT != nil {
-		predicates = append(predicates, booking.StatusGT(*i.StatusGT))
+	if i.SeatType != nil {
+		predicates = append(predicates, booking.SeatTypeEQ(*i.SeatType))
 	}
-	if i.StatusGTE != nil {
-		predicates = append(predicates, booking.StatusGTE(*i.StatusGTE))
+	if i.SeatTypeNEQ != nil {
+		predicates = append(predicates, booking.SeatTypeNEQ(*i.SeatTypeNEQ))
 	}
-	if i.StatusLT != nil {
-		predicates = append(predicates, booking.StatusLT(*i.StatusLT))
+	if len(i.SeatTypeIn) > 0 {
+		predicates = append(predicates, booking.SeatTypeIn(i.SeatTypeIn...))
 	}
-	if i.StatusLTE != nil {
-		predicates = append(predicates, booking.StatusLTE(*i.StatusLTE))
-	}
-	if i.StatusContains != nil {
-		predicates = append(predicates, booking.StatusContains(*i.StatusContains))
-	}
-	if i.StatusHasPrefix != nil {
-		predicates = append(predicates, booking.StatusHasPrefix(*i.StatusHasPrefix))
-	}
-	if i.StatusHasSuffix != nil {
-		predicates = append(predicates, booking.StatusHasSuffix(*i.StatusHasSuffix))
-	}
-	if i.StatusEqualFold != nil {
-		predicates = append(predicates, booking.StatusEqualFold(*i.StatusEqualFold))
-	}
-	if i.StatusContainsFold != nil {
-		predicates = append(predicates, booking.StatusContainsFold(*i.StatusContainsFold))
+	if len(i.SeatTypeNotIn) > 0 {
+		predicates = append(predicates, booking.SeatTypeNotIn(i.SeatTypeNotIn...))
 	}
 	if i.CustomerID != nil {
 		predicates = append(predicates, booking.CustomerIDEQ(*i.CustomerID))
@@ -852,14 +834,16 @@ type CustomerWhereInput struct {
 	FullNameContainsFold *string  `json:"fullNameContainsFold,omitempty"`
 
 	// "dob" field predicates.
-	Dob      *time.Time  `json:"dob,omitempty"`
-	DobNEQ   *time.Time  `json:"dobNEQ,omitempty"`
-	DobIn    []time.Time `json:"dobIn,omitempty"`
-	DobNotIn []time.Time `json:"dobNotIn,omitempty"`
-	DobGT    *time.Time  `json:"dobGT,omitempty"`
-	DobGTE   *time.Time  `json:"dobGTE,omitempty"`
-	DobLT    *time.Time  `json:"dobLT,omitempty"`
-	DobLTE   *time.Time  `json:"dobLTE,omitempty"`
+	Dob       *time.Time  `json:"dob,omitempty"`
+	DobNEQ    *time.Time  `json:"dobNEQ,omitempty"`
+	DobIn     []time.Time `json:"dobIn,omitempty"`
+	DobNotIn  []time.Time `json:"dobNotIn,omitempty"`
+	DobGT     *time.Time  `json:"dobGT,omitempty"`
+	DobGTE    *time.Time  `json:"dobGTE,omitempty"`
+	DobLT     *time.Time  `json:"dobLT,omitempty"`
+	DobLTE    *time.Time  `json:"dobLTE,omitempty"`
+	DobIsNil  bool        `json:"dobIsNil,omitempty"`
+	DobNotNil bool        `json:"dobNotNil,omitempty"`
 
 	// "cid" field predicates.
 	Cid             *string  `json:"cid,omitempty"`
@@ -1176,6 +1160,12 @@ func (i *CustomerWhereInput) P() (predicate.Customer, error) {
 	}
 	if i.DobLTE != nil {
 		predicates = append(predicates, customer.DobLTE(*i.DobLTE))
+	}
+	if i.DobIsNil {
+		predicates = append(predicates, customer.DobIsNil())
+	}
+	if i.DobNotNil {
+		predicates = append(predicates, customer.DobNotNil())
 	}
 	if i.Cid != nil {
 		predicates = append(predicates, customer.CidEQ(*i.Cid))

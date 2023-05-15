@@ -74,6 +74,14 @@ func (cc *CustomerCreate) SetDob(t time.Time) *CustomerCreate {
 	return cc
 }
 
+// SetNillableDob sets the "dob" field if the given value is not nil.
+func (cc *CustomerCreate) SetNillableDob(t *time.Time) *CustomerCreate {
+	if t != nil {
+		cc.SetDob(*t)
+	}
+	return cc
+}
+
 // SetCid sets the "cid" field.
 func (cc *CustomerCreate) SetCid(s string) *CustomerCreate {
 	cc.mutation.SetCid(s)
@@ -204,9 +212,6 @@ func (cc *CustomerCreate) check() error {
 		if err := customer.FullNameValidator(v); err != nil {
 			return &ValidationError{Name: "full_name", err: fmt.Errorf(`ent: validator failed for field "Customer.full_name": %w`, err)}
 		}
-	}
-	if _, ok := cc.mutation.Dob(); !ok {
-		return &ValidationError{Name: "dob", err: errors.New(`ent: missing required field "Customer.dob"`)}
 	}
 	if _, ok := cc.mutation.Cid(); !ok {
 		return &ValidationError{Name: "cid", err: errors.New(`ent: missing required field "Customer.cid"`)}

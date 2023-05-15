@@ -195,6 +195,11 @@ func (b *BookingQuery) collectField(ctx context.Context, opCtx *graphql.Operatio
 				selectedFields = append(selectedFields, booking.FieldStatus)
 				fieldSeen[booking.FieldStatus] = struct{}{}
 			}
+		case "seatType":
+			if _, ok := fieldSeen[booking.FieldSeatType]; !ok {
+				selectedFields = append(selectedFields, booking.FieldSeatType)
+				fieldSeen[booking.FieldSeatType] = struct{}{}
+			}
 		case "customerID":
 			if _, ok := fieldSeen[booking.FieldCustomerID]; !ok {
 				selectedFields = append(selectedFields, booking.FieldCustomerID)

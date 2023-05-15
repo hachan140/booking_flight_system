@@ -12,12 +12,14 @@ type Mutation{
     find_member_by_name(name: String!): [Member]
     change_password(oldPassword: String!, newPassword: String!): String
     update_member_profile(input: UpdateMemberInput): Member!
+    find_member_by_email(email: String!): Member!
 
     #AIRPORT
     create_airport(input:CreateAirportInput!): Airport!
     update_airport(id: Int!, input:UpdateAirportInput!): Airport!
     delete_airport(id: Int!): String
     find_airport_by_id(id: Int!): Airport!
+    find_airport_by_name(name: String!): Airport!
 
     #PLANE
     create_plane(input:CreatePlaneInput!): Plane!
@@ -25,12 +27,21 @@ type Mutation{
     delete_plane(id:Int!): String
     find_plane_by_id(id: Int!): Plane!
 
-    #FLIGHTS
+    #FLIGHT
     create_flight(input:CreateFlight!): Flight!
-    cancel_flight: String
+    cancel_flight(id: Int!): String
     update_flight_slot: Flight!
-    update_flight_status(status: String!):Flight!
-    search_flight(depart_at: String!, dest_at: String!): [Flight!]
+    update_flight_status(id: Int!,input: UpdateFlightStatus):Flight!
+    search_flight(input: SearchFlight!): [Flight!]
+    find_flight_by_id(id: Int!): Flight!
 
+    #CUSTOMER
+    create_customer(input: CustomerInput!): Customer!
+
+    #BOOKING
+    create_customer_booking(input: CustomerBooking!): Booking!
+    create_member_booking(input: MemberBooking!): Booking!
+    view_booking_history: [Booking!]
+    search_booking(input: SearchBooking!): [Booking!]
 }
 

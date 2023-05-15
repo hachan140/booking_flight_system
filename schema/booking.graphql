@@ -1,0 +1,20 @@
+input CustomerBooking{
+    seatType: BookingSeatType!
+    flight_id: ID!
+    customer_id: ID!
+    status: BookingStatus
+}
+
+input MemberBooking{
+    seatType: BookingSeatType!
+    flight_id: ID!
+    member_id: ID!
+    status: BookingStatus
+}
+
+input SearchBooking{
+    flight_id: ID
+    depart_at: Time
+    from_airport: String
+    to_airport: String
+}
