@@ -6,6 +6,7 @@ import (
 	"booking-flight-system/ent"
 	"booking-flight-system/ent/booking"
 	"booking-flight-system/ent/flight"
+	"booking-flight-system/ent/member"
 	"booking-flight-system/ent/plane"
 	"bytes"
 	"context"
@@ -114,8 +115,8 @@ type ComplexityRoot struct {
 		FullName    func(childComplexity int) int
 		HasCustomer func(childComplexity int) int
 		ID          func(childComplexity int) int
+		MemberType  func(childComplexity int) int
 		PhoneNumber func(childComplexity int) int
-		Role        func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
 	}
 
@@ -605,19 +606,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Member.ID(childComplexity), true
 
+	case "Member.memberType":
+		if e.complexity.Member.MemberType == nil {
+			break
+		}
+
+		return e.complexity.Member.MemberType(childComplexity), true
+
 	case "Member.phoneNumber":
 		if e.complexity.Member.PhoneNumber == nil {
 			break
 		}
 
 		return e.complexity.Member.PhoneNumber(childComplexity), true
-
-	case "Member.role":
-		if e.complexity.Member.Role == nil {
-			break
-		}
-
-		return e.complexity.Member.Role(childComplexity), true
 
 	case "Member.updatedAt":
 		if e.complexity.Member.UpdatedAt == nil {
@@ -1231,7 +1232,9 @@ input SearchBooking{
     fullName: String!
     dob: Time
     cid: String!
-}`, BuiltIn: false},
+}
+
+`, BuiltIn: false},
 	{Name: "../schema/ent.graphql", Input: `directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 directive @goModel(model: String, models: [String!]) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
 type Airport implements Node {
@@ -1492,7 +1495,7 @@ input CreateMemberInput {
   fullName: String!
   dob: Time
   cid: String!
-  role: Int
+  memberType: MemberMemberType
   hasCustomerID: ID
 }
 """
@@ -1800,8 +1803,13 @@ type Member implements Node {
   fullName: String!
   dob: Time
   cid: String!
-  role: Int!
+  memberType: MemberMemberType
   hasCustomer: Customer
+}
+"""MemberMemberType is enum for the field member_type"""
+enum MemberMemberType @goModel(model: "booking-flight-system/ent/member.MemberType") {
+  ADMIN
+  MEMBER
 }
 """
 MemberWhereInput is used for filtering Member objects.
@@ -1905,15 +1913,13 @@ input MemberWhereInput {
   cidHasSuffix: String
   cidEqualFold: String
   cidContainsFold: String
-  """role field predicates"""
-  role: Int
-  roleNEQ: Int
-  roleIn: [Int!]
-  roleNotIn: [Int!]
-  roleGT: Int
-  roleGTE: Int
-  roleLT: Int
-  roleLTE: Int
+  """member_type field predicates"""
+  memberType: MemberMemberType
+  memberTypeNEQ: MemberMemberType
+  memberTypeIn: [MemberMemberType!]
+  memberTypeNotIn: [MemberMemberType!]
+  memberTypeIsNil: Boolean
+  memberTypeNotNil: Boolean
   """has_customer edge predicates"""
   hasHasCustomer: Boolean
   hasHasCustomerWith: [CustomerWhereInput!]
@@ -2146,7 +2152,8 @@ input UpdateMemberInput {
   dob: Time
   clearDob: Boolean
   cid: String
-  role: Int
+  memberType: MemberMemberType
+  clearMemberType: Boolean
   hasCustomerID: ID
   clearHasCustomer: Boolean
 }
@@ -4093,8 +4100,8 @@ func (ec *executionContext) fieldContext_Customer_hasMember(ctx context.Context,
 				return ec.fieldContext_Member_dob(ctx, field)
 			case "cid":
 				return ec.fieldContext_Member_cid(ctx, field)
-			case "role":
-				return ec.fieldContext_Member_role(ctx, field)
+			case "memberType":
+				return ec.fieldContext_Member_memberType(ctx, field)
 			case "hasCustomer":
 				return ec.fieldContext_Member_hasCustomer(ctx, field)
 			}
@@ -5275,8 +5282,8 @@ func (ec *executionContext) fieldContext_Member_cid(ctx context.Context, field g
 	return fc, nil
 }
 
-func (ec *executionContext) _Member_role(ctx context.Context, field graphql.CollectedField, obj *ent.Member) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Member_role(ctx, field)
+func (ec *executionContext) _Member_memberType(ctx context.Context, field graphql.CollectedField, obj *ent.Member) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Member_memberType(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5289,31 +5296,28 @@ func (ec *executionContext) _Member_role(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Role, nil
+		return obj.MemberType, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(member.MemberType)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalOMemberMemberType2bookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Member_role(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Member_memberType(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Member",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type MemberMemberType does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5439,8 +5443,8 @@ func (ec *executionContext) fieldContext_Mutation_sign_up(ctx context.Context, f
 				return ec.fieldContext_Member_dob(ctx, field)
 			case "cid":
 				return ec.fieldContext_Member_cid(ctx, field)
-			case "role":
-				return ec.fieldContext_Member_role(ctx, field)
+			case "memberType":
+				return ec.fieldContext_Member_memberType(ctx, field)
 			case "hasCustomer":
 				return ec.fieldContext_Member_hasCustomer(ctx, field)
 			}
@@ -5577,8 +5581,8 @@ func (ec *executionContext) fieldContext_Mutation_self(ctx context.Context, fiel
 				return ec.fieldContext_Member_dob(ctx, field)
 			case "cid":
 				return ec.fieldContext_Member_cid(ctx, field)
-			case "role":
-				return ec.fieldContext_Member_role(ctx, field)
+			case "memberType":
+				return ec.fieldContext_Member_memberType(ctx, field)
 			case "hasCustomer":
 				return ec.fieldContext_Member_hasCustomer(ctx, field)
 			}
@@ -5692,8 +5696,8 @@ func (ec *executionContext) fieldContext_Mutation_find_member_by_name(ctx contex
 				return ec.fieldContext_Member_dob(ctx, field)
 			case "cid":
 				return ec.fieldContext_Member_cid(ctx, field)
-			case "role":
-				return ec.fieldContext_Member_role(ctx, field)
+			case "memberType":
+				return ec.fieldContext_Member_memberType(ctx, field)
 			case "hasCustomer":
 				return ec.fieldContext_Member_hasCustomer(ctx, field)
 			}
@@ -5821,8 +5825,8 @@ func (ec *executionContext) fieldContext_Mutation_update_member_profile(ctx cont
 				return ec.fieldContext_Member_dob(ctx, field)
 			case "cid":
 				return ec.fieldContext_Member_cid(ctx, field)
-			case "role":
-				return ec.fieldContext_Member_role(ctx, field)
+			case "memberType":
+				return ec.fieldContext_Member_memberType(ctx, field)
 			case "hasCustomer":
 				return ec.fieldContext_Member_hasCustomer(ctx, field)
 			}
@@ -5898,8 +5902,8 @@ func (ec *executionContext) fieldContext_Mutation_find_member_by_email(ctx conte
 				return ec.fieldContext_Member_dob(ctx, field)
 			case "cid":
 				return ec.fieldContext_Member_cid(ctx, field)
-			case "role":
-				return ec.fieldContext_Member_role(ctx, field)
+			case "memberType":
+				return ec.fieldContext_Member_memberType(ctx, field)
 			case "hasCustomer":
 				return ec.fieldContext_Member_hasCustomer(ctx, field)
 			}
@@ -8377,8 +8381,8 @@ func (ec *executionContext) fieldContext_Query_members(ctx context.Context, fiel
 				return ec.fieldContext_Member_dob(ctx, field)
 			case "cid":
 				return ec.fieldContext_Member_cid(ctx, field)
-			case "role":
-				return ec.fieldContext_Member_role(ctx, field)
+			case "memberType":
+				return ec.fieldContext_Member_memberType(ctx, field)
 			case "hasCustomer":
 				return ec.fieldContext_Member_hasCustomer(ctx, field)
 			}
@@ -12090,7 +12094,7 @@ func (ec *executionContext) unmarshalInputCreateMemberInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "email", "password", "phoneNumber", "fullName", "dob", "cid", "role", "hasCustomerID"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "email", "password", "phoneNumber", "fullName", "dob", "cid", "memberType", "hasCustomerID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -12169,15 +12173,15 @@ func (ec *executionContext) unmarshalInputCreateMemberInput(ctx context.Context,
 				return it, err
 			}
 			it.Cid = data
-		case "role":
+		case "memberType":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("memberType"))
+			data, err := ec.unmarshalOMemberMemberType2ᚖbookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Role = data
+			it.MemberType = data
 		case "hasCustomerID":
 			var err error
 
@@ -14309,7 +14313,7 @@ func (ec *executionContext) unmarshalInputMemberWhereInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailEqualFold", "emailContainsFold", "phoneNumber", "phoneNumberNEQ", "phoneNumberIn", "phoneNumberNotIn", "phoneNumberGT", "phoneNumberGTE", "phoneNumberLT", "phoneNumberLTE", "phoneNumberContains", "phoneNumberHasPrefix", "phoneNumberHasSuffix", "phoneNumberEqualFold", "phoneNumberContainsFold", "fullName", "fullNameNEQ", "fullNameIn", "fullNameNotIn", "fullNameGT", "fullNameGTE", "fullNameLT", "fullNameLTE", "fullNameContains", "fullNameHasPrefix", "fullNameHasSuffix", "fullNameEqualFold", "fullNameContainsFold", "dob", "dobNEQ", "dobIn", "dobNotIn", "dobGT", "dobGTE", "dobLT", "dobLTE", "dobIsNil", "dobNotNil", "cid", "cidNEQ", "cidIn", "cidNotIn", "cidGT", "cidGTE", "cidLT", "cidLTE", "cidContains", "cidHasPrefix", "cidHasSuffix", "cidEqualFold", "cidContainsFold", "role", "roleNEQ", "roleIn", "roleNotIn", "roleGT", "roleGTE", "roleLT", "roleLTE", "hasHasCustomer", "hasHasCustomerWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailEqualFold", "emailContainsFold", "phoneNumber", "phoneNumberNEQ", "phoneNumberIn", "phoneNumberNotIn", "phoneNumberGT", "phoneNumberGTE", "phoneNumberLT", "phoneNumberLTE", "phoneNumberContains", "phoneNumberHasPrefix", "phoneNumberHasSuffix", "phoneNumberEqualFold", "phoneNumberContainsFold", "fullName", "fullNameNEQ", "fullNameIn", "fullNameNotIn", "fullNameGT", "fullNameGTE", "fullNameLT", "fullNameLTE", "fullNameContains", "fullNameHasPrefix", "fullNameHasSuffix", "fullNameEqualFold", "fullNameContainsFold", "dob", "dobNEQ", "dobIn", "dobNotIn", "dobGT", "dobGTE", "dobLT", "dobLTE", "dobIsNil", "dobNotNil", "cid", "cidNEQ", "cidIn", "cidNotIn", "cidGT", "cidGTE", "cidLT", "cidLTE", "cidContains", "cidHasPrefix", "cidHasSuffix", "cidEqualFold", "cidContainsFold", "memberType", "memberTypeNEQ", "memberTypeIn", "memberTypeNotIn", "memberTypeIsNil", "memberTypeNotNil", "hasHasCustomer", "hasHasCustomerWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -15117,78 +15121,60 @@ func (ec *executionContext) unmarshalInputMemberWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.CidContainsFold = data
-		case "role":
+		case "memberType":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("memberType"))
+			data, err := ec.unmarshalOMemberMemberType2ᚖbookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Role = data
-		case "roleNEQ":
+			it.MemberType = data
+		case "memberTypeNEQ":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("roleNEQ"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("memberTypeNEQ"))
+			data, err := ec.unmarshalOMemberMemberType2ᚖbookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.RoleNEQ = data
-		case "roleIn":
+			it.MemberTypeNEQ = data
+		case "memberTypeIn":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("roleIn"))
-			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("memberTypeIn"))
+			data, err := ec.unmarshalOMemberMemberType2ᚕbookingᚑflightᚑsystemᚋentᚋmemberᚐMemberTypeᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.RoleIn = data
-		case "roleNotIn":
+			it.MemberTypeIn = data
+		case "memberTypeNotIn":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("roleNotIn"))
-			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("memberTypeNotIn"))
+			data, err := ec.unmarshalOMemberMemberType2ᚕbookingᚑflightᚑsystemᚋentᚋmemberᚐMemberTypeᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.RoleNotIn = data
-		case "roleGT":
+			it.MemberTypeNotIn = data
+		case "memberTypeIsNil":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("roleGT"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("memberTypeIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.RoleGT = data
-		case "roleGTE":
+			it.MemberTypeIsNil = data
+		case "memberTypeNotNil":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("roleGTE"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("memberTypeNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.RoleGTE = data
-		case "roleLT":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("roleLT"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.RoleLT = data
-		case "roleLTE":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("roleLTE"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.RoleLTE = data
+			it.MemberTypeNotNil = data
 		case "hasHasCustomer":
 			var err error
 
@@ -16507,7 +16493,7 @@ func (ec *executionContext) unmarshalInputUpdateMemberInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "email", "password", "phoneNumber", "fullName", "dob", "clearDob", "cid", "role", "hasCustomerID", "clearHasCustomer"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "email", "password", "phoneNumber", "fullName", "dob", "clearDob", "cid", "memberType", "clearMemberType", "hasCustomerID", "clearHasCustomer"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -16595,15 +16581,24 @@ func (ec *executionContext) unmarshalInputUpdateMemberInput(ctx context.Context,
 				return it, err
 			}
 			it.Cid = data
-		case "role":
+		case "memberType":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("memberType"))
+			data, err := ec.unmarshalOMemberMemberType2ᚖbookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.Role = data
+			it.MemberType = data
+		case "clearMemberType":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearMemberType"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearMemberType = data
 		case "hasCustomerID":
 			var err error
 
@@ -17317,13 +17312,10 @@ func (ec *executionContext) _Member(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "role":
+		case "memberType":
 
-			out.Values[i] = ec._Member_role(ctx, field, obj)
+			out.Values[i] = ec._Member_memberType(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "hasCustomer":
 			field := field
 
@@ -18852,6 +18844,16 @@ func (ec *executionContext) unmarshalNMemberBooking2bookingᚑflightᚑsystemᚋ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNMemberMemberType2bookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx context.Context, v interface{}) (member.MemberType, error) {
+	var res member.MemberType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNMemberMemberType2bookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx context.Context, sel ast.SelectionSet, v member.MemberType) graphql.Marshaler {
+	return v
+}
+
 func (ec *executionContext) unmarshalNMemberWhereInput2ᚖbookingᚑflightᚑsystemᚋentᚐMemberWhereInput(ctx context.Context, v interface{}) (*ent.MemberWhereInput, error) {
 	res, err := ec.unmarshalInputMemberWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
@@ -20091,6 +20093,99 @@ func (ec *executionContext) marshalOMember2ᚖbookingᚑflightᚑsystemᚋentᚐ
 		return graphql.Null
 	}
 	return ec._Member(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOMemberMemberType2bookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx context.Context, v interface{}) (member.MemberType, error) {
+	var res member.MemberType
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOMemberMemberType2bookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx context.Context, sel ast.SelectionSet, v member.MemberType) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalOMemberMemberType2ᚕbookingᚑflightᚑsystemᚋentᚋmemberᚐMemberTypeᚄ(ctx context.Context, v interface{}) ([]member.MemberType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]member.MemberType, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNMemberMemberType2bookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOMemberMemberType2ᚕbookingᚑflightᚑsystemᚋentᚋmemberᚐMemberTypeᚄ(ctx context.Context, sel ast.SelectionSet, v []member.MemberType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNMemberMemberType2bookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOMemberMemberType2ᚖbookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx context.Context, v interface{}) (*member.MemberType, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(member.MemberType)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOMemberMemberType2ᚖbookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx context.Context, sel ast.SelectionSet, v *member.MemberType) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOMemberWhereInput2ᚕᚖbookingᚑflightᚑsystemᚋentᚐMemberWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.MemberWhereInput, error) {

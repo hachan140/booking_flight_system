@@ -34,8 +34,8 @@ type Member struct {
 	Dob time.Time `json:"dob,omitempty"`
 	// Cid holds the value of the "cid" field.
 	Cid string `json:"cid,omitempty"`
-	// Role holds the value of the "role" field.
-	Role int `json:"role,omitempty"`
+	// MemberType holds the value of the "member_type" field.
+	MemberType member.MemberType `json:"member_type,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the MemberQuery when eager-loading is set.
 	Edges        MemberEdges `json:"edges"`
@@ -71,9 +71,9 @@ func (*Member) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case member.FieldID, member.FieldRole:
+		case member.FieldID:
 			values[i] = new(sql.NullInt64)
-		case member.FieldEmail, member.FieldPassword, member.FieldPhoneNumber, member.FieldFullName, member.FieldCid:
+		case member.FieldEmail, member.FieldPassword, member.FieldPhoneNumber, member.FieldFullName, member.FieldCid, member.FieldMemberType:
 			values[i] = new(sql.NullString)
 		case member.FieldCreatedAt, member.FieldUpdatedAt, member.FieldDob:
 			values[i] = new(sql.NullTime)
@@ -146,11 +146,11 @@ func (m *Member) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				m.Cid = value.String
 			}
-		case member.FieldRole:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field role", values[i])
+		case member.FieldMemberType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field member_type", values[i])
 			} else if value.Valid {
-				m.Role = int(value.Int64)
+				m.MemberType = member.MemberType(value.String)
 			}
 		default:
 			m.selectValues.Set(columns[i], values[i])
@@ -216,8 +216,8 @@ func (m *Member) String() string {
 	builder.WriteString("cid=")
 	builder.WriteString(m.Cid)
 	builder.WriteString(", ")
-	builder.WriteString("role=")
-	builder.WriteString(fmt.Sprintf("%v", m.Role))
+	builder.WriteString("member_type=")
+	builder.WriteString(fmt.Sprintf("%v", m.MemberType))
 	builder.WriteByte(')')
 	return builder.String()
 }

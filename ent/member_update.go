@@ -99,24 +99,23 @@ func (mu *MemberUpdate) SetCid(s string) *MemberUpdate {
 	return mu
 }
 
-// SetRole sets the "role" field.
-func (mu *MemberUpdate) SetRole(i int) *MemberUpdate {
-	mu.mutation.ResetRole()
-	mu.mutation.SetRole(i)
+// SetMemberType sets the "member_type" field.
+func (mu *MemberUpdate) SetMemberType(mt member.MemberType) *MemberUpdate {
+	mu.mutation.SetMemberType(mt)
 	return mu
 }
 
-// SetNillableRole sets the "role" field if the given value is not nil.
-func (mu *MemberUpdate) SetNillableRole(i *int) *MemberUpdate {
-	if i != nil {
-		mu.SetRole(*i)
+// SetNillableMemberType sets the "member_type" field if the given value is not nil.
+func (mu *MemberUpdate) SetNillableMemberType(mt *member.MemberType) *MemberUpdate {
+	if mt != nil {
+		mu.SetMemberType(*mt)
 	}
 	return mu
 }
 
-// AddRole adds i to the "role" field.
-func (mu *MemberUpdate) AddRole(i int) *MemberUpdate {
-	mu.mutation.AddRole(i)
+// ClearMemberType clears the value of the "member_type" field.
+func (mu *MemberUpdate) ClearMemberType() *MemberUpdate {
+	mu.mutation.ClearMemberType()
 	return mu
 }
 
@@ -203,6 +202,11 @@ func (mu *MemberUpdate) check() error {
 			return &ValidationError{Name: "full_name", err: fmt.Errorf(`ent: validator failed for field "Member.full_name": %w`, err)}
 		}
 	}
+	if v, ok := mu.mutation.MemberType(); ok {
+		if err := member.MemberTypeValidator(v); err != nil {
+			return &ValidationError{Name: "member_type", err: fmt.Errorf(`ent: validator failed for field "Member.member_type": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -245,11 +249,11 @@ func (mu *MemberUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := mu.mutation.Cid(); ok {
 		_spec.SetField(member.FieldCid, field.TypeString, value)
 	}
-	if value, ok := mu.mutation.Role(); ok {
-		_spec.SetField(member.FieldRole, field.TypeInt, value)
+	if value, ok := mu.mutation.MemberType(); ok {
+		_spec.SetField(member.FieldMemberType, field.TypeEnum, value)
 	}
-	if value, ok := mu.mutation.AddedRole(); ok {
-		_spec.AddField(member.FieldRole, field.TypeInt, value)
+	if mu.mutation.MemberTypeCleared() {
+		_spec.ClearField(member.FieldMemberType, field.TypeEnum)
 	}
 	if mu.mutation.HasCustomerCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -370,24 +374,23 @@ func (muo *MemberUpdateOne) SetCid(s string) *MemberUpdateOne {
 	return muo
 }
 
-// SetRole sets the "role" field.
-func (muo *MemberUpdateOne) SetRole(i int) *MemberUpdateOne {
-	muo.mutation.ResetRole()
-	muo.mutation.SetRole(i)
+// SetMemberType sets the "member_type" field.
+func (muo *MemberUpdateOne) SetMemberType(mt member.MemberType) *MemberUpdateOne {
+	muo.mutation.SetMemberType(mt)
 	return muo
 }
 
-// SetNillableRole sets the "role" field if the given value is not nil.
-func (muo *MemberUpdateOne) SetNillableRole(i *int) *MemberUpdateOne {
-	if i != nil {
-		muo.SetRole(*i)
+// SetNillableMemberType sets the "member_type" field if the given value is not nil.
+func (muo *MemberUpdateOne) SetNillableMemberType(mt *member.MemberType) *MemberUpdateOne {
+	if mt != nil {
+		muo.SetMemberType(*mt)
 	}
 	return muo
 }
 
-// AddRole adds i to the "role" field.
-func (muo *MemberUpdateOne) AddRole(i int) *MemberUpdateOne {
-	muo.mutation.AddRole(i)
+// ClearMemberType clears the value of the "member_type" field.
+func (muo *MemberUpdateOne) ClearMemberType() *MemberUpdateOne {
+	muo.mutation.ClearMemberType()
 	return muo
 }
 
@@ -487,6 +490,11 @@ func (muo *MemberUpdateOne) check() error {
 			return &ValidationError{Name: "full_name", err: fmt.Errorf(`ent: validator failed for field "Member.full_name": %w`, err)}
 		}
 	}
+	if v, ok := muo.mutation.MemberType(); ok {
+		if err := member.MemberTypeValidator(v); err != nil {
+			return &ValidationError{Name: "member_type", err: fmt.Errorf(`ent: validator failed for field "Member.member_type": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -546,11 +554,11 @@ func (muo *MemberUpdateOne) sqlSave(ctx context.Context) (_node *Member, err err
 	if value, ok := muo.mutation.Cid(); ok {
 		_spec.SetField(member.FieldCid, field.TypeString, value)
 	}
-	if value, ok := muo.mutation.Role(); ok {
-		_spec.SetField(member.FieldRole, field.TypeInt, value)
+	if value, ok := muo.mutation.MemberType(); ok {
+		_spec.SetField(member.FieldMemberType, field.TypeEnum, value)
 	}
-	if value, ok := muo.mutation.AddedRole(); ok {
-		_spec.AddField(member.FieldRole, field.TypeInt, value)
+	if muo.mutation.MemberTypeCleared() {
+		_spec.ClearField(member.FieldMemberType, field.TypeEnum)
 	}
 	if muo.mutation.HasCustomerCleared() {
 		edge := &sqlgraph.EdgeSpec{

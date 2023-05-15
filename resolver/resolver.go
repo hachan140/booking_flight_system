@@ -3,6 +3,7 @@ package resolver
 import (
 	"booking-flight-system/ent"
 	generated "booking-flight-system/graphql"
+	"booking-flight-system/helper"
 	"booking-flight-system/jwt"
 
 	"booking-flight-system/internal/util"
@@ -24,6 +25,7 @@ type Resolver struct {
 	validationTranslator ut.Translator
 	logger               *zap.Logger
 	jwtService           *jwt.Service
+	memberTypeValidator  *helper.MemberTypeValidator
 }
 
 func NewSchema(
@@ -32,6 +34,7 @@ func NewSchema(
 	validationTranslator ut.Translator,
 	logger *zap.Logger,
 	service *jwt.Service,
+	memberTypeValidator *helper.MemberTypeValidator,
 ) graphql.ExecutableSchema {
 	return generated.NewExecutableSchema(generated.Config{
 		Resolvers: &Resolver{
@@ -40,6 +43,7 @@ func NewSchema(
 			validationTranslator: validationTranslator,
 			logger:               logger,
 			jwtService:           service,
+			memberTypeValidator:  memberTypeValidator,
 		},
 	})
 }

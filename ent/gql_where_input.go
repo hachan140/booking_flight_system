@@ -1961,15 +1961,13 @@ type MemberWhereInput struct {
 	CidEqualFold    *string  `json:"cidEqualFold,omitempty"`
 	CidContainsFold *string  `json:"cidContainsFold,omitempty"`
 
-	// "role" field predicates.
-	Role      *int  `json:"role,omitempty"`
-	RoleNEQ   *int  `json:"roleNEQ,omitempty"`
-	RoleIn    []int `json:"roleIn,omitempty"`
-	RoleNotIn []int `json:"roleNotIn,omitempty"`
-	RoleGT    *int  `json:"roleGT,omitempty"`
-	RoleGTE   *int  `json:"roleGTE,omitempty"`
-	RoleLT    *int  `json:"roleLT,omitempty"`
-	RoleLTE   *int  `json:"roleLTE,omitempty"`
+	// "member_type" field predicates.
+	MemberType       *member.MemberType  `json:"memberType,omitempty"`
+	MemberTypeNEQ    *member.MemberType  `json:"memberTypeNEQ,omitempty"`
+	MemberTypeIn     []member.MemberType `json:"memberTypeIn,omitempty"`
+	MemberTypeNotIn  []member.MemberType `json:"memberTypeNotIn,omitempty"`
+	MemberTypeIsNil  bool                `json:"memberTypeIsNil,omitempty"`
+	MemberTypeNotNil bool                `json:"memberTypeNotNil,omitempty"`
 
 	// "has_customer" edge predicates.
 	HasHasCustomer     *bool                 `json:"hasHasCustomer,omitempty"`
@@ -2344,29 +2342,23 @@ func (i *MemberWhereInput) P() (predicate.Member, error) {
 	if i.CidContainsFold != nil {
 		predicates = append(predicates, member.CidContainsFold(*i.CidContainsFold))
 	}
-	if i.Role != nil {
-		predicates = append(predicates, member.RoleEQ(*i.Role))
+	if i.MemberType != nil {
+		predicates = append(predicates, member.MemberTypeEQ(*i.MemberType))
 	}
-	if i.RoleNEQ != nil {
-		predicates = append(predicates, member.RoleNEQ(*i.RoleNEQ))
+	if i.MemberTypeNEQ != nil {
+		predicates = append(predicates, member.MemberTypeNEQ(*i.MemberTypeNEQ))
 	}
-	if len(i.RoleIn) > 0 {
-		predicates = append(predicates, member.RoleIn(i.RoleIn...))
+	if len(i.MemberTypeIn) > 0 {
+		predicates = append(predicates, member.MemberTypeIn(i.MemberTypeIn...))
 	}
-	if len(i.RoleNotIn) > 0 {
-		predicates = append(predicates, member.RoleNotIn(i.RoleNotIn...))
+	if len(i.MemberTypeNotIn) > 0 {
+		predicates = append(predicates, member.MemberTypeNotIn(i.MemberTypeNotIn...))
 	}
-	if i.RoleGT != nil {
-		predicates = append(predicates, member.RoleGT(*i.RoleGT))
+	if i.MemberTypeIsNil {
+		predicates = append(predicates, member.MemberTypeIsNil())
 	}
-	if i.RoleGTE != nil {
-		predicates = append(predicates, member.RoleGTE(*i.RoleGTE))
-	}
-	if i.RoleLT != nil {
-		predicates = append(predicates, member.RoleLT(*i.RoleLT))
-	}
-	if i.RoleLTE != nil {
-		predicates = append(predicates, member.RoleLTE(*i.RoleLTE))
+	if i.MemberTypeNotNil {
+		predicates = append(predicates, member.MemberTypeNotNil())
 	}
 
 	if i.HasHasCustomer != nil {

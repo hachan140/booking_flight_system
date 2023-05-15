@@ -258,7 +258,7 @@ input CreateMemberInput {
   fullName: String!
   dob: Time
   cid: String!
-  role: Int
+  memberType: MemberMemberType
   hasCustomerID: ID
 }
 """
@@ -566,8 +566,13 @@ type Member implements Node {
   fullName: String!
   dob: Time
   cid: String!
-  role: Int!
+  memberType: MemberMemberType
   hasCustomer: Customer
+}
+"""MemberMemberType is enum for the field member_type"""
+enum MemberMemberType @goModel(model: "booking-flight-system/ent/member.MemberType") {
+  ADMIN
+  MEMBER
 }
 """
 MemberWhereInput is used for filtering Member objects.
@@ -671,15 +676,13 @@ input MemberWhereInput {
   cidHasSuffix: String
   cidEqualFold: String
   cidContainsFold: String
-  """role field predicates"""
-  role: Int
-  roleNEQ: Int
-  roleIn: [Int!]
-  roleNotIn: [Int!]
-  roleGT: Int
-  roleGTE: Int
-  roleLT: Int
-  roleLTE: Int
+  """member_type field predicates"""
+  memberType: MemberMemberType
+  memberTypeNEQ: MemberMemberType
+  memberTypeIn: [MemberMemberType!]
+  memberTypeNotIn: [MemberMemberType!]
+  memberTypeIsNil: Boolean
+  memberTypeNotNil: Boolean
   """has_customer edge predicates"""
   hasHasCustomer: Boolean
   hasHasCustomerWith: [CustomerWhereInput!]
@@ -912,7 +915,8 @@ input UpdateMemberInput {
   dob: Time
   clearDob: Boolean
   cid: String
-  role: Int
+  memberType: MemberMemberType
+  clearMemberType: Boolean
   hasCustomerID: ID
   clearHasCustomer: Boolean
 }

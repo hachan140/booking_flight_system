@@ -5,6 +5,7 @@ package ent
 import (
 	"booking-flight-system/ent/booking"
 	"booking-flight-system/ent/flight"
+	"booking-flight-system/ent/member"
 	"booking-flight-system/ent/plane"
 	"time"
 )
@@ -465,7 +466,7 @@ type CreateMemberInput struct {
 	FullName      string
 	Dob           *time.Time
 	Cid           string
-	Role          *int
+	MemberType    *member.MemberType
 	HasCustomerID *int
 }
 
@@ -485,8 +486,8 @@ func (i *CreateMemberInput) Mutate(m *MemberMutation) {
 		m.SetDob(*v)
 	}
 	m.SetCid(i.Cid)
-	if v := i.Role; v != nil {
-		m.SetRole(*v)
+	if v := i.MemberType; v != nil {
+		m.SetMemberType(*v)
 	}
 	if v := i.HasCustomerID; v != nil {
 		m.SetHasCustomerID(*v)
@@ -510,7 +511,8 @@ type UpdateMemberInput struct {
 	ClearDob         bool
 	Dob              *time.Time
 	Cid              *string
-	Role             *int
+	ClearMemberType  bool
+	MemberType       *member.MemberType
 	ClearHasCustomer bool
 	HasCustomerID    *int
 }
@@ -544,8 +546,11 @@ func (i *UpdateMemberInput) Mutate(m *MemberMutation) {
 	if v := i.Cid; v != nil {
 		m.SetCid(*v)
 	}
-	if v := i.Role; v != nil {
-		m.SetRole(*v)
+	if i.ClearMemberType {
+		m.ClearMemberType()
+	}
+	if v := i.MemberType; v != nil {
+		m.SetMemberType(*v)
 	}
 	if i.ClearHasCustomer {
 		m.ClearHasCustomer()

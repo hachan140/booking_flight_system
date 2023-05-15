@@ -6,8 +6,8 @@ package resolver
 
 import (
 	"booking-flight-system/ent"
+	"booking-flight-system/ent/airport"
 	"booking-flight-system/ent/booking"
-	"booking-flight-system/ent/booking-flight-system/ent/airport"
 	"booking-flight-system/ent/flight"
 	"booking-flight-system/ent/member"
 	graphql1 "booking-flight-system/graphql"
@@ -128,6 +128,9 @@ func (r *mutationResolver) CreateAirport(ctx context.Context, input ent.CreateAi
 
 // UpdateAirport is the resolver for the update_airport field.
 func (r *mutationResolver) UpdateAirport(ctx context.Context, id int, input ent.UpdateAirportInput) (*ent.Airport, error) {
+	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+		return nil, err
+	}
 	airport, err := r.FindAirportByID(ctx, id)
 	if err != nil {
 		return nil, errors.New("can't find airport")
@@ -171,6 +174,9 @@ func (r *mutationResolver) FindAirportByName(ctx context.Context, name string) (
 
 // CreatePlane is the resolver for the create_plane field.
 func (r *mutationResolver) CreatePlane(ctx context.Context, input ent.CreatePlaneInput) (*ent.Plane, error) {
+	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+		return nil, err
+	}
 	return r.client.Plane.Create().SetInput(input).Save(ctx)
 }
 
@@ -203,6 +209,9 @@ func (r *mutationResolver) FindPlaneByID(ctx context.Context, id int) (*ent.Plan
 
 // CreateFlight is the resolver for the create_flight field.
 func (r *mutationResolver) CreateFlight(ctx context.Context, input ent.CreateFlight) (*ent.Flight, error) {
+	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+		return nil, err
+	}
 	plane, err := r.client.Plane.Get(ctx, input.PlaneID)
 	if err != nil {
 		return nil, err
@@ -268,6 +277,7 @@ func (r *mutationResolver) CreateCustomer(ctx context.Context, input ent.Custome
 // CreateCustomerBooking is the resolver for the create_customer_booking field.
 func (r *mutationResolver) CreateCustomerBooking(ctx context.Context, input ent.CustomerBooking) (*ent.Booking, error) {
 	//booking, err := r.client.Booking.Create().SetStatus(booking.StatusSuccess).SetFlightID(input.FlightID).Save(ctx)
+	return nil, nil
 }
 
 // CreateMemberBooking is the resolver for the create_member_booking field.

@@ -93,16 +93,16 @@ func (mc *MemberCreate) SetCid(s string) *MemberCreate {
 	return mc
 }
 
-// SetRole sets the "role" field.
-func (mc *MemberCreate) SetRole(i int) *MemberCreate {
-	mc.mutation.SetRole(i)
+// SetMemberType sets the "member_type" field.
+func (mc *MemberCreate) SetMemberType(mt member.MemberType) *MemberCreate {
+	mc.mutation.SetMemberType(mt)
 	return mc
 }
 
-// SetNillableRole sets the "role" field if the given value is not nil.
-func (mc *MemberCreate) SetNillableRole(i *int) *MemberCreate {
-	if i != nil {
-		mc.SetRole(*i)
+// SetNillableMemberType sets the "member_type" field if the given value is not nil.
+func (mc *MemberCreate) SetNillableMemberType(mt *member.MemberType) *MemberCreate {
+	if mt != nil {
+		mc.SetMemberType(*mt)
 	}
 	return mc
 }
@@ -169,9 +169,9 @@ func (mc *MemberCreate) defaults() {
 		v := member.DefaultUpdatedAt()
 		mc.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := mc.mutation.Role(); !ok {
-		v := member.DefaultRole
-		mc.mutation.SetRole(v)
+	if _, ok := mc.mutation.MemberType(); !ok {
+		v := member.DefaultMemberType
+		mc.mutation.SetMemberType(v)
 	}
 }
 
@@ -213,8 +213,10 @@ func (mc *MemberCreate) check() error {
 	if _, ok := mc.mutation.Cid(); !ok {
 		return &ValidationError{Name: "cid", err: errors.New(`ent: missing required field "Member.cid"`)}
 	}
-	if _, ok := mc.mutation.Role(); !ok {
-		return &ValidationError{Name: "role", err: errors.New(`ent: missing required field "Member.role"`)}
+	if v, ok := mc.mutation.MemberType(); ok {
+		if err := member.MemberTypeValidator(v); err != nil {
+			return &ValidationError{Name: "member_type", err: fmt.Errorf(`ent: validator failed for field "Member.member_type": %w`, err)}
+		}
 	}
 	return nil
 }
@@ -274,9 +276,9 @@ func (mc *MemberCreate) createSpec() (*Member, *sqlgraph.CreateSpec) {
 		_spec.SetField(member.FieldCid, field.TypeString, value)
 		_node.Cid = value
 	}
-	if value, ok := mc.mutation.Role(); ok {
-		_spec.SetField(member.FieldRole, field.TypeInt, value)
-		_node.Role = value
+	if value, ok := mc.mutation.MemberType(); ok {
+		_spec.SetField(member.FieldMemberType, field.TypeEnum, value)
+		_node.MemberType = value
 	}
 	if nodes := mc.mutation.HasCustomerIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

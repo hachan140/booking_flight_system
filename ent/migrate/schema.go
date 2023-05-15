@@ -132,7 +132,7 @@ var (
 		{Name: "full_name", Type: field.TypeString},
 		{Name: "dob", Type: field.TypeTime, Nullable: true},
 		{Name: "cid", Type: field.TypeString, Unique: true},
-		{Name: "role", Type: field.TypeInt, Default: 1},
+		{Name: "member_type", Type: field.TypeEnum, Nullable: true, Enums: []string{"ADMIN", "MEMBER"}, Default: "MEMBER"},
 	}
 	// MembersTable holds the schema information for the "members" table.
 	MembersTable = &schema.Table{

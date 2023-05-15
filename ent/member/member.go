@@ -3,6 +3,9 @@
 package member
 
 import (
+	"fmt"
+	"io"
+	"strconv"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -30,8 +33,8 @@ const (
 	FieldDob = "dob"
 	// FieldCid holds the string denoting the cid field in the database.
 	FieldCid = "cid"
-	// FieldRole holds the string denoting the role field in the database.
-	FieldRole = "role"
+	// FieldMemberType holds the string denoting the member_type field in the database.
+	FieldMemberType = "member_type"
 	// EdgeHasCustomer holds the string denoting the has_customer edge name in mutations.
 	EdgeHasCustomer = "has_customer"
 	// Table holds the table name of the member in the database.
@@ -56,7 +59,7 @@ var Columns = []string{
 	FieldFullName,
 	FieldDob,
 	FieldCid,
-	FieldRole,
+	FieldMemberType,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -82,9 +85,33 @@ var (
 	PhoneNumberValidator func(string) error
 	// FullNameValidator is a validator for the "full_name" field. It is called by the builders before save.
 	FullNameValidator func(string) error
-	// DefaultRole holds the default value on creation for the "role" field.
-	DefaultRole int
 )
+
+// MemberType defines the type for the "member_type" enum field.
+type MemberType string
+
+// MemberTypeMember is the default value of the MemberType enum.
+const DefaultMemberType = MemberTypeMember
+
+// MemberType values.
+const (
+	MemberTypeAdmin  MemberType = "ADMIN"
+	MemberTypeMember MemberType = "MEMBER"
+)
+
+func (mt MemberType) String() string {
+	return string(mt)
+}
+
+// MemberTypeValidator is a validator for the "member_type" field enum values. It is called by the builders before save.
+func MemberTypeValidator(mt MemberType) error {
+	switch mt {
+	case MemberTypeAdmin, MemberTypeMember:
+		return nil
+	default:
+		return fmt.Errorf("member: invalid enum value for member_type field: %q", mt)
+	}
+}
 
 // OrderOption defines the ordering options for the Member queries.
 type OrderOption func(*sql.Selector)
@@ -134,9 +161,9 @@ func ByCid(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCid, opts...).ToFunc()
 }
 
-// ByRole orders the results by the role field.
-func ByRole(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldRole, opts...).ToFunc()
+// ByMemberType orders the results by the member_type field.
+func ByMemberType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldMemberType, opts...).ToFunc()
 }
 
 // ByHasCustomerField orders the results by has_customer field.
@@ -151,4 +178,22 @@ func newHasCustomerStep() *sqlgraph.Step {
 		sqlgraph.To(HasCustomerInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2O, false, HasCustomerTable, HasCustomerColumn),
 	)
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (e MemberType) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(e.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (e *MemberType) UnmarshalGQL(val interface{}) error {
+	str, ok := val.(string)
+	if !ok {
+		return fmt.Errorf("enum %T must be a string", val)
+	}
+	*e = MemberType(str)
+	if err := MemberTypeValidator(*e); err != nil {
+		return fmt.Errorf("%s is not a valid MemberType", str)
+	}
+	return nil
 }

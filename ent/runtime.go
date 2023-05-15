@@ -125,10 +125,6 @@ func init() {
 	memberDescFullName := memberFields[5].Descriptor()
 	// member.FullNameValidator is a validator for the "full_name" field. It is called by the builders before save.
 	member.FullNameValidator = memberDescFullName.Validators[0].(func(string) error)
-	// memberDescRole is the schema descriptor for role field.
-	memberDescRole := memberFields[8].Descriptor()
-	// member.DefaultRole holds the default value on creation for the role field.
-	member.DefaultRole = memberDescRole.Default.(int)
 	planeFields := schema.Plane{}.Fields()
 	_ = planeFields
 	// planeDescCreatedAt is the schema descriptor for created_at field.

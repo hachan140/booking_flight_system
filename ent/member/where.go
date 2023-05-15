@@ -95,11 +95,6 @@ func Cid(v string) predicate.Member {
 	return predicate.Member(sql.FieldEQ(FieldCid, v))
 }
 
-// Role applies equality check predicate on the "role" field. It's identical to RoleEQ.
-func Role(v int) predicate.Member {
-	return predicate.Member(sql.FieldEQ(FieldRole, v))
-}
-
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Member {
 	return predicate.Member(sql.FieldEQ(FieldCreatedAt, v))
@@ -555,44 +550,34 @@ func CidContainsFold(v string) predicate.Member {
 	return predicate.Member(sql.FieldContainsFold(FieldCid, v))
 }
 
-// RoleEQ applies the EQ predicate on the "role" field.
-func RoleEQ(v int) predicate.Member {
-	return predicate.Member(sql.FieldEQ(FieldRole, v))
+// MemberTypeEQ applies the EQ predicate on the "member_type" field.
+func MemberTypeEQ(v MemberType) predicate.Member {
+	return predicate.Member(sql.FieldEQ(FieldMemberType, v))
 }
 
-// RoleNEQ applies the NEQ predicate on the "role" field.
-func RoleNEQ(v int) predicate.Member {
-	return predicate.Member(sql.FieldNEQ(FieldRole, v))
+// MemberTypeNEQ applies the NEQ predicate on the "member_type" field.
+func MemberTypeNEQ(v MemberType) predicate.Member {
+	return predicate.Member(sql.FieldNEQ(FieldMemberType, v))
 }
 
-// RoleIn applies the In predicate on the "role" field.
-func RoleIn(vs ...int) predicate.Member {
-	return predicate.Member(sql.FieldIn(FieldRole, vs...))
+// MemberTypeIn applies the In predicate on the "member_type" field.
+func MemberTypeIn(vs ...MemberType) predicate.Member {
+	return predicate.Member(sql.FieldIn(FieldMemberType, vs...))
 }
 
-// RoleNotIn applies the NotIn predicate on the "role" field.
-func RoleNotIn(vs ...int) predicate.Member {
-	return predicate.Member(sql.FieldNotIn(FieldRole, vs...))
+// MemberTypeNotIn applies the NotIn predicate on the "member_type" field.
+func MemberTypeNotIn(vs ...MemberType) predicate.Member {
+	return predicate.Member(sql.FieldNotIn(FieldMemberType, vs...))
 }
 
-// RoleGT applies the GT predicate on the "role" field.
-func RoleGT(v int) predicate.Member {
-	return predicate.Member(sql.FieldGT(FieldRole, v))
+// MemberTypeIsNil applies the IsNil predicate on the "member_type" field.
+func MemberTypeIsNil() predicate.Member {
+	return predicate.Member(sql.FieldIsNull(FieldMemberType))
 }
 
-// RoleGTE applies the GTE predicate on the "role" field.
-func RoleGTE(v int) predicate.Member {
-	return predicate.Member(sql.FieldGTE(FieldRole, v))
-}
-
-// RoleLT applies the LT predicate on the "role" field.
-func RoleLT(v int) predicate.Member {
-	return predicate.Member(sql.FieldLT(FieldRole, v))
-}
-
-// RoleLTE applies the LTE predicate on the "role" field.
-func RoleLTE(v int) predicate.Member {
-	return predicate.Member(sql.FieldLTE(FieldRole, v))
+// MemberTypeNotNil applies the NotNil predicate on the "member_type" field.
+func MemberTypeNotNil() predicate.Member {
+	return predicate.Member(sql.FieldNotNull(FieldMemberType))
 }
 
 // HasHasCustomer applies the HasEdge predicate on the "has_customer" edge.

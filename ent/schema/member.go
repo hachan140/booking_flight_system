@@ -25,7 +25,7 @@ func (Member) Fields() []ent.Field {
 		field.String("full_name").NotEmpty(),
 		field.Time("dob").Optional(),
 		field.String("cid").Unique(),
-		field.Int("role").Default(1),
+		field.Enum("member_type").NamedValues("Admin", "ADMIN", "Member", "MEMBER").Default("MEMBER").Optional(),
 	}
 }
 

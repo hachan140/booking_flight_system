@@ -616,10 +616,10 @@ func (m *MemberQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 				selectedFields = append(selectedFields, member.FieldCid)
 				fieldSeen[member.FieldCid] = struct{}{}
 			}
-		case "role":
-			if _, ok := fieldSeen[member.FieldRole]; !ok {
-				selectedFields = append(selectedFields, member.FieldRole)
-				fieldSeen[member.FieldRole] = struct{}{}
+		case "memberType":
+			if _, ok := fieldSeen[member.FieldMemberType]; !ok {
+				selectedFields = append(selectedFields, member.FieldMemberType)
+				fieldSeen[member.FieldMemberType] = struct{}{}
 			}
 		case "id":
 		case "__typename":

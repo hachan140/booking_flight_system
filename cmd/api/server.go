@@ -3,6 +3,7 @@ package api
 import (
 	"booking-flight-system/config"
 	"booking-flight-system/ent"
+	"booking-flight-system/helper"
 	"booking-flight-system/jwt"
 	"booking-flight-system/middleware"
 	"booking-flight-system/resolver"
@@ -59,8 +60,8 @@ func NewServerCmd(configs *config.Configurations, logger *zap.Logger) *cobra.Com
 			}
 
 			jwtService := jwt.NewJWTService(configs.JWT)
-
-			resolverHandler := handler.NewDefaultServer(resolver.NewSchema(db, validator, validationTranslator, logger, jwtService))
+			memberTypeValidator := helper.NewMemberTypeValidator(db)
+			resolverHandler := handler.NewDefaultServer(resolver.NewSchema(db, validator, validationTranslator, logger, jwtService, memberTypeValidator))
 			playgroundHandler := playground.Handler("Booking Flight System", "/graphql")
 			// Handle a method not allowed.
 			gin.SetMode(gin.ReleaseMode)

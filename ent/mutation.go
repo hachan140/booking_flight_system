@@ -3791,8 +3791,7 @@ type MemberMutation struct {
 	full_name           *string
 	dob                 *time.Time
 	cid                 *string
-	role                *int
-	addrole             *int
+	member_type         *member.MemberType
 	clearedFields       map[string]struct{}
 	has_customer        *int
 	clearedhas_customer bool
@@ -4200,60 +4199,53 @@ func (m *MemberMutation) ResetCid() {
 	m.cid = nil
 }
 
-// SetRole sets the "role" field.
-func (m *MemberMutation) SetRole(i int) {
-	m.role = &i
-	m.addrole = nil
+// SetMemberType sets the "member_type" field.
+func (m *MemberMutation) SetMemberType(mt member.MemberType) {
+	m.member_type = &mt
 }
 
-// Role returns the value of the "role" field in the mutation.
-func (m *MemberMutation) Role() (r int, exists bool) {
-	v := m.role
+// MemberType returns the value of the "member_type" field in the mutation.
+func (m *MemberMutation) MemberType() (r member.MemberType, exists bool) {
+	v := m.member_type
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldRole returns the old "role" field's value of the Member entity.
+// OldMemberType returns the old "member_type" field's value of the Member entity.
 // If the Member object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *MemberMutation) OldRole(ctx context.Context) (v int, err error) {
+func (m *MemberMutation) OldMemberType(ctx context.Context) (v member.MemberType, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRole is only allowed on UpdateOne operations")
+		return v, errors.New("OldMemberType is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRole requires an ID field in the mutation")
+		return v, errors.New("OldMemberType requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRole: %w", err)
+		return v, fmt.Errorf("querying old value for OldMemberType: %w", err)
 	}
-	return oldValue.Role, nil
+	return oldValue.MemberType, nil
 }
 
-// AddRole adds i to the "role" field.
-func (m *MemberMutation) AddRole(i int) {
-	if m.addrole != nil {
-		*m.addrole += i
-	} else {
-		m.addrole = &i
-	}
+// ClearMemberType clears the value of the "member_type" field.
+func (m *MemberMutation) ClearMemberType() {
+	m.member_type = nil
+	m.clearedFields[member.FieldMemberType] = struct{}{}
 }
 
-// AddedRole returns the value that was added to the "role" field in this mutation.
-func (m *MemberMutation) AddedRole() (r int, exists bool) {
-	v := m.addrole
-	if v == nil {
-		return
-	}
-	return *v, true
+// MemberTypeCleared returns if the "member_type" field was cleared in this mutation.
+func (m *MemberMutation) MemberTypeCleared() bool {
+	_, ok := m.clearedFields[member.FieldMemberType]
+	return ok
 }
 
-// ResetRole resets all changes to the "role" field.
-func (m *MemberMutation) ResetRole() {
-	m.role = nil
-	m.addrole = nil
+// ResetMemberType resets all changes to the "member_type" field.
+func (m *MemberMutation) ResetMemberType() {
+	m.member_type = nil
+	delete(m.clearedFields, member.FieldMemberType)
 }
 
 // SetHasCustomerID sets the "has_customer" edge to the Customer entity by id.
@@ -4354,8 +4346,8 @@ func (m *MemberMutation) Fields() []string {
 	if m.cid != nil {
 		fields = append(fields, member.FieldCid)
 	}
-	if m.role != nil {
-		fields = append(fields, member.FieldRole)
+	if m.member_type != nil {
+		fields = append(fields, member.FieldMemberType)
 	}
 	return fields
 }
@@ -4381,8 +4373,8 @@ func (m *MemberMutation) Field(name string) (ent.Value, bool) {
 		return m.Dob()
 	case member.FieldCid:
 		return m.Cid()
-	case member.FieldRole:
-		return m.Role()
+	case member.FieldMemberType:
+		return m.MemberType()
 	}
 	return nil, false
 }
@@ -4408,8 +4400,8 @@ func (m *MemberMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldDob(ctx)
 	case member.FieldCid:
 		return m.OldCid(ctx)
-	case member.FieldRole:
-		return m.OldRole(ctx)
+	case member.FieldMemberType:
+		return m.OldMemberType(ctx)
 	}
 	return nil, fmt.Errorf("unknown Member field %s", name)
 }
@@ -4475,12 +4467,12 @@ func (m *MemberMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetCid(v)
 		return nil
-	case member.FieldRole:
-		v, ok := value.(int)
+	case member.FieldMemberType:
+		v, ok := value.(member.MemberType)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetRole(v)
+		m.SetMemberType(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Member field %s", name)
@@ -4489,21 +4481,13 @@ func (m *MemberMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *MemberMutation) AddedFields() []string {
-	var fields []string
-	if m.addrole != nil {
-		fields = append(fields, member.FieldRole)
-	}
-	return fields
+	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *MemberMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case member.FieldRole:
-		return m.AddedRole()
-	}
 	return nil, false
 }
 
@@ -4512,13 +4496,6 @@ func (m *MemberMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *MemberMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case member.FieldRole:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddRole(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Member numeric field %s", name)
 }
@@ -4529,6 +4506,9 @@ func (m *MemberMutation) ClearedFields() []string {
 	var fields []string
 	if m.FieldCleared(member.FieldDob) {
 		fields = append(fields, member.FieldDob)
+	}
+	if m.FieldCleared(member.FieldMemberType) {
+		fields = append(fields, member.FieldMemberType)
 	}
 	return fields
 }
@@ -4546,6 +4526,9 @@ func (m *MemberMutation) ClearField(name string) error {
 	switch name {
 	case member.FieldDob:
 		m.ClearDob()
+		return nil
+	case member.FieldMemberType:
+		m.ClearMemberType()
 		return nil
 	}
 	return fmt.Errorf("unknown Member nullable field %s", name)
@@ -4579,8 +4562,8 @@ func (m *MemberMutation) ResetField(name string) error {
 	case member.FieldCid:
 		m.ResetCid()
 		return nil
-	case member.FieldRole:
-		m.ResetRole()
+	case member.FieldMemberType:
+		m.ResetMemberType()
 		return nil
 	}
 	return fmt.Errorf("unknown Member field %s", name)
