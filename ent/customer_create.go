@@ -3,8 +3,8 @@
 package ent
 
 import (
+	"booking-flight-system/ent/booking"
 	"booking-flight-system/ent/customer"
-	"booking-flight-system/ent/flight"
 	"booking-flight-system/ent/member"
 	"context"
 	"errors"
@@ -113,19 +113,19 @@ func (cc *CustomerCreate) SetHasMember(m *Member) *CustomerCreate {
 	return cc.SetHasMemberID(m.ID)
 }
 
-// AddHasFlightIDs adds the "has_flight" edge to the Flight entity by IDs.
-func (cc *CustomerCreate) AddHasFlightIDs(ids ...int) *CustomerCreate {
-	cc.mutation.AddHasFlightIDs(ids...)
+// AddHasBookingIDs adds the "has_booking" edge to the Booking entity by IDs.
+func (cc *CustomerCreate) AddHasBookingIDs(ids ...int) *CustomerCreate {
+	cc.mutation.AddHasBookingIDs(ids...)
 	return cc
 }
 
-// AddHasFlight adds the "has_flight" edges to the Flight entity.
-func (cc *CustomerCreate) AddHasFlight(f ...*Flight) *CustomerCreate {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
+// AddHasBooking adds the "has_booking" edges to the Booking entity.
+func (cc *CustomerCreate) AddHasBooking(b ...*Booking) *CustomerCreate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return cc.AddHasFlightIDs(ids...)
+	return cc.AddHasBookingIDs(ids...)
 }
 
 // Mutation returns the CustomerMutation object of the builder.
@@ -287,15 +287,15 @@ func (cc *CustomerCreate) createSpec() (*Customer, *sqlgraph.CreateSpec) {
 		_node.MemberID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := cc.mutation.HasFlightIDs(); len(nodes) > 0 {
+	if nodes := cc.mutation.HasBookingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   customer.HasFlightTable,
-			Columns: []string{customer.HasFlightColumn},
+			Table:   customer.HasBookingTable,
+			Columns: []string{customer.HasBookingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(booking.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

@@ -19,14 +19,16 @@ import (
 // AirportQuery is the builder for querying Airport entities.
 type AirportQuery struct {
 	config
-	ctx                *QueryContext
-	order              []airport.OrderOption
-	inters             []Interceptor
-	predicates         []predicate.Airport
-	withHasFlight      *FlightQuery
-	modifiers          []func(*sql.Selector)
-	loadTotal          []func(context.Context, []*Airport) error
-	withNamedHasFlight map[string]*FlightQuery
+	ctx                 *QueryContext
+	order               []airport.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.Airport
+	withFromFlight      *FlightQuery
+	withToFlight        *FlightQuery
+	modifiers           []func(*sql.Selector)
+	loadTotal           []func(context.Context, []*Airport) error
+	withNamedFromFlight map[string]*FlightQuery
+	withNamedToFlight   map[string]*FlightQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -63,8 +65,8 @@ func (aq *AirportQuery) Order(o ...airport.OrderOption) *AirportQuery {
 	return aq
 }
 
-// QueryHasFlight chains the current query on the "has_flight" edge.
-func (aq *AirportQuery) QueryHasFlight() *FlightQuery {
+// QueryFromFlight chains the current query on the "from_flight" edge.
+func (aq *AirportQuery) QueryFromFlight() *FlightQuery {
 	query := (&FlightClient{config: aq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := aq.prepareQuery(ctx); err != nil {
@@ -77,7 +79,29 @@ func (aq *AirportQuery) QueryHasFlight() *FlightQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(airport.Table, airport.FieldID, selector),
 			sqlgraph.To(flight.Table, flight.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, airport.HasFlightTable, airport.HasFlightColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, airport.FromFlightTable, airport.FromFlightColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryToFlight chains the current query on the "to_flight" edge.
+func (aq *AirportQuery) QueryToFlight() *FlightQuery {
+	query := (&FlightClient{config: aq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := aq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := aq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(airport.Table, airport.FieldID, selector),
+			sqlgraph.To(flight.Table, flight.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, airport.ToFlightTable, airport.ToFlightColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(aq.driver.Dialect(), step)
 		return fromU, nil
@@ -272,26 +296,38 @@ func (aq *AirportQuery) Clone() *AirportQuery {
 		return nil
 	}
 	return &AirportQuery{
-		config:        aq.config,
-		ctx:           aq.ctx.Clone(),
-		order:         append([]airport.OrderOption{}, aq.order...),
-		inters:        append([]Interceptor{}, aq.inters...),
-		predicates:    append([]predicate.Airport{}, aq.predicates...),
-		withHasFlight: aq.withHasFlight.Clone(),
+		config:         aq.config,
+		ctx:            aq.ctx.Clone(),
+		order:          append([]airport.OrderOption{}, aq.order...),
+		inters:         append([]Interceptor{}, aq.inters...),
+		predicates:     append([]predicate.Airport{}, aq.predicates...),
+		withFromFlight: aq.withFromFlight.Clone(),
+		withToFlight:   aq.withToFlight.Clone(),
 		// clone intermediate query.
 		sql:  aq.sql.Clone(),
 		path: aq.path,
 	}
 }
 
-// WithHasFlight tells the query-builder to eager-load the nodes that are connected to
-// the "has_flight" edge. The optional arguments are used to configure the query builder of the edge.
-func (aq *AirportQuery) WithHasFlight(opts ...func(*FlightQuery)) *AirportQuery {
+// WithFromFlight tells the query-builder to eager-load the nodes that are connected to
+// the "from_flight" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *AirportQuery) WithFromFlight(opts ...func(*FlightQuery)) *AirportQuery {
 	query := (&FlightClient{config: aq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	aq.withHasFlight = query
+	aq.withFromFlight = query
+	return aq
+}
+
+// WithToFlight tells the query-builder to eager-load the nodes that are connected to
+// the "to_flight" edge. The optional arguments are used to configure the query builder of the edge.
+func (aq *AirportQuery) WithToFlight(opts ...func(*FlightQuery)) *AirportQuery {
+	query := (&FlightClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	aq.withToFlight = query
 	return aq
 }
 
@@ -373,8 +409,9 @@ func (aq *AirportQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Airp
 	var (
 		nodes       = []*Airport{}
 		_spec       = aq.querySpec()
-		loadedTypes = [1]bool{
-			aq.withHasFlight != nil,
+		loadedTypes = [2]bool{
+			aq.withFromFlight != nil,
+			aq.withToFlight != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -398,17 +435,31 @@ func (aq *AirportQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Airp
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := aq.withHasFlight; query != nil {
-		if err := aq.loadHasFlight(ctx, query, nodes,
-			func(n *Airport) { n.Edges.HasFlight = []*Flight{} },
-			func(n *Airport, e *Flight) { n.Edges.HasFlight = append(n.Edges.HasFlight, e) }); err != nil {
+	if query := aq.withFromFlight; query != nil {
+		if err := aq.loadFromFlight(ctx, query, nodes,
+			func(n *Airport) { n.Edges.FromFlight = []*Flight{} },
+			func(n *Airport, e *Flight) { n.Edges.FromFlight = append(n.Edges.FromFlight, e) }); err != nil {
 			return nil, err
 		}
 	}
-	for name, query := range aq.withNamedHasFlight {
-		if err := aq.loadHasFlight(ctx, query, nodes,
-			func(n *Airport) { n.appendNamedHasFlight(name) },
-			func(n *Airport, e *Flight) { n.appendNamedHasFlight(name, e) }); err != nil {
+	if query := aq.withToFlight; query != nil {
+		if err := aq.loadToFlight(ctx, query, nodes,
+			func(n *Airport) { n.Edges.ToFlight = []*Flight{} },
+			func(n *Airport, e *Flight) { n.Edges.ToFlight = append(n.Edges.ToFlight, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range aq.withNamedFromFlight {
+		if err := aq.loadFromFlight(ctx, query, nodes,
+			func(n *Airport) { n.appendNamedFromFlight(name) },
+			func(n *Airport, e *Flight) { n.appendNamedFromFlight(name, e) }); err != nil {
+			return nil, err
+		}
+	}
+	for name, query := range aq.withNamedToFlight {
+		if err := aq.loadToFlight(ctx, query, nodes,
+			func(n *Airport) { n.appendNamedToFlight(name) },
+			func(n *Airport, e *Flight) { n.appendNamedToFlight(name, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -420,7 +471,7 @@ func (aq *AirportQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Airp
 	return nodes, nil
 }
 
-func (aq *AirportQuery) loadHasFlight(ctx context.Context, query *FlightQuery, nodes []*Airport, init func(*Airport), assign func(*Airport, *Flight)) error {
+func (aq *AirportQuery) loadFromFlight(ctx context.Context, query *FlightQuery, nodes []*Airport, init func(*Airport), assign func(*Airport, *Flight)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[int]*Airport)
 	for i := range nodes {
@@ -431,20 +482,50 @@ func (aq *AirportQuery) loadHasFlight(ctx context.Context, query *FlightQuery, n
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(flight.FieldAirportID)
+		query.ctx.AppendFieldOnce(flight.FieldFromAirportID)
 	}
 	query.Where(predicate.Flight(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(airport.HasFlightColumn), fks...))
+		s.Where(sql.InValues(s.C(airport.FromFlightColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.AirportID
+		fk := n.FromAirportID
 		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "airport_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "from_airport_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (aq *AirportQuery) loadToFlight(ctx context.Context, query *FlightQuery, nodes []*Airport, init func(*Airport), assign func(*Airport, *Flight)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[int]*Airport)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(flight.FieldToAirportID)
+	}
+	query.Where(predicate.Flight(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(airport.ToFlightColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ToAirportID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "to_airport_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -535,17 +616,31 @@ func (aq *AirportQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	return selector
 }
 
-// WithNamedHasFlight tells the query-builder to eager-load the nodes that are connected to the "has_flight"
+// WithNamedFromFlight tells the query-builder to eager-load the nodes that are connected to the "from_flight"
 // edge with the given name. The optional arguments are used to configure the query builder of the edge.
-func (aq *AirportQuery) WithNamedHasFlight(name string, opts ...func(*FlightQuery)) *AirportQuery {
+func (aq *AirportQuery) WithNamedFromFlight(name string, opts ...func(*FlightQuery)) *AirportQuery {
 	query := (&FlightClient{config: aq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	if aq.withNamedHasFlight == nil {
-		aq.withNamedHasFlight = make(map[string]*FlightQuery)
+	if aq.withNamedFromFlight == nil {
+		aq.withNamedFromFlight = make(map[string]*FlightQuery)
 	}
-	aq.withNamedHasFlight[name] = query
+	aq.withNamedFromFlight[name] = query
+	return aq
+}
+
+// WithNamedToFlight tells the query-builder to eager-load the nodes that are connected to the "to_flight"
+// edge with the given name. The optional arguments are used to configure the query builder of the edge.
+func (aq *AirportQuery) WithNamedToFlight(name string, opts ...func(*FlightQuery)) *AirportQuery {
+	query := (&FlightClient{config: aq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	if aq.withNamedToFlight == nil {
+		aq.withNamedToFlight = make(map[string]*FlightQuery)
+	}
+	aq.withNamedToFlight[name] = query
 	return aq
 }
 

@@ -4,7 +4,6 @@ package ent
 
 import (
 	"booking-flight-system/ent/airport"
-	"booking-flight-system/ent/customer"
 	"booking-flight-system/ent/flight"
 	"booking-flight-system/ent/plane"
 	"fmt"
@@ -31,17 +30,17 @@ type Flight struct {
 	// LandAt holds the value of the "land_at" field.
 	LandAt time.Time `json:"land_at,omitempty"`
 	// AvailableEcSlot holds the value of the "available_ec_slot" field.
-	AvailableEcSlot int `json:"available_ec_slot,omitempty"`
+	AvailableEcSlot *int `json:"available_ec_slot,omitempty"`
 	// AvailableBcSlot holds the value of the "available_bc_slot" field.
-	AvailableBcSlot int `json:"available_bc_slot,omitempty"`
+	AvailableBcSlot *int `json:"available_bc_slot,omitempty"`
 	// Status holds the value of the "status" field.
 	Status flight.Status `json:"status,omitempty"`
 	// PlaneID holds the value of the "plane_id" field.
 	PlaneID int `json:"plane_id,omitempty"`
-	// AirportID holds the value of the "airport_id" field.
-	AirportID int `json:"airport_id,omitempty"`
-	// CustomerID holds the value of the "customer_id" field.
-	CustomerID int `json:"customer_id,omitempty"`
+	// FromAirportID holds the value of the "from_airport_id" field.
+	FromAirportID int `json:"from_airport_id,omitempty"`
+	// ToAirportID holds the value of the "to_airport_id" field.
+	ToAirportID int `json:"to_airport_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the FlightQuery when eager-loading is set.
 	Edges        FlightEdges `json:"edges"`
@@ -54,10 +53,10 @@ type FlightEdges struct {
 	HasPlane *Plane `json:"has_plane,omitempty"`
 	// HasBooking holds the value of the has_booking edge.
 	HasBooking []*Booking `json:"has_booking,omitempty"`
-	// HasAirport holds the value of the has_airport edge.
-	HasAirport *Airport `json:"has_airport,omitempty"`
-	// HasCustomer holds the value of the has_customer edge.
-	HasCustomer *Customer `json:"has_customer,omitempty"`
+	// FromAirport holds the value of the from_airport edge.
+	FromAirport *Airport `json:"from_airport,omitempty"`
+	// ToAirport holds the value of the to_airport edge.
+	ToAirport *Airport `json:"to_airport,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
@@ -89,30 +88,30 @@ func (e FlightEdges) HasBookingOrErr() ([]*Booking, error) {
 	return nil, &NotLoadedError{edge: "has_booking"}
 }
 
-// HasAirportOrErr returns the HasAirport value or an error if the edge
+// FromAirportOrErr returns the FromAirport value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e FlightEdges) HasAirportOrErr() (*Airport, error) {
+func (e FlightEdges) FromAirportOrErr() (*Airport, error) {
 	if e.loadedTypes[2] {
-		if e.HasAirport == nil {
+		if e.FromAirport == nil {
 			// Edge was loaded but was not found.
 			return nil, &NotFoundError{label: airport.Label}
 		}
-		return e.HasAirport, nil
+		return e.FromAirport, nil
 	}
-	return nil, &NotLoadedError{edge: "has_airport"}
+	return nil, &NotLoadedError{edge: "from_airport"}
 }
 
-// HasCustomerOrErr returns the HasCustomer value or an error if the edge
+// ToAirportOrErr returns the ToAirport value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e FlightEdges) HasCustomerOrErr() (*Customer, error) {
+func (e FlightEdges) ToAirportOrErr() (*Airport, error) {
 	if e.loadedTypes[3] {
-		if e.HasCustomer == nil {
+		if e.ToAirport == nil {
 			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: customer.Label}
+			return nil, &NotFoundError{label: airport.Label}
 		}
-		return e.HasCustomer, nil
+		return e.ToAirport, nil
 	}
-	return nil, &NotLoadedError{edge: "has_customer"}
+	return nil, &NotLoadedError{edge: "to_airport"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -120,7 +119,7 @@ func (*Flight) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case flight.FieldID, flight.FieldAvailableEcSlot, flight.FieldAvailableBcSlot, flight.FieldPlaneID, flight.FieldAirportID, flight.FieldCustomerID:
+		case flight.FieldID, flight.FieldAvailableEcSlot, flight.FieldAvailableBcSlot, flight.FieldPlaneID, flight.FieldFromAirportID, flight.FieldToAirportID:
 			values[i] = new(sql.NullInt64)
 		case flight.FieldName, flight.FieldStatus:
 			values[i] = new(sql.NullString)
@@ -181,13 +180,15 @@ func (f *Flight) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field available_ec_slot", values[i])
 			} else if value.Valid {
-				f.AvailableEcSlot = int(value.Int64)
+				f.AvailableEcSlot = new(int)
+				*f.AvailableEcSlot = int(value.Int64)
 			}
 		case flight.FieldAvailableBcSlot:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field available_bc_slot", values[i])
 			} else if value.Valid {
-				f.AvailableBcSlot = int(value.Int64)
+				f.AvailableBcSlot = new(int)
+				*f.AvailableBcSlot = int(value.Int64)
 			}
 		case flight.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -201,17 +202,17 @@ func (f *Flight) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				f.PlaneID = int(value.Int64)
 			}
-		case flight.FieldAirportID:
+		case flight.FieldFromAirportID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field airport_id", values[i])
+				return fmt.Errorf("unexpected type %T for field from_airport_id", values[i])
 			} else if value.Valid {
-				f.AirportID = int(value.Int64)
+				f.FromAirportID = int(value.Int64)
 			}
-		case flight.FieldCustomerID:
+		case flight.FieldToAirportID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field customer_id", values[i])
+				return fmt.Errorf("unexpected type %T for field to_airport_id", values[i])
 			} else if value.Valid {
-				f.CustomerID = int(value.Int64)
+				f.ToAirportID = int(value.Int64)
 			}
 		default:
 			f.selectValues.Set(columns[i], values[i])
@@ -236,14 +237,14 @@ func (f *Flight) QueryHasBooking() *BookingQuery {
 	return NewFlightClient(f.config).QueryHasBooking(f)
 }
 
-// QueryHasAirport queries the "has_airport" edge of the Flight entity.
-func (f *Flight) QueryHasAirport() *AirportQuery {
-	return NewFlightClient(f.config).QueryHasAirport(f)
+// QueryFromAirport queries the "from_airport" edge of the Flight entity.
+func (f *Flight) QueryFromAirport() *AirportQuery {
+	return NewFlightClient(f.config).QueryFromAirport(f)
 }
 
-// QueryHasCustomer queries the "has_customer" edge of the Flight entity.
-func (f *Flight) QueryHasCustomer() *CustomerQuery {
-	return NewFlightClient(f.config).QueryHasCustomer(f)
+// QueryToAirport queries the "to_airport" edge of the Flight entity.
+func (f *Flight) QueryToAirport() *AirportQuery {
+	return NewFlightClient(f.config).QueryToAirport(f)
 }
 
 // Update returns a builder for updating this Flight.
@@ -284,11 +285,15 @@ func (f *Flight) String() string {
 	builder.WriteString("land_at=")
 	builder.WriteString(f.LandAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("available_ec_slot=")
-	builder.WriteString(fmt.Sprintf("%v", f.AvailableEcSlot))
+	if v := f.AvailableEcSlot; v != nil {
+		builder.WriteString("available_ec_slot=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("available_bc_slot=")
-	builder.WriteString(fmt.Sprintf("%v", f.AvailableBcSlot))
+	if v := f.AvailableBcSlot; v != nil {
+		builder.WriteString("available_bc_slot=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", f.Status))
@@ -296,11 +301,11 @@ func (f *Flight) String() string {
 	builder.WriteString("plane_id=")
 	builder.WriteString(fmt.Sprintf("%v", f.PlaneID))
 	builder.WriteString(", ")
-	builder.WriteString("airport_id=")
-	builder.WriteString(fmt.Sprintf("%v", f.AirportID))
+	builder.WriteString("from_airport_id=")
+	builder.WriteString(fmt.Sprintf("%v", f.FromAirportID))
 	builder.WriteString(", ")
-	builder.WriteString("customer_id=")
-	builder.WriteString(fmt.Sprintf("%v", f.CustomerID))
+	builder.WriteString("to_airport_id=")
+	builder.WriteString(fmt.Sprintf("%v", f.ToAirportID))
 	builder.WriteByte(')')
 	return builder.String()
 }

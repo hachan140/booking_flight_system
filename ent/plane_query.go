@@ -301,12 +301,12 @@ func (pq *PlaneQuery) WithFlights(opts ...func(*FlightQuery)) *PlaneQuery {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		CreatedAt time.Time `json:"created_at,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Plane.Query().
-//		GroupBy(plane.FieldName).
+//		GroupBy(plane.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (pq *PlaneQuery) GroupBy(field string, fields ...string) *PlaneGroupBy {
@@ -324,11 +324,11 @@ func (pq *PlaneQuery) GroupBy(field string, fields ...string) *PlaneGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Name string `json:"name,omitempty"`
+//		CreatedAt time.Time `json:"created_at,omitempty"`
 //	}
 //
 //	client.Plane.Query().
-//		Select(plane.FieldName).
+//		Select(plane.FieldCreatedAt).
 //		Scan(ctx, &v)
 func (pq *PlaneQuery) Select(fields ...string) *PlaneSelect {
 	pq.ctx.Fields = append(pq.ctx.Fields, fields...)

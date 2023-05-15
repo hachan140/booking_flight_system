@@ -3,8 +3,8 @@
 package ent
 
 import (
+	"booking-flight-system/ent/booking"
 	"booking-flight-system/ent/customer"
-	"booking-flight-system/ent/flight"
 	"booking-flight-system/ent/member"
 	"booking-flight-system/ent/predicate"
 	"context"
@@ -119,19 +119,19 @@ func (cu *CustomerUpdate) SetHasMember(m *Member) *CustomerUpdate {
 	return cu.SetHasMemberID(m.ID)
 }
 
-// AddHasFlightIDs adds the "has_flight" edge to the Flight entity by IDs.
-func (cu *CustomerUpdate) AddHasFlightIDs(ids ...int) *CustomerUpdate {
-	cu.mutation.AddHasFlightIDs(ids...)
+// AddHasBookingIDs adds the "has_booking" edge to the Booking entity by IDs.
+func (cu *CustomerUpdate) AddHasBookingIDs(ids ...int) *CustomerUpdate {
+	cu.mutation.AddHasBookingIDs(ids...)
 	return cu
 }
 
-// AddHasFlight adds the "has_flight" edges to the Flight entity.
-func (cu *CustomerUpdate) AddHasFlight(f ...*Flight) *CustomerUpdate {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
+// AddHasBooking adds the "has_booking" edges to the Booking entity.
+func (cu *CustomerUpdate) AddHasBooking(b ...*Booking) *CustomerUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return cu.AddHasFlightIDs(ids...)
+	return cu.AddHasBookingIDs(ids...)
 }
 
 // Mutation returns the CustomerMutation object of the builder.
@@ -145,25 +145,25 @@ func (cu *CustomerUpdate) ClearHasMember() *CustomerUpdate {
 	return cu
 }
 
-// ClearHasFlight clears all "has_flight" edges to the Flight entity.
-func (cu *CustomerUpdate) ClearHasFlight() *CustomerUpdate {
-	cu.mutation.ClearHasFlight()
+// ClearHasBooking clears all "has_booking" edges to the Booking entity.
+func (cu *CustomerUpdate) ClearHasBooking() *CustomerUpdate {
+	cu.mutation.ClearHasBooking()
 	return cu
 }
 
-// RemoveHasFlightIDs removes the "has_flight" edge to Flight entities by IDs.
-func (cu *CustomerUpdate) RemoveHasFlightIDs(ids ...int) *CustomerUpdate {
-	cu.mutation.RemoveHasFlightIDs(ids...)
+// RemoveHasBookingIDs removes the "has_booking" edge to Booking entities by IDs.
+func (cu *CustomerUpdate) RemoveHasBookingIDs(ids ...int) *CustomerUpdate {
+	cu.mutation.RemoveHasBookingIDs(ids...)
 	return cu
 }
 
-// RemoveHasFlight removes "has_flight" edges to Flight entities.
-func (cu *CustomerUpdate) RemoveHasFlight(f ...*Flight) *CustomerUpdate {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
+// RemoveHasBooking removes "has_booking" edges to Booking entities.
+func (cu *CustomerUpdate) RemoveHasBooking(b ...*Booking) *CustomerUpdate {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return cu.RemoveHasFlightIDs(ids...)
+	return cu.RemoveHasBookingIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -289,28 +289,28 @@ func (cu *CustomerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if cu.mutation.HasFlightCleared() {
+	if cu.mutation.HasBookingCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   customer.HasFlightTable,
-			Columns: []string{customer.HasFlightColumn},
+			Table:   customer.HasBookingTable,
+			Columns: []string{customer.HasBookingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(booking.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cu.mutation.RemovedHasFlightIDs(); len(nodes) > 0 && !cu.mutation.HasFlightCleared() {
+	if nodes := cu.mutation.RemovedHasBookingIDs(); len(nodes) > 0 && !cu.mutation.HasBookingCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   customer.HasFlightTable,
-			Columns: []string{customer.HasFlightColumn},
+			Table:   customer.HasBookingTable,
+			Columns: []string{customer.HasBookingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(booking.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -318,15 +318,15 @@ func (cu *CustomerUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cu.mutation.HasFlightIDs(); len(nodes) > 0 {
+	if nodes := cu.mutation.HasBookingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   customer.HasFlightTable,
-			Columns: []string{customer.HasFlightColumn},
+			Table:   customer.HasBookingTable,
+			Columns: []string{customer.HasBookingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(booking.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -443,19 +443,19 @@ func (cuo *CustomerUpdateOne) SetHasMember(m *Member) *CustomerUpdateOne {
 	return cuo.SetHasMemberID(m.ID)
 }
 
-// AddHasFlightIDs adds the "has_flight" edge to the Flight entity by IDs.
-func (cuo *CustomerUpdateOne) AddHasFlightIDs(ids ...int) *CustomerUpdateOne {
-	cuo.mutation.AddHasFlightIDs(ids...)
+// AddHasBookingIDs adds the "has_booking" edge to the Booking entity by IDs.
+func (cuo *CustomerUpdateOne) AddHasBookingIDs(ids ...int) *CustomerUpdateOne {
+	cuo.mutation.AddHasBookingIDs(ids...)
 	return cuo
 }
 
-// AddHasFlight adds the "has_flight" edges to the Flight entity.
-func (cuo *CustomerUpdateOne) AddHasFlight(f ...*Flight) *CustomerUpdateOne {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
+// AddHasBooking adds the "has_booking" edges to the Booking entity.
+func (cuo *CustomerUpdateOne) AddHasBooking(b ...*Booking) *CustomerUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return cuo.AddHasFlightIDs(ids...)
+	return cuo.AddHasBookingIDs(ids...)
 }
 
 // Mutation returns the CustomerMutation object of the builder.
@@ -469,25 +469,25 @@ func (cuo *CustomerUpdateOne) ClearHasMember() *CustomerUpdateOne {
 	return cuo
 }
 
-// ClearHasFlight clears all "has_flight" edges to the Flight entity.
-func (cuo *CustomerUpdateOne) ClearHasFlight() *CustomerUpdateOne {
-	cuo.mutation.ClearHasFlight()
+// ClearHasBooking clears all "has_booking" edges to the Booking entity.
+func (cuo *CustomerUpdateOne) ClearHasBooking() *CustomerUpdateOne {
+	cuo.mutation.ClearHasBooking()
 	return cuo
 }
 
-// RemoveHasFlightIDs removes the "has_flight" edge to Flight entities by IDs.
-func (cuo *CustomerUpdateOne) RemoveHasFlightIDs(ids ...int) *CustomerUpdateOne {
-	cuo.mutation.RemoveHasFlightIDs(ids...)
+// RemoveHasBookingIDs removes the "has_booking" edge to Booking entities by IDs.
+func (cuo *CustomerUpdateOne) RemoveHasBookingIDs(ids ...int) *CustomerUpdateOne {
+	cuo.mutation.RemoveHasBookingIDs(ids...)
 	return cuo
 }
 
-// RemoveHasFlight removes "has_flight" edges to Flight entities.
-func (cuo *CustomerUpdateOne) RemoveHasFlight(f ...*Flight) *CustomerUpdateOne {
-	ids := make([]int, len(f))
-	for i := range f {
-		ids[i] = f[i].ID
+// RemoveHasBooking removes "has_booking" edges to Booking entities.
+func (cuo *CustomerUpdateOne) RemoveHasBooking(b ...*Booking) *CustomerUpdateOne {
+	ids := make([]int, len(b))
+	for i := range b {
+		ids[i] = b[i].ID
 	}
-	return cuo.RemoveHasFlightIDs(ids...)
+	return cuo.RemoveHasBookingIDs(ids...)
 }
 
 // Where appends a list predicates to the CustomerUpdate builder.
@@ -643,28 +643,28 @@ func (cuo *CustomerUpdateOne) sqlSave(ctx context.Context) (_node *Customer, err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if cuo.mutation.HasFlightCleared() {
+	if cuo.mutation.HasBookingCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   customer.HasFlightTable,
-			Columns: []string{customer.HasFlightColumn},
+			Table:   customer.HasBookingTable,
+			Columns: []string{customer.HasBookingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(booking.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cuo.mutation.RemovedHasFlightIDs(); len(nodes) > 0 && !cuo.mutation.HasFlightCleared() {
+	if nodes := cuo.mutation.RemovedHasBookingIDs(); len(nodes) > 0 && !cuo.mutation.HasBookingCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   customer.HasFlightTable,
-			Columns: []string{customer.HasFlightColumn},
+			Table:   customer.HasBookingTable,
+			Columns: []string{customer.HasBookingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(booking.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -672,15 +672,15 @@ func (cuo *CustomerUpdateOne) sqlSave(ctx context.Context) (_node *Customer, err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := cuo.mutation.HasFlightIDs(); len(nodes) > 0 {
+	if nodes := cuo.mutation.HasBookingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   customer.HasFlightTable,
-			Columns: []string{customer.HasFlightColumn},
+			Table:   customer.HasBookingTable,
+			Columns: []string{customer.HasBookingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(booking.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

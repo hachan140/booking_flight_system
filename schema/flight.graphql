@@ -1,0 +1,11 @@
+input CreateFlight {
+    name: String!
+    departAt: Time!
+    landAt: Time!
+    availableEcSlot: Int!
+    availableBcSlot: Int!
+    toID: Int!
+    fromID: Int!
+    planeID: Int!
+
+}

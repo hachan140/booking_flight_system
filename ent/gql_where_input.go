@@ -87,9 +87,13 @@ type AirportWhereInput struct {
 	LongLT    *float64  `json:"longLT,omitempty"`
 	LongLTE   *float64  `json:"longLTE,omitempty"`
 
-	// "has_flight" edge predicates.
-	HasHasFlight     *bool               `json:"hasHasFlight,omitempty"`
-	HasHasFlightWith []*FlightWhereInput `json:"hasHasFlightWith,omitempty"`
+	// "from_flight" edge predicates.
+	HasFromFlight     *bool               `json:"hasFromFlight,omitempty"`
+	HasFromFlightWith []*FlightWhereInput `json:"hasFromFlightWith,omitempty"`
+
+	// "to_flight" edge predicates.
+	HasToFlight     *bool               `json:"hasToFlight,omitempty"`
+	HasToFlightWith []*FlightWhereInput `json:"hasToFlightWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -323,23 +327,41 @@ func (i *AirportWhereInput) P() (predicate.Airport, error) {
 		predicates = append(predicates, airport.LongLTE(*i.LongLTE))
 	}
 
-	if i.HasHasFlight != nil {
-		p := airport.HasHasFlight()
-		if !*i.HasHasFlight {
+	if i.HasFromFlight != nil {
+		p := airport.HasFromFlight()
+		if !*i.HasFromFlight {
 			p = airport.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
-	if len(i.HasHasFlightWith) > 0 {
-		with := make([]predicate.Flight, 0, len(i.HasHasFlightWith))
-		for _, w := range i.HasHasFlightWith {
+	if len(i.HasFromFlightWith) > 0 {
+		with := make([]predicate.Flight, 0, len(i.HasFromFlightWith))
+		for _, w := range i.HasFromFlightWith {
 			p, err := w.P()
 			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasHasFlightWith'", err)
+				return nil, fmt.Errorf("%w: field 'HasFromFlightWith'", err)
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, airport.HasHasFlightWith(with...))
+		predicates = append(predicates, airport.HasFromFlightWith(with...))
+	}
+	if i.HasToFlight != nil {
+		p := airport.HasToFlight()
+		if !*i.HasToFlight {
+			p = airport.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasToFlightWith) > 0 {
+		with := make([]predicate.Flight, 0, len(i.HasToFlightWith))
+		for _, w := range i.HasToFlightWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasToFlightWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, airport.HasToFlightWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -418,6 +440,14 @@ type BookingWhereInput struct {
 	StatusEqualFold    *string  `json:"statusEqualFold,omitempty"`
 	StatusContainsFold *string  `json:"statusContainsFold,omitempty"`
 
+	// "customer_id" field predicates.
+	CustomerID       *int  `json:"customerID,omitempty"`
+	CustomerIDNEQ    *int  `json:"customerIDNEQ,omitempty"`
+	CustomerIDIn     []int `json:"customerIDIn,omitempty"`
+	CustomerIDNotIn  []int `json:"customerIDNotIn,omitempty"`
+	CustomerIDIsNil  bool  `json:"customerIDIsNil,omitempty"`
+	CustomerIDNotNil bool  `json:"customerIDNotNil,omitempty"`
+
 	// "flight_id" field predicates.
 	FlightID       *int  `json:"flightID,omitempty"`
 	FlightIDNEQ    *int  `json:"flightIDNEQ,omitempty"`
@@ -429,6 +459,10 @@ type BookingWhereInput struct {
 	// "has_flight" edge predicates.
 	HasHasFlight     *bool               `json:"hasHasFlight,omitempty"`
 	HasHasFlightWith []*FlightWhereInput `json:"hasHasFlightWith,omitempty"`
+
+	// "has_customer" edge predicates.
+	HasHasCustomer     *bool                 `json:"hasHasCustomer,omitempty"`
+	HasHasCustomerWith []*CustomerWhereInput `json:"hasHasCustomerWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -652,6 +686,24 @@ func (i *BookingWhereInput) P() (predicate.Booking, error) {
 	if i.StatusContainsFold != nil {
 		predicates = append(predicates, booking.StatusContainsFold(*i.StatusContainsFold))
 	}
+	if i.CustomerID != nil {
+		predicates = append(predicates, booking.CustomerIDEQ(*i.CustomerID))
+	}
+	if i.CustomerIDNEQ != nil {
+		predicates = append(predicates, booking.CustomerIDNEQ(*i.CustomerIDNEQ))
+	}
+	if len(i.CustomerIDIn) > 0 {
+		predicates = append(predicates, booking.CustomerIDIn(i.CustomerIDIn...))
+	}
+	if len(i.CustomerIDNotIn) > 0 {
+		predicates = append(predicates, booking.CustomerIDNotIn(i.CustomerIDNotIn...))
+	}
+	if i.CustomerIDIsNil {
+		predicates = append(predicates, booking.CustomerIDIsNil())
+	}
+	if i.CustomerIDNotNil {
+		predicates = append(predicates, booking.CustomerIDNotNil())
+	}
 	if i.FlightID != nil {
 		predicates = append(predicates, booking.FlightIDEQ(*i.FlightID))
 	}
@@ -688,6 +740,24 @@ func (i *BookingWhereInput) P() (predicate.Booking, error) {
 			with = append(with, p)
 		}
 		predicates = append(predicates, booking.HasHasFlightWith(with...))
+	}
+	if i.HasHasCustomer != nil {
+		p := booking.HasHasCustomer()
+		if !*i.HasHasCustomer {
+			p = booking.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if len(i.HasHasCustomerWith) > 0 {
+		with := make([]predicate.Customer, 0, len(i.HasHasCustomerWith))
+		for _, w := range i.HasHasCustomerWith {
+			p, err := w.P()
+			if err != nil {
+				return nil, fmt.Errorf("%w: field 'HasHasCustomerWith'", err)
+			}
+			with = append(with, p)
+		}
+		predicates = append(predicates, booking.HasHasCustomerWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -818,9 +888,9 @@ type CustomerWhereInput struct {
 	HasHasMember     *bool               `json:"hasHasMember,omitempty"`
 	HasHasMemberWith []*MemberWhereInput `json:"hasHasMemberWith,omitempty"`
 
-	// "has_flight" edge predicates.
-	HasHasFlight     *bool               `json:"hasHasFlight,omitempty"`
-	HasHasFlightWith []*FlightWhereInput `json:"hasHasFlightWith,omitempty"`
+	// "has_booking" edge predicates.
+	HasHasBooking     *bool                `json:"hasHasBooking,omitempty"`
+	HasHasBookingWith []*BookingWhereInput `json:"hasHasBookingWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -1183,23 +1253,23 @@ func (i *CustomerWhereInput) P() (predicate.Customer, error) {
 		}
 		predicates = append(predicates, customer.HasHasMemberWith(with...))
 	}
-	if i.HasHasFlight != nil {
-		p := customer.HasHasFlight()
-		if !*i.HasHasFlight {
+	if i.HasHasBooking != nil {
+		p := customer.HasHasBooking()
+		if !*i.HasHasBooking {
 			p = customer.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
-	if len(i.HasHasFlightWith) > 0 {
-		with := make([]predicate.Flight, 0, len(i.HasHasFlightWith))
-		for _, w := range i.HasHasFlightWith {
+	if len(i.HasHasBookingWith) > 0 {
+		with := make([]predicate.Booking, 0, len(i.HasHasBookingWith))
+		for _, w := range i.HasHasBookingWith {
 			p, err := w.P()
 			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasHasFlightWith'", err)
+				return nil, fmt.Errorf("%w: field 'HasHasBookingWith'", err)
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, customer.HasHasFlightWith(with...))
+		predicates = append(predicates, customer.HasHasBookingWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -1317,21 +1387,21 @@ type FlightWhereInput struct {
 	PlaneIDIsNil  bool  `json:"planeIDIsNil,omitempty"`
 	PlaneIDNotNil bool  `json:"planeIDNotNil,omitempty"`
 
-	// "airport_id" field predicates.
-	AirportID       *int  `json:"airportID,omitempty"`
-	AirportIDNEQ    *int  `json:"airportIDNEQ,omitempty"`
-	AirportIDIn     []int `json:"airportIDIn,omitempty"`
-	AirportIDNotIn  []int `json:"airportIDNotIn,omitempty"`
-	AirportIDIsNil  bool  `json:"airportIDIsNil,omitempty"`
-	AirportIDNotNil bool  `json:"airportIDNotNil,omitempty"`
+	// "from_airport_id" field predicates.
+	FromAirportID       *int  `json:"fromAirportID,omitempty"`
+	FromAirportIDNEQ    *int  `json:"fromAirportIDNEQ,omitempty"`
+	FromAirportIDIn     []int `json:"fromAirportIDIn,omitempty"`
+	FromAirportIDNotIn  []int `json:"fromAirportIDNotIn,omitempty"`
+	FromAirportIDIsNil  bool  `json:"fromAirportIDIsNil,omitempty"`
+	FromAirportIDNotNil bool  `json:"fromAirportIDNotNil,omitempty"`
 
-	// "customer_id" field predicates.
-	CustomerID       *int  `json:"customerID,omitempty"`
-	CustomerIDNEQ    *int  `json:"customerIDNEQ,omitempty"`
-	CustomerIDIn     []int `json:"customerIDIn,omitempty"`
-	CustomerIDNotIn  []int `json:"customerIDNotIn,omitempty"`
-	CustomerIDIsNil  bool  `json:"customerIDIsNil,omitempty"`
-	CustomerIDNotNil bool  `json:"customerIDNotNil,omitempty"`
+	// "to_airport_id" field predicates.
+	ToAirportID       *int  `json:"toAirportID,omitempty"`
+	ToAirportIDNEQ    *int  `json:"toAirportIDNEQ,omitempty"`
+	ToAirportIDIn     []int `json:"toAirportIDIn,omitempty"`
+	ToAirportIDNotIn  []int `json:"toAirportIDNotIn,omitempty"`
+	ToAirportIDIsNil  bool  `json:"toAirportIDIsNil,omitempty"`
+	ToAirportIDNotNil bool  `json:"toAirportIDNotNil,omitempty"`
 
 	// "has_plane" edge predicates.
 	HasHasPlane     *bool              `json:"hasHasPlane,omitempty"`
@@ -1341,13 +1411,13 @@ type FlightWhereInput struct {
 	HasHasBooking     *bool                `json:"hasHasBooking,omitempty"`
 	HasHasBookingWith []*BookingWhereInput `json:"hasHasBookingWith,omitempty"`
 
-	// "has_airport" edge predicates.
-	HasHasAirport     *bool                `json:"hasHasAirport,omitempty"`
-	HasHasAirportWith []*AirportWhereInput `json:"hasHasAirportWith,omitempty"`
+	// "from_airport" edge predicates.
+	HasFromAirport     *bool                `json:"hasFromAirport,omitempty"`
+	HasFromAirportWith []*AirportWhereInput `json:"hasFromAirportWith,omitempty"`
 
-	// "has_customer" edge predicates.
-	HasHasCustomer     *bool                 `json:"hasHasCustomer,omitempty"`
-	HasHasCustomerWith []*CustomerWhereInput `json:"hasHasCustomerWith,omitempty"`
+	// "to_airport" edge predicates.
+	HasToAirport     *bool                `json:"hasToAirport,omitempty"`
+	HasToAirportWith []*AirportWhereInput `json:"hasToAirportWith,omitempty"`
 }
 
 // AddPredicates adds custom predicates to the where input to be used during the filtering phase.
@@ -1658,41 +1728,41 @@ func (i *FlightWhereInput) P() (predicate.Flight, error) {
 	if i.PlaneIDNotNil {
 		predicates = append(predicates, flight.PlaneIDNotNil())
 	}
-	if i.AirportID != nil {
-		predicates = append(predicates, flight.AirportIDEQ(*i.AirportID))
+	if i.FromAirportID != nil {
+		predicates = append(predicates, flight.FromAirportIDEQ(*i.FromAirportID))
 	}
-	if i.AirportIDNEQ != nil {
-		predicates = append(predicates, flight.AirportIDNEQ(*i.AirportIDNEQ))
+	if i.FromAirportIDNEQ != nil {
+		predicates = append(predicates, flight.FromAirportIDNEQ(*i.FromAirportIDNEQ))
 	}
-	if len(i.AirportIDIn) > 0 {
-		predicates = append(predicates, flight.AirportIDIn(i.AirportIDIn...))
+	if len(i.FromAirportIDIn) > 0 {
+		predicates = append(predicates, flight.FromAirportIDIn(i.FromAirportIDIn...))
 	}
-	if len(i.AirportIDNotIn) > 0 {
-		predicates = append(predicates, flight.AirportIDNotIn(i.AirportIDNotIn...))
+	if len(i.FromAirportIDNotIn) > 0 {
+		predicates = append(predicates, flight.FromAirportIDNotIn(i.FromAirportIDNotIn...))
 	}
-	if i.AirportIDIsNil {
-		predicates = append(predicates, flight.AirportIDIsNil())
+	if i.FromAirportIDIsNil {
+		predicates = append(predicates, flight.FromAirportIDIsNil())
 	}
-	if i.AirportIDNotNil {
-		predicates = append(predicates, flight.AirportIDNotNil())
+	if i.FromAirportIDNotNil {
+		predicates = append(predicates, flight.FromAirportIDNotNil())
 	}
-	if i.CustomerID != nil {
-		predicates = append(predicates, flight.CustomerIDEQ(*i.CustomerID))
+	if i.ToAirportID != nil {
+		predicates = append(predicates, flight.ToAirportIDEQ(*i.ToAirportID))
 	}
-	if i.CustomerIDNEQ != nil {
-		predicates = append(predicates, flight.CustomerIDNEQ(*i.CustomerIDNEQ))
+	if i.ToAirportIDNEQ != nil {
+		predicates = append(predicates, flight.ToAirportIDNEQ(*i.ToAirportIDNEQ))
 	}
-	if len(i.CustomerIDIn) > 0 {
-		predicates = append(predicates, flight.CustomerIDIn(i.CustomerIDIn...))
+	if len(i.ToAirportIDIn) > 0 {
+		predicates = append(predicates, flight.ToAirportIDIn(i.ToAirportIDIn...))
 	}
-	if len(i.CustomerIDNotIn) > 0 {
-		predicates = append(predicates, flight.CustomerIDNotIn(i.CustomerIDNotIn...))
+	if len(i.ToAirportIDNotIn) > 0 {
+		predicates = append(predicates, flight.ToAirportIDNotIn(i.ToAirportIDNotIn...))
 	}
-	if i.CustomerIDIsNil {
-		predicates = append(predicates, flight.CustomerIDIsNil())
+	if i.ToAirportIDIsNil {
+		predicates = append(predicates, flight.ToAirportIDIsNil())
 	}
-	if i.CustomerIDNotNil {
-		predicates = append(predicates, flight.CustomerIDNotNil())
+	if i.ToAirportIDNotNil {
+		predicates = append(predicates, flight.ToAirportIDNotNil())
 	}
 
 	if i.HasHasPlane != nil {
@@ -1731,41 +1801,41 @@ func (i *FlightWhereInput) P() (predicate.Flight, error) {
 		}
 		predicates = append(predicates, flight.HasHasBookingWith(with...))
 	}
-	if i.HasHasAirport != nil {
-		p := flight.HasHasAirport()
-		if !*i.HasHasAirport {
+	if i.HasFromAirport != nil {
+		p := flight.HasFromAirport()
+		if !*i.HasFromAirport {
 			p = flight.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
-	if len(i.HasHasAirportWith) > 0 {
-		with := make([]predicate.Airport, 0, len(i.HasHasAirportWith))
-		for _, w := range i.HasHasAirportWith {
+	if len(i.HasFromAirportWith) > 0 {
+		with := make([]predicate.Airport, 0, len(i.HasFromAirportWith))
+		for _, w := range i.HasFromAirportWith {
 			p, err := w.P()
 			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasHasAirportWith'", err)
+				return nil, fmt.Errorf("%w: field 'HasFromAirportWith'", err)
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, flight.HasHasAirportWith(with...))
+		predicates = append(predicates, flight.HasFromAirportWith(with...))
 	}
-	if i.HasHasCustomer != nil {
-		p := flight.HasHasCustomer()
-		if !*i.HasHasCustomer {
+	if i.HasToAirport != nil {
+		p := flight.HasToAirport()
+		if !*i.HasToAirport {
 			p = flight.Not(p)
 		}
 		predicates = append(predicates, p)
 	}
-	if len(i.HasHasCustomerWith) > 0 {
-		with := make([]predicate.Customer, 0, len(i.HasHasCustomerWith))
-		for _, w := range i.HasHasCustomerWith {
+	if len(i.HasToAirportWith) > 0 {
+		with := make([]predicate.Airport, 0, len(i.HasToAirportWith))
+		for _, w := range i.HasToAirportWith {
 			p, err := w.P()
 			if err != nil {
-				return nil, fmt.Errorf("%w: field 'HasHasCustomerWith'", err)
+				return nil, fmt.Errorf("%w: field 'HasToAirportWith'", err)
 			}
 			with = append(with, p)
 		}
-		predicates = append(predicates, flight.HasHasCustomerWith(with...))
+		predicates = append(predicates, flight.HasToAirportWith(with...))
 	}
 	switch len(predicates) {
 	case 0:
@@ -2354,6 +2424,26 @@ type PlaneWhereInput struct {
 	IDLT    *int  `json:"idLT,omitempty"`
 	IDLTE   *int  `json:"idLTE,omitempty"`
 
+	// "created_at" field predicates.
+	CreatedAt      *time.Time  `json:"createdAt,omitempty"`
+	CreatedAtNEQ   *time.Time  `json:"createdAtNEQ,omitempty"`
+	CreatedAtIn    []time.Time `json:"createdAtIn,omitempty"`
+	CreatedAtNotIn []time.Time `json:"createdAtNotIn,omitempty"`
+	CreatedAtGT    *time.Time  `json:"createdAtGT,omitempty"`
+	CreatedAtGTE   *time.Time  `json:"createdAtGTE,omitempty"`
+	CreatedAtLT    *time.Time  `json:"createdAtLT,omitempty"`
+	CreatedAtLTE   *time.Time  `json:"createdAtLTE,omitempty"`
+
+	// "updated_at" field predicates.
+	UpdatedAt      *time.Time  `json:"updatedAt,omitempty"`
+	UpdatedAtNEQ   *time.Time  `json:"updatedAtNEQ,omitempty"`
+	UpdatedAtIn    []time.Time `json:"updatedAtIn,omitempty"`
+	UpdatedAtNotIn []time.Time `json:"updatedAtNotIn,omitempty"`
+	UpdatedAtGT    *time.Time  `json:"updatedAtGT,omitempty"`
+	UpdatedAtGTE   *time.Time  `json:"updatedAtGTE,omitempty"`
+	UpdatedAtLT    *time.Time  `json:"updatedAtLT,omitempty"`
+	UpdatedAtLTE   *time.Time  `json:"updatedAtLTE,omitempty"`
+
 	// "name" field predicates.
 	Name             *string  `json:"name,omitempty"`
 	NameNEQ          *string  `json:"nameNEQ,omitempty"`
@@ -2494,6 +2584,54 @@ func (i *PlaneWhereInput) P() (predicate.Plane, error) {
 	}
 	if i.IDLTE != nil {
 		predicates = append(predicates, plane.IDLTE(*i.IDLTE))
+	}
+	if i.CreatedAt != nil {
+		predicates = append(predicates, plane.CreatedAtEQ(*i.CreatedAt))
+	}
+	if i.CreatedAtNEQ != nil {
+		predicates = append(predicates, plane.CreatedAtNEQ(*i.CreatedAtNEQ))
+	}
+	if len(i.CreatedAtIn) > 0 {
+		predicates = append(predicates, plane.CreatedAtIn(i.CreatedAtIn...))
+	}
+	if len(i.CreatedAtNotIn) > 0 {
+		predicates = append(predicates, plane.CreatedAtNotIn(i.CreatedAtNotIn...))
+	}
+	if i.CreatedAtGT != nil {
+		predicates = append(predicates, plane.CreatedAtGT(*i.CreatedAtGT))
+	}
+	if i.CreatedAtGTE != nil {
+		predicates = append(predicates, plane.CreatedAtGTE(*i.CreatedAtGTE))
+	}
+	if i.CreatedAtLT != nil {
+		predicates = append(predicates, plane.CreatedAtLT(*i.CreatedAtLT))
+	}
+	if i.CreatedAtLTE != nil {
+		predicates = append(predicates, plane.CreatedAtLTE(*i.CreatedAtLTE))
+	}
+	if i.UpdatedAt != nil {
+		predicates = append(predicates, plane.UpdatedAtEQ(*i.UpdatedAt))
+	}
+	if i.UpdatedAtNEQ != nil {
+		predicates = append(predicates, plane.UpdatedAtNEQ(*i.UpdatedAtNEQ))
+	}
+	if len(i.UpdatedAtIn) > 0 {
+		predicates = append(predicates, plane.UpdatedAtIn(i.UpdatedAtIn...))
+	}
+	if len(i.UpdatedAtNotIn) > 0 {
+		predicates = append(predicates, plane.UpdatedAtNotIn(i.UpdatedAtNotIn...))
+	}
+	if i.UpdatedAtGT != nil {
+		predicates = append(predicates, plane.UpdatedAtGT(*i.UpdatedAtGT))
+	}
+	if i.UpdatedAtGTE != nil {
+		predicates = append(predicates, plane.UpdatedAtGTE(*i.UpdatedAtGTE))
+	}
+	if i.UpdatedAtLT != nil {
+		predicates = append(predicates, plane.UpdatedAtLT(*i.UpdatedAtLT))
+	}
+	if i.UpdatedAtLTE != nil {
+		predicates = append(predicates, plane.UpdatedAtLTE(*i.UpdatedAtLTE))
 	}
 	if i.Name != nil {
 		predicates = append(predicates, plane.NameEQ(*i.Name))

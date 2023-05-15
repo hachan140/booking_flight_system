@@ -5,7 +5,6 @@ package ent
 import (
 	"booking-flight-system/ent/airport"
 	"booking-flight-system/ent/booking"
-	"booking-flight-system/ent/customer"
 	"booking-flight-system/ent/flight"
 	"booking-flight-system/ent/plane"
 	"booking-flight-system/ent/predicate"
@@ -28,8 +27,8 @@ type FlightQuery struct {
 	predicates          []predicate.Flight
 	withHasPlane        *PlaneQuery
 	withHasBooking      *BookingQuery
-	withHasAirport      *AirportQuery
-	withHasCustomer     *CustomerQuery
+	withFromAirport     *AirportQuery
+	withToAirport       *AirportQuery
 	modifiers           []func(*sql.Selector)
 	loadTotal           []func(context.Context, []*Flight) error
 	withNamedHasBooking map[string]*BookingQuery
@@ -113,8 +112,8 @@ func (fq *FlightQuery) QueryHasBooking() *BookingQuery {
 	return query
 }
 
-// QueryHasAirport chains the current query on the "has_airport" edge.
-func (fq *FlightQuery) QueryHasAirport() *AirportQuery {
+// QueryFromAirport chains the current query on the "from_airport" edge.
+func (fq *FlightQuery) QueryFromAirport() *AirportQuery {
 	query := (&AirportClient{config: fq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := fq.prepareQuery(ctx); err != nil {
@@ -127,7 +126,7 @@ func (fq *FlightQuery) QueryHasAirport() *AirportQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(flight.Table, flight.FieldID, selector),
 			sqlgraph.To(airport.Table, airport.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, flight.HasAirportTable, flight.HasAirportColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, flight.FromAirportTable, flight.FromAirportColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
 		return fromU, nil
@@ -135,9 +134,9 @@ func (fq *FlightQuery) QueryHasAirport() *AirportQuery {
 	return query
 }
 
-// QueryHasCustomer chains the current query on the "has_customer" edge.
-func (fq *FlightQuery) QueryHasCustomer() *CustomerQuery {
-	query := (&CustomerClient{config: fq.config}).Query()
+// QueryToAirport chains the current query on the "to_airport" edge.
+func (fq *FlightQuery) QueryToAirport() *AirportQuery {
+	query := (&AirportClient{config: fq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := fq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -148,8 +147,8 @@ func (fq *FlightQuery) QueryHasCustomer() *CustomerQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(flight.Table, flight.FieldID, selector),
-			sqlgraph.To(customer.Table, customer.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, flight.HasCustomerTable, flight.HasCustomerColumn),
+			sqlgraph.To(airport.Table, airport.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, flight.ToAirportTable, flight.ToAirportColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(fq.driver.Dialect(), step)
 		return fromU, nil
@@ -351,8 +350,8 @@ func (fq *FlightQuery) Clone() *FlightQuery {
 		predicates:      append([]predicate.Flight{}, fq.predicates...),
 		withHasPlane:    fq.withHasPlane.Clone(),
 		withHasBooking:  fq.withHasBooking.Clone(),
-		withHasAirport:  fq.withHasAirport.Clone(),
-		withHasCustomer: fq.withHasCustomer.Clone(),
+		withFromAirport: fq.withFromAirport.Clone(),
+		withToAirport:   fq.withToAirport.Clone(),
 		// clone intermediate query.
 		sql:  fq.sql.Clone(),
 		path: fq.path,
@@ -381,25 +380,25 @@ func (fq *FlightQuery) WithHasBooking(opts ...func(*BookingQuery)) *FlightQuery 
 	return fq
 }
 
-// WithHasAirport tells the query-builder to eager-load the nodes that are connected to
-// the "has_airport" edge. The optional arguments are used to configure the query builder of the edge.
-func (fq *FlightQuery) WithHasAirport(opts ...func(*AirportQuery)) *FlightQuery {
+// WithFromAirport tells the query-builder to eager-load the nodes that are connected to
+// the "from_airport" edge. The optional arguments are used to configure the query builder of the edge.
+func (fq *FlightQuery) WithFromAirport(opts ...func(*AirportQuery)) *FlightQuery {
 	query := (&AirportClient{config: fq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	fq.withHasAirport = query
+	fq.withFromAirport = query
 	return fq
 }
 
-// WithHasCustomer tells the query-builder to eager-load the nodes that are connected to
-// the "has_customer" edge. The optional arguments are used to configure the query builder of the edge.
-func (fq *FlightQuery) WithHasCustomer(opts ...func(*CustomerQuery)) *FlightQuery {
-	query := (&CustomerClient{config: fq.config}).Query()
+// WithToAirport tells the query-builder to eager-load the nodes that are connected to
+// the "to_airport" edge. The optional arguments are used to configure the query builder of the edge.
+func (fq *FlightQuery) WithToAirport(opts ...func(*AirportQuery)) *FlightQuery {
+	query := (&AirportClient{config: fq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	fq.withHasCustomer = query
+	fq.withToAirport = query
 	return fq
 }
 
@@ -484,8 +483,8 @@ func (fq *FlightQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Fligh
 		loadedTypes = [4]bool{
 			fq.withHasPlane != nil,
 			fq.withHasBooking != nil,
-			fq.withHasAirport != nil,
-			fq.withHasCustomer != nil,
+			fq.withFromAirport != nil,
+			fq.withToAirport != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -522,15 +521,15 @@ func (fq *FlightQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Fligh
 			return nil, err
 		}
 	}
-	if query := fq.withHasAirport; query != nil {
-		if err := fq.loadHasAirport(ctx, query, nodes, nil,
-			func(n *Flight, e *Airport) { n.Edges.HasAirport = e }); err != nil {
+	if query := fq.withFromAirport; query != nil {
+		if err := fq.loadFromAirport(ctx, query, nodes, nil,
+			func(n *Flight, e *Airport) { n.Edges.FromAirport = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := fq.withHasCustomer; query != nil {
-		if err := fq.loadHasCustomer(ctx, query, nodes, nil,
-			func(n *Flight, e *Customer) { n.Edges.HasCustomer = e }); err != nil {
+	if query := fq.withToAirport; query != nil {
+		if err := fq.loadToAirport(ctx, query, nodes, nil,
+			func(n *Flight, e *Airport) { n.Edges.ToAirport = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -608,11 +607,11 @@ func (fq *FlightQuery) loadHasBooking(ctx context.Context, query *BookingQuery, 
 	}
 	return nil
 }
-func (fq *FlightQuery) loadHasAirport(ctx context.Context, query *AirportQuery, nodes []*Flight, init func(*Flight), assign func(*Flight, *Airport)) error {
+func (fq *FlightQuery) loadFromAirport(ctx context.Context, query *AirportQuery, nodes []*Flight, init func(*Flight), assign func(*Flight, *Airport)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*Flight)
 	for i := range nodes {
-		fk := nodes[i].AirportID
+		fk := nodes[i].FromAirportID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -629,7 +628,7 @@ func (fq *FlightQuery) loadHasAirport(ctx context.Context, query *AirportQuery, 
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "airport_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "from_airport_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -637,11 +636,11 @@ func (fq *FlightQuery) loadHasAirport(ctx context.Context, query *AirportQuery, 
 	}
 	return nil
 }
-func (fq *FlightQuery) loadHasCustomer(ctx context.Context, query *CustomerQuery, nodes []*Flight, init func(*Flight), assign func(*Flight, *Customer)) error {
+func (fq *FlightQuery) loadToAirport(ctx context.Context, query *AirportQuery, nodes []*Flight, init func(*Flight), assign func(*Flight, *Airport)) error {
 	ids := make([]int, 0, len(nodes))
 	nodeids := make(map[int][]*Flight)
 	for i := range nodes {
-		fk := nodes[i].CustomerID
+		fk := nodes[i].ToAirportID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -650,7 +649,7 @@ func (fq *FlightQuery) loadHasCustomer(ctx context.Context, query *CustomerQuery
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(customer.IDIn(ids...))
+	query.Where(airport.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -658,7 +657,7 @@ func (fq *FlightQuery) loadHasCustomer(ctx context.Context, query *CustomerQuery
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "customer_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "to_airport_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -698,11 +697,11 @@ func (fq *FlightQuery) querySpec() *sqlgraph.QuerySpec {
 		if fq.withHasPlane != nil {
 			_spec.Node.AddColumnOnce(flight.FieldPlaneID)
 		}
-		if fq.withHasAirport != nil {
-			_spec.Node.AddColumnOnce(flight.FieldAirportID)
+		if fq.withFromAirport != nil {
+			_spec.Node.AddColumnOnce(flight.FieldFromAirportID)
 		}
-		if fq.withHasCustomer != nil {
-			_spec.Node.AddColumnOnce(flight.FieldCustomerID)
+		if fq.withToAirport != nil {
+			_spec.Node.AddColumnOnce(flight.FieldToAirportID)
 		}
 	}
 	if ps := fq.predicates; len(ps) > 0 {

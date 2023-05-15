@@ -81,19 +81,34 @@ func (au *AirportUpdate) AddLong(f float64) *AirportUpdate {
 	return au
 }
 
-// AddHasFlightIDs adds the "has_flight" edge to the Flight entity by IDs.
-func (au *AirportUpdate) AddHasFlightIDs(ids ...int) *AirportUpdate {
-	au.mutation.AddHasFlightIDs(ids...)
+// AddFromFlightIDs adds the "from_flight" edge to the Flight entity by IDs.
+func (au *AirportUpdate) AddFromFlightIDs(ids ...int) *AirportUpdate {
+	au.mutation.AddFromFlightIDs(ids...)
 	return au
 }
 
-// AddHasFlight adds the "has_flight" edges to the Flight entity.
-func (au *AirportUpdate) AddHasFlight(f ...*Flight) *AirportUpdate {
+// AddFromFlight adds the "from_flight" edges to the Flight entity.
+func (au *AirportUpdate) AddFromFlight(f ...*Flight) *AirportUpdate {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return au.AddHasFlightIDs(ids...)
+	return au.AddFromFlightIDs(ids...)
+}
+
+// AddToFlightIDs adds the "to_flight" edge to the Flight entity by IDs.
+func (au *AirportUpdate) AddToFlightIDs(ids ...int) *AirportUpdate {
+	au.mutation.AddToFlightIDs(ids...)
+	return au
+}
+
+// AddToFlight adds the "to_flight" edges to the Flight entity.
+func (au *AirportUpdate) AddToFlight(f ...*Flight) *AirportUpdate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return au.AddToFlightIDs(ids...)
 }
 
 // Mutation returns the AirportMutation object of the builder.
@@ -101,25 +116,46 @@ func (au *AirportUpdate) Mutation() *AirportMutation {
 	return au.mutation
 }
 
-// ClearHasFlight clears all "has_flight" edges to the Flight entity.
-func (au *AirportUpdate) ClearHasFlight() *AirportUpdate {
-	au.mutation.ClearHasFlight()
+// ClearFromFlight clears all "from_flight" edges to the Flight entity.
+func (au *AirportUpdate) ClearFromFlight() *AirportUpdate {
+	au.mutation.ClearFromFlight()
 	return au
 }
 
-// RemoveHasFlightIDs removes the "has_flight" edge to Flight entities by IDs.
-func (au *AirportUpdate) RemoveHasFlightIDs(ids ...int) *AirportUpdate {
-	au.mutation.RemoveHasFlightIDs(ids...)
+// RemoveFromFlightIDs removes the "from_flight" edge to Flight entities by IDs.
+func (au *AirportUpdate) RemoveFromFlightIDs(ids ...int) *AirportUpdate {
+	au.mutation.RemoveFromFlightIDs(ids...)
 	return au
 }
 
-// RemoveHasFlight removes "has_flight" edges to Flight entities.
-func (au *AirportUpdate) RemoveHasFlight(f ...*Flight) *AirportUpdate {
+// RemoveFromFlight removes "from_flight" edges to Flight entities.
+func (au *AirportUpdate) RemoveFromFlight(f ...*Flight) *AirportUpdate {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return au.RemoveHasFlightIDs(ids...)
+	return au.RemoveFromFlightIDs(ids...)
+}
+
+// ClearToFlight clears all "to_flight" edges to the Flight entity.
+func (au *AirportUpdate) ClearToFlight() *AirportUpdate {
+	au.mutation.ClearToFlight()
+	return au
+}
+
+// RemoveToFlightIDs removes the "to_flight" edge to Flight entities by IDs.
+func (au *AirportUpdate) RemoveToFlightIDs(ids ...int) *AirportUpdate {
+	au.mutation.RemoveToFlightIDs(ids...)
+	return au
+}
+
+// RemoveToFlight removes "to_flight" edges to Flight entities.
+func (au *AirportUpdate) RemoveToFlight(f ...*Flight) *AirportUpdate {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return au.RemoveToFlightIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -211,12 +247,12 @@ func (au *AirportUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := au.mutation.AddedLong(); ok {
 		_spec.AddField(airport.FieldLong, field.TypeFloat64, value)
 	}
-	if au.mutation.HasFlightCleared() {
+	if au.mutation.FromFlightCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   airport.HasFlightTable,
-			Columns: []string{airport.HasFlightColumn},
+			Table:   airport.FromFlightTable,
+			Columns: []string{airport.FromFlightColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
@@ -224,12 +260,12 @@ func (au *AirportUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.RemovedHasFlightIDs(); len(nodes) > 0 && !au.mutation.HasFlightCleared() {
+	if nodes := au.mutation.RemovedFromFlightIDs(); len(nodes) > 0 && !au.mutation.FromFlightCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   airport.HasFlightTable,
-			Columns: []string{airport.HasFlightColumn},
+			Table:   airport.FromFlightTable,
+			Columns: []string{airport.FromFlightColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
@@ -240,12 +276,57 @@ func (au *AirportUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := au.mutation.HasFlightIDs(); len(nodes) > 0 {
+	if nodes := au.mutation.FromFlightIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   airport.HasFlightTable,
-			Columns: []string{airport.HasFlightColumn},
+			Table:   airport.FromFlightTable,
+			Columns: []string{airport.FromFlightColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if au.mutation.ToFlightCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   airport.ToFlightTable,
+			Columns: []string{airport.ToFlightColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.RemovedToFlightIDs(); len(nodes) > 0 && !au.mutation.ToFlightCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   airport.ToFlightTable,
+			Columns: []string{airport.ToFlightColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := au.mutation.ToFlightIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   airport.ToFlightTable,
+			Columns: []string{airport.ToFlightColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
@@ -328,19 +409,34 @@ func (auo *AirportUpdateOne) AddLong(f float64) *AirportUpdateOne {
 	return auo
 }
 
-// AddHasFlightIDs adds the "has_flight" edge to the Flight entity by IDs.
-func (auo *AirportUpdateOne) AddHasFlightIDs(ids ...int) *AirportUpdateOne {
-	auo.mutation.AddHasFlightIDs(ids...)
+// AddFromFlightIDs adds the "from_flight" edge to the Flight entity by IDs.
+func (auo *AirportUpdateOne) AddFromFlightIDs(ids ...int) *AirportUpdateOne {
+	auo.mutation.AddFromFlightIDs(ids...)
 	return auo
 }
 
-// AddHasFlight adds the "has_flight" edges to the Flight entity.
-func (auo *AirportUpdateOne) AddHasFlight(f ...*Flight) *AirportUpdateOne {
+// AddFromFlight adds the "from_flight" edges to the Flight entity.
+func (auo *AirportUpdateOne) AddFromFlight(f ...*Flight) *AirportUpdateOne {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return auo.AddHasFlightIDs(ids...)
+	return auo.AddFromFlightIDs(ids...)
+}
+
+// AddToFlightIDs adds the "to_flight" edge to the Flight entity by IDs.
+func (auo *AirportUpdateOne) AddToFlightIDs(ids ...int) *AirportUpdateOne {
+	auo.mutation.AddToFlightIDs(ids...)
+	return auo
+}
+
+// AddToFlight adds the "to_flight" edges to the Flight entity.
+func (auo *AirportUpdateOne) AddToFlight(f ...*Flight) *AirportUpdateOne {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return auo.AddToFlightIDs(ids...)
 }
 
 // Mutation returns the AirportMutation object of the builder.
@@ -348,25 +444,46 @@ func (auo *AirportUpdateOne) Mutation() *AirportMutation {
 	return auo.mutation
 }
 
-// ClearHasFlight clears all "has_flight" edges to the Flight entity.
-func (auo *AirportUpdateOne) ClearHasFlight() *AirportUpdateOne {
-	auo.mutation.ClearHasFlight()
+// ClearFromFlight clears all "from_flight" edges to the Flight entity.
+func (auo *AirportUpdateOne) ClearFromFlight() *AirportUpdateOne {
+	auo.mutation.ClearFromFlight()
 	return auo
 }
 
-// RemoveHasFlightIDs removes the "has_flight" edge to Flight entities by IDs.
-func (auo *AirportUpdateOne) RemoveHasFlightIDs(ids ...int) *AirportUpdateOne {
-	auo.mutation.RemoveHasFlightIDs(ids...)
+// RemoveFromFlightIDs removes the "from_flight" edge to Flight entities by IDs.
+func (auo *AirportUpdateOne) RemoveFromFlightIDs(ids ...int) *AirportUpdateOne {
+	auo.mutation.RemoveFromFlightIDs(ids...)
 	return auo
 }
 
-// RemoveHasFlight removes "has_flight" edges to Flight entities.
-func (auo *AirportUpdateOne) RemoveHasFlight(f ...*Flight) *AirportUpdateOne {
+// RemoveFromFlight removes "from_flight" edges to Flight entities.
+func (auo *AirportUpdateOne) RemoveFromFlight(f ...*Flight) *AirportUpdateOne {
 	ids := make([]int, len(f))
 	for i := range f {
 		ids[i] = f[i].ID
 	}
-	return auo.RemoveHasFlightIDs(ids...)
+	return auo.RemoveFromFlightIDs(ids...)
+}
+
+// ClearToFlight clears all "to_flight" edges to the Flight entity.
+func (auo *AirportUpdateOne) ClearToFlight() *AirportUpdateOne {
+	auo.mutation.ClearToFlight()
+	return auo
+}
+
+// RemoveToFlightIDs removes the "to_flight" edge to Flight entities by IDs.
+func (auo *AirportUpdateOne) RemoveToFlightIDs(ids ...int) *AirportUpdateOne {
+	auo.mutation.RemoveToFlightIDs(ids...)
+	return auo
+}
+
+// RemoveToFlight removes "to_flight" edges to Flight entities.
+func (auo *AirportUpdateOne) RemoveToFlight(f ...*Flight) *AirportUpdateOne {
+	ids := make([]int, len(f))
+	for i := range f {
+		ids[i] = f[i].ID
+	}
+	return auo.RemoveToFlightIDs(ids...)
 }
 
 // Where appends a list predicates to the AirportUpdate builder.
@@ -488,12 +605,12 @@ func (auo *AirportUpdateOne) sqlSave(ctx context.Context) (_node *Airport, err e
 	if value, ok := auo.mutation.AddedLong(); ok {
 		_spec.AddField(airport.FieldLong, field.TypeFloat64, value)
 	}
-	if auo.mutation.HasFlightCleared() {
+	if auo.mutation.FromFlightCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   airport.HasFlightTable,
-			Columns: []string{airport.HasFlightColumn},
+			Table:   airport.FromFlightTable,
+			Columns: []string{airport.FromFlightColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
@@ -501,12 +618,12 @@ func (auo *AirportUpdateOne) sqlSave(ctx context.Context) (_node *Airport, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.RemovedHasFlightIDs(); len(nodes) > 0 && !auo.mutation.HasFlightCleared() {
+	if nodes := auo.mutation.RemovedFromFlightIDs(); len(nodes) > 0 && !auo.mutation.FromFlightCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   airport.HasFlightTable,
-			Columns: []string{airport.HasFlightColumn},
+			Table:   airport.FromFlightTable,
+			Columns: []string{airport.FromFlightColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
@@ -517,12 +634,57 @@ func (auo *AirportUpdateOne) sqlSave(ctx context.Context) (_node *Airport, err e
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := auo.mutation.HasFlightIDs(); len(nodes) > 0 {
+	if nodes := auo.mutation.FromFlightIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   airport.HasFlightTable,
-			Columns: []string{airport.HasFlightColumn},
+			Table:   airport.FromFlightTable,
+			Columns: []string{airport.FromFlightColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if auo.mutation.ToFlightCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   airport.ToFlightTable,
+			Columns: []string{airport.ToFlightColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.RemovedToFlightIDs(); len(nodes) > 0 && !auo.mutation.ToFlightCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   airport.ToFlightTable,
+			Columns: []string{airport.ToFlightColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := auo.mutation.ToFlightIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   airport.ToFlightTable,
+			Columns: []string{airport.ToFlightColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),

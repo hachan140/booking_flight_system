@@ -32,7 +32,7 @@ func (Customer) Fields() []ent.Field {
 func (Customer) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("has_member", Member.Type).Ref("has_customer").Field("member_id").Unique(),
-		edge.To("has_flight", Flight.Type),
+		edge.To("has_booking", Booking.Type),
 	}
 }
 

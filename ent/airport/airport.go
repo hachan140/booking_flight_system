@@ -24,17 +24,26 @@ const (
 	FieldLat = "lat"
 	// FieldLong holds the string denoting the long field in the database.
 	FieldLong = "long"
-	// EdgeHasFlight holds the string denoting the has_flight edge name in mutations.
-	EdgeHasFlight = "has_flight"
+	// EdgeFromFlight holds the string denoting the from_flight edge name in mutations.
+	EdgeFromFlight = "from_flight"
+	// EdgeToFlight holds the string denoting the to_flight edge name in mutations.
+	EdgeToFlight = "to_flight"
 	// Table holds the table name of the airport in the database.
 	Table = "airports"
-	// HasFlightTable is the table that holds the has_flight relation/edge.
-	HasFlightTable = "flights"
-	// HasFlightInverseTable is the table name for the Flight entity.
+	// FromFlightTable is the table that holds the from_flight relation/edge.
+	FromFlightTable = "flights"
+	// FromFlightInverseTable is the table name for the Flight entity.
 	// It exists in this package in order to avoid circular dependency with the "flight" package.
-	HasFlightInverseTable = "flights"
-	// HasFlightColumn is the table column denoting the has_flight relation/edge.
-	HasFlightColumn = "airport_id"
+	FromFlightInverseTable = "flights"
+	// FromFlightColumn is the table column denoting the from_flight relation/edge.
+	FromFlightColumn = "from_airport_id"
+	// ToFlightTable is the table that holds the to_flight relation/edge.
+	ToFlightTable = "flights"
+	// ToFlightInverseTable is the table name for the Flight entity.
+	// It exists in this package in order to avoid circular dependency with the "flight" package.
+	ToFlightInverseTable = "flights"
+	// ToFlightColumn is the table column denoting the to_flight relation/edge.
+	ToFlightColumn = "to_airport_id"
 )
 
 // Columns holds all SQL columns for airport fields.
@@ -105,23 +114,44 @@ func ByLong(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLong, opts...).ToFunc()
 }
 
-// ByHasFlightCount orders the results by has_flight count.
-func ByHasFlightCount(opts ...sql.OrderTermOption) OrderOption {
+// ByFromFlightCount orders the results by from_flight count.
+func ByFromFlightCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newHasFlightStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newFromFlightStep(), opts...)
 	}
 }
 
-// ByHasFlight orders the results by has_flight terms.
-func ByHasFlight(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByFromFlight orders the results by from_flight terms.
+func ByFromFlight(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newHasFlightStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newFromFlightStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newHasFlightStep() *sqlgraph.Step {
+
+// ByToFlightCount orders the results by to_flight count.
+func ByToFlightCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newToFlightStep(), opts...)
+	}
+}
+
+// ByToFlight orders the results by to_flight terms.
+func ByToFlight(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newToFlightStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newFromFlightStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(HasFlightInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, HasFlightTable, HasFlightColumn),
+		sqlgraph.To(FromFlightInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, FromFlightTable, FromFlightColumn),
+	)
+}
+func newToFlightStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ToFlightInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ToFlightTable, ToFlightColumn),
 	)
 }

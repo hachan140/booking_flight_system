@@ -9,6 +9,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -28,6 +29,26 @@ func (pu *PlaneUpdate) Where(ps ...predicate.Plane) *PlaneUpdate {
 	return pu
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (pu *PlaneUpdate) SetCreatedAt(t time.Time) *PlaneUpdate {
+	pu.mutation.SetCreatedAt(t)
+	return pu
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (pu *PlaneUpdate) SetNillableCreatedAt(t *time.Time) *PlaneUpdate {
+	if t != nil {
+		pu.SetCreatedAt(*t)
+	}
+	return pu
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (pu *PlaneUpdate) SetUpdatedAt(t time.Time) *PlaneUpdate {
+	pu.mutation.SetUpdatedAt(t)
+	return pu
+}
+
 // SetName sets the "name" field.
 func (pu *PlaneUpdate) SetName(s string) *PlaneUpdate {
 	pu.mutation.SetName(s)
@@ -41,6 +62,14 @@ func (pu *PlaneUpdate) SetEconomyClassSlots(i int64) *PlaneUpdate {
 	return pu
 }
 
+// SetNillableEconomyClassSlots sets the "economy_class_slots" field if the given value is not nil.
+func (pu *PlaneUpdate) SetNillableEconomyClassSlots(i *int64) *PlaneUpdate {
+	if i != nil {
+		pu.SetEconomyClassSlots(*i)
+	}
+	return pu
+}
+
 // AddEconomyClassSlots adds i to the "economy_class_slots" field.
 func (pu *PlaneUpdate) AddEconomyClassSlots(i int64) *PlaneUpdate {
 	pu.mutation.AddEconomyClassSlots(i)
@@ -51,6 +80,14 @@ func (pu *PlaneUpdate) AddEconomyClassSlots(i int64) *PlaneUpdate {
 func (pu *PlaneUpdate) SetBusinessClassSlots(i int64) *PlaneUpdate {
 	pu.mutation.ResetBusinessClassSlots()
 	pu.mutation.SetBusinessClassSlots(i)
+	return pu
+}
+
+// SetNillableBusinessClassSlots sets the "business_class_slots" field if the given value is not nil.
+func (pu *PlaneUpdate) SetNillableBusinessClassSlots(i *int64) *PlaneUpdate {
+	if i != nil {
+		pu.SetBusinessClassSlots(*i)
+	}
 	return pu
 }
 
@@ -117,6 +154,7 @@ func (pu *PlaneUpdate) RemoveFlights(f ...*Flight) *PlaneUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (pu *PlaneUpdate) Save(ctx context.Context) (int, error) {
+	pu.defaults()
 	return withHooks(ctx, pu.sqlSave, pu.mutation, pu.hooks)
 }
 
@@ -139,6 +177,14 @@ func (pu *PlaneUpdate) Exec(ctx context.Context) error {
 func (pu *PlaneUpdate) ExecX(ctx context.Context) {
 	if err := pu.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (pu *PlaneUpdate) defaults() {
+	if _, ok := pu.mutation.UpdatedAt(); !ok {
+		v := plane.UpdateDefaultUpdatedAt()
+		pu.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -168,6 +214,12 @@ func (pu *PlaneUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := pu.mutation.CreatedAt(); ok {
+		_spec.SetField(plane.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := pu.mutation.UpdatedAt(); ok {
+		_spec.SetField(plane.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := pu.mutation.Name(); ok {
 		_spec.SetField(plane.FieldName, field.TypeString, value)
@@ -252,6 +304,26 @@ type PlaneUpdateOne struct {
 	mutation *PlaneMutation
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (puo *PlaneUpdateOne) SetCreatedAt(t time.Time) *PlaneUpdateOne {
+	puo.mutation.SetCreatedAt(t)
+	return puo
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (puo *PlaneUpdateOne) SetNillableCreatedAt(t *time.Time) *PlaneUpdateOne {
+	if t != nil {
+		puo.SetCreatedAt(*t)
+	}
+	return puo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (puo *PlaneUpdateOne) SetUpdatedAt(t time.Time) *PlaneUpdateOne {
+	puo.mutation.SetUpdatedAt(t)
+	return puo
+}
+
 // SetName sets the "name" field.
 func (puo *PlaneUpdateOne) SetName(s string) *PlaneUpdateOne {
 	puo.mutation.SetName(s)
@@ -265,6 +337,14 @@ func (puo *PlaneUpdateOne) SetEconomyClassSlots(i int64) *PlaneUpdateOne {
 	return puo
 }
 
+// SetNillableEconomyClassSlots sets the "economy_class_slots" field if the given value is not nil.
+func (puo *PlaneUpdateOne) SetNillableEconomyClassSlots(i *int64) *PlaneUpdateOne {
+	if i != nil {
+		puo.SetEconomyClassSlots(*i)
+	}
+	return puo
+}
+
 // AddEconomyClassSlots adds i to the "economy_class_slots" field.
 func (puo *PlaneUpdateOne) AddEconomyClassSlots(i int64) *PlaneUpdateOne {
 	puo.mutation.AddEconomyClassSlots(i)
@@ -275,6 +355,14 @@ func (puo *PlaneUpdateOne) AddEconomyClassSlots(i int64) *PlaneUpdateOne {
 func (puo *PlaneUpdateOne) SetBusinessClassSlots(i int64) *PlaneUpdateOne {
 	puo.mutation.ResetBusinessClassSlots()
 	puo.mutation.SetBusinessClassSlots(i)
+	return puo
+}
+
+// SetNillableBusinessClassSlots sets the "business_class_slots" field if the given value is not nil.
+func (puo *PlaneUpdateOne) SetNillableBusinessClassSlots(i *int64) *PlaneUpdateOne {
+	if i != nil {
+		puo.SetBusinessClassSlots(*i)
+	}
 	return puo
 }
 
@@ -354,6 +442,7 @@ func (puo *PlaneUpdateOne) Select(field string, fields ...string) *PlaneUpdateOn
 
 // Save executes the query and returns the updated Plane entity.
 func (puo *PlaneUpdateOne) Save(ctx context.Context) (*Plane, error) {
+	puo.defaults()
 	return withHooks(ctx, puo.sqlSave, puo.mutation, puo.hooks)
 }
 
@@ -376,6 +465,14 @@ func (puo *PlaneUpdateOne) Exec(ctx context.Context) error {
 func (puo *PlaneUpdateOne) ExecX(ctx context.Context) {
 	if err := puo.Exec(ctx); err != nil {
 		panic(err)
+	}
+}
+
+// defaults sets the default values of the builder before save.
+func (puo *PlaneUpdateOne) defaults() {
+	if _, ok := puo.mutation.UpdatedAt(); !ok {
+		v := plane.UpdateDefaultUpdatedAt()
+		puo.mutation.SetUpdatedAt(v)
 	}
 }
 
@@ -422,6 +519,12 @@ func (puo *PlaneUpdateOne) sqlSave(ctx context.Context) (_node *Plane, err error
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := puo.mutation.CreatedAt(); ok {
+		_spec.SetField(plane.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := puo.mutation.UpdatedAt(); ok {
+		_spec.SetField(plane.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := puo.mutation.Name(); ok {
 		_spec.SetField(plane.FieldName, field.TypeString, value)

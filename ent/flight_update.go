@@ -5,7 +5,6 @@ package ent
 import (
 	"booking-flight-system/ent/airport"
 	"booking-flight-system/ent/booking"
-	"booking-flight-system/ent/customer"
 	"booking-flight-system/ent/flight"
 	"booking-flight-system/ent/plane"
 	"booking-flight-system/ent/predicate"
@@ -130,43 +129,43 @@ func (fu *FlightUpdate) ClearPlaneID() *FlightUpdate {
 	return fu
 }
 
-// SetAirportID sets the "airport_id" field.
-func (fu *FlightUpdate) SetAirportID(i int) *FlightUpdate {
-	fu.mutation.SetAirportID(i)
+// SetFromAirportID sets the "from_airport_id" field.
+func (fu *FlightUpdate) SetFromAirportID(i int) *FlightUpdate {
+	fu.mutation.SetFromAirportID(i)
 	return fu
 }
 
-// SetNillableAirportID sets the "airport_id" field if the given value is not nil.
-func (fu *FlightUpdate) SetNillableAirportID(i *int) *FlightUpdate {
+// SetNillableFromAirportID sets the "from_airport_id" field if the given value is not nil.
+func (fu *FlightUpdate) SetNillableFromAirportID(i *int) *FlightUpdate {
 	if i != nil {
-		fu.SetAirportID(*i)
+		fu.SetFromAirportID(*i)
 	}
 	return fu
 }
 
-// ClearAirportID clears the value of the "airport_id" field.
-func (fu *FlightUpdate) ClearAirportID() *FlightUpdate {
-	fu.mutation.ClearAirportID()
+// ClearFromAirportID clears the value of the "from_airport_id" field.
+func (fu *FlightUpdate) ClearFromAirportID() *FlightUpdate {
+	fu.mutation.ClearFromAirportID()
 	return fu
 }
 
-// SetCustomerID sets the "customer_id" field.
-func (fu *FlightUpdate) SetCustomerID(i int) *FlightUpdate {
-	fu.mutation.SetCustomerID(i)
+// SetToAirportID sets the "to_airport_id" field.
+func (fu *FlightUpdate) SetToAirportID(i int) *FlightUpdate {
+	fu.mutation.SetToAirportID(i)
 	return fu
 }
 
-// SetNillableCustomerID sets the "customer_id" field if the given value is not nil.
-func (fu *FlightUpdate) SetNillableCustomerID(i *int) *FlightUpdate {
+// SetNillableToAirportID sets the "to_airport_id" field if the given value is not nil.
+func (fu *FlightUpdate) SetNillableToAirportID(i *int) *FlightUpdate {
 	if i != nil {
-		fu.SetCustomerID(*i)
+		fu.SetToAirportID(*i)
 	}
 	return fu
 }
 
-// ClearCustomerID clears the value of the "customer_id" field.
-func (fu *FlightUpdate) ClearCustomerID() *FlightUpdate {
-	fu.mutation.ClearCustomerID()
+// ClearToAirportID clears the value of the "to_airport_id" field.
+func (fu *FlightUpdate) ClearToAirportID() *FlightUpdate {
+	fu.mutation.ClearToAirportID()
 	return fu
 }
 
@@ -204,42 +203,14 @@ func (fu *FlightUpdate) AddHasBooking(b ...*Booking) *FlightUpdate {
 	return fu.AddHasBookingIDs(ids...)
 }
 
-// SetHasAirportID sets the "has_airport" edge to the Airport entity by ID.
-func (fu *FlightUpdate) SetHasAirportID(id int) *FlightUpdate {
-	fu.mutation.SetHasAirportID(id)
-	return fu
+// SetFromAirport sets the "from_airport" edge to the Airport entity.
+func (fu *FlightUpdate) SetFromAirport(a *Airport) *FlightUpdate {
+	return fu.SetFromAirportID(a.ID)
 }
 
-// SetNillableHasAirportID sets the "has_airport" edge to the Airport entity by ID if the given value is not nil.
-func (fu *FlightUpdate) SetNillableHasAirportID(id *int) *FlightUpdate {
-	if id != nil {
-		fu = fu.SetHasAirportID(*id)
-	}
-	return fu
-}
-
-// SetHasAirport sets the "has_airport" edge to the Airport entity.
-func (fu *FlightUpdate) SetHasAirport(a *Airport) *FlightUpdate {
-	return fu.SetHasAirportID(a.ID)
-}
-
-// SetHasCustomerID sets the "has_customer" edge to the Customer entity by ID.
-func (fu *FlightUpdate) SetHasCustomerID(id int) *FlightUpdate {
-	fu.mutation.SetHasCustomerID(id)
-	return fu
-}
-
-// SetNillableHasCustomerID sets the "has_customer" edge to the Customer entity by ID if the given value is not nil.
-func (fu *FlightUpdate) SetNillableHasCustomerID(id *int) *FlightUpdate {
-	if id != nil {
-		fu = fu.SetHasCustomerID(*id)
-	}
-	return fu
-}
-
-// SetHasCustomer sets the "has_customer" edge to the Customer entity.
-func (fu *FlightUpdate) SetHasCustomer(c *Customer) *FlightUpdate {
-	return fu.SetHasCustomerID(c.ID)
+// SetToAirport sets the "to_airport" edge to the Airport entity.
+func (fu *FlightUpdate) SetToAirport(a *Airport) *FlightUpdate {
+	return fu.SetToAirportID(a.ID)
 }
 
 // Mutation returns the FlightMutation object of the builder.
@@ -274,15 +245,15 @@ func (fu *FlightUpdate) RemoveHasBooking(b ...*Booking) *FlightUpdate {
 	return fu.RemoveHasBookingIDs(ids...)
 }
 
-// ClearHasAirport clears the "has_airport" edge to the Airport entity.
-func (fu *FlightUpdate) ClearHasAirport() *FlightUpdate {
-	fu.mutation.ClearHasAirport()
+// ClearFromAirport clears the "from_airport" edge to the Airport entity.
+func (fu *FlightUpdate) ClearFromAirport() *FlightUpdate {
+	fu.mutation.ClearFromAirport()
 	return fu
 }
 
-// ClearHasCustomer clears the "has_customer" edge to the Customer entity.
-func (fu *FlightUpdate) ClearHasCustomer() *FlightUpdate {
-	fu.mutation.ClearHasCustomer()
+// ClearToAirport clears the "to_airport" edge to the Airport entity.
+func (fu *FlightUpdate) ClearToAirport() *FlightUpdate {
+	fu.mutation.ClearToAirport()
 	return fu
 }
 
@@ -453,12 +424,12 @@ func (fu *FlightUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if fu.mutation.HasAirportCleared() {
+	if fu.mutation.FromAirportCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   flight.HasAirportTable,
-			Columns: []string{flight.HasAirportColumn},
+			Table:   flight.FromAirportTable,
+			Columns: []string{flight.FromAirportColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(airport.FieldID, field.TypeInt),
@@ -466,12 +437,12 @@ func (fu *FlightUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := fu.mutation.HasAirportIDs(); len(nodes) > 0 {
+	if nodes := fu.mutation.FromAirportIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   flight.HasAirportTable,
-			Columns: []string{flight.HasAirportColumn},
+			Table:   flight.FromAirportTable,
+			Columns: []string{flight.FromAirportColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(airport.FieldID, field.TypeInt),
@@ -482,28 +453,28 @@ func (fu *FlightUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if fu.mutation.HasCustomerCleared() {
+	if fu.mutation.ToAirportCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   flight.HasCustomerTable,
-			Columns: []string{flight.HasCustomerColumn},
+			Table:   flight.ToAirportTable,
+			Columns: []string{flight.ToAirportColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(airport.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := fu.mutation.HasCustomerIDs(); len(nodes) > 0 {
+	if nodes := fu.mutation.ToAirportIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   flight.HasCustomerTable,
-			Columns: []string{flight.HasCustomerColumn},
+			Table:   flight.ToAirportTable,
+			Columns: []string{flight.ToAirportColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(airport.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
@@ -629,43 +600,43 @@ func (fuo *FlightUpdateOne) ClearPlaneID() *FlightUpdateOne {
 	return fuo
 }
 
-// SetAirportID sets the "airport_id" field.
-func (fuo *FlightUpdateOne) SetAirportID(i int) *FlightUpdateOne {
-	fuo.mutation.SetAirportID(i)
+// SetFromAirportID sets the "from_airport_id" field.
+func (fuo *FlightUpdateOne) SetFromAirportID(i int) *FlightUpdateOne {
+	fuo.mutation.SetFromAirportID(i)
 	return fuo
 }
 
-// SetNillableAirportID sets the "airport_id" field if the given value is not nil.
-func (fuo *FlightUpdateOne) SetNillableAirportID(i *int) *FlightUpdateOne {
+// SetNillableFromAirportID sets the "from_airport_id" field if the given value is not nil.
+func (fuo *FlightUpdateOne) SetNillableFromAirportID(i *int) *FlightUpdateOne {
 	if i != nil {
-		fuo.SetAirportID(*i)
+		fuo.SetFromAirportID(*i)
 	}
 	return fuo
 }
 
-// ClearAirportID clears the value of the "airport_id" field.
-func (fuo *FlightUpdateOne) ClearAirportID() *FlightUpdateOne {
-	fuo.mutation.ClearAirportID()
+// ClearFromAirportID clears the value of the "from_airport_id" field.
+func (fuo *FlightUpdateOne) ClearFromAirportID() *FlightUpdateOne {
+	fuo.mutation.ClearFromAirportID()
 	return fuo
 }
 
-// SetCustomerID sets the "customer_id" field.
-func (fuo *FlightUpdateOne) SetCustomerID(i int) *FlightUpdateOne {
-	fuo.mutation.SetCustomerID(i)
+// SetToAirportID sets the "to_airport_id" field.
+func (fuo *FlightUpdateOne) SetToAirportID(i int) *FlightUpdateOne {
+	fuo.mutation.SetToAirportID(i)
 	return fuo
 }
 
-// SetNillableCustomerID sets the "customer_id" field if the given value is not nil.
-func (fuo *FlightUpdateOne) SetNillableCustomerID(i *int) *FlightUpdateOne {
+// SetNillableToAirportID sets the "to_airport_id" field if the given value is not nil.
+func (fuo *FlightUpdateOne) SetNillableToAirportID(i *int) *FlightUpdateOne {
 	if i != nil {
-		fuo.SetCustomerID(*i)
+		fuo.SetToAirportID(*i)
 	}
 	return fuo
 }
 
-// ClearCustomerID clears the value of the "customer_id" field.
-func (fuo *FlightUpdateOne) ClearCustomerID() *FlightUpdateOne {
-	fuo.mutation.ClearCustomerID()
+// ClearToAirportID clears the value of the "to_airport_id" field.
+func (fuo *FlightUpdateOne) ClearToAirportID() *FlightUpdateOne {
+	fuo.mutation.ClearToAirportID()
 	return fuo
 }
 
@@ -703,42 +674,14 @@ func (fuo *FlightUpdateOne) AddHasBooking(b ...*Booking) *FlightUpdateOne {
 	return fuo.AddHasBookingIDs(ids...)
 }
 
-// SetHasAirportID sets the "has_airport" edge to the Airport entity by ID.
-func (fuo *FlightUpdateOne) SetHasAirportID(id int) *FlightUpdateOne {
-	fuo.mutation.SetHasAirportID(id)
-	return fuo
+// SetFromAirport sets the "from_airport" edge to the Airport entity.
+func (fuo *FlightUpdateOne) SetFromAirport(a *Airport) *FlightUpdateOne {
+	return fuo.SetFromAirportID(a.ID)
 }
 
-// SetNillableHasAirportID sets the "has_airport" edge to the Airport entity by ID if the given value is not nil.
-func (fuo *FlightUpdateOne) SetNillableHasAirportID(id *int) *FlightUpdateOne {
-	if id != nil {
-		fuo = fuo.SetHasAirportID(*id)
-	}
-	return fuo
-}
-
-// SetHasAirport sets the "has_airport" edge to the Airport entity.
-func (fuo *FlightUpdateOne) SetHasAirport(a *Airport) *FlightUpdateOne {
-	return fuo.SetHasAirportID(a.ID)
-}
-
-// SetHasCustomerID sets the "has_customer" edge to the Customer entity by ID.
-func (fuo *FlightUpdateOne) SetHasCustomerID(id int) *FlightUpdateOne {
-	fuo.mutation.SetHasCustomerID(id)
-	return fuo
-}
-
-// SetNillableHasCustomerID sets the "has_customer" edge to the Customer entity by ID if the given value is not nil.
-func (fuo *FlightUpdateOne) SetNillableHasCustomerID(id *int) *FlightUpdateOne {
-	if id != nil {
-		fuo = fuo.SetHasCustomerID(*id)
-	}
-	return fuo
-}
-
-// SetHasCustomer sets the "has_customer" edge to the Customer entity.
-func (fuo *FlightUpdateOne) SetHasCustomer(c *Customer) *FlightUpdateOne {
-	return fuo.SetHasCustomerID(c.ID)
+// SetToAirport sets the "to_airport" edge to the Airport entity.
+func (fuo *FlightUpdateOne) SetToAirport(a *Airport) *FlightUpdateOne {
+	return fuo.SetToAirportID(a.ID)
 }
 
 // Mutation returns the FlightMutation object of the builder.
@@ -773,15 +716,15 @@ func (fuo *FlightUpdateOne) RemoveHasBooking(b ...*Booking) *FlightUpdateOne {
 	return fuo.RemoveHasBookingIDs(ids...)
 }
 
-// ClearHasAirport clears the "has_airport" edge to the Airport entity.
-func (fuo *FlightUpdateOne) ClearHasAirport() *FlightUpdateOne {
-	fuo.mutation.ClearHasAirport()
+// ClearFromAirport clears the "from_airport" edge to the Airport entity.
+func (fuo *FlightUpdateOne) ClearFromAirport() *FlightUpdateOne {
+	fuo.mutation.ClearFromAirport()
 	return fuo
 }
 
-// ClearHasCustomer clears the "has_customer" edge to the Customer entity.
-func (fuo *FlightUpdateOne) ClearHasCustomer() *FlightUpdateOne {
-	fuo.mutation.ClearHasCustomer()
+// ClearToAirport clears the "to_airport" edge to the Airport entity.
+func (fuo *FlightUpdateOne) ClearToAirport() *FlightUpdateOne {
+	fuo.mutation.ClearToAirport()
 	return fuo
 }
 
@@ -982,12 +925,12 @@ func (fuo *FlightUpdateOne) sqlSave(ctx context.Context) (_node *Flight, err err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if fuo.mutation.HasAirportCleared() {
+	if fuo.mutation.FromAirportCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   flight.HasAirportTable,
-			Columns: []string{flight.HasAirportColumn},
+			Table:   flight.FromAirportTable,
+			Columns: []string{flight.FromAirportColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(airport.FieldID, field.TypeInt),
@@ -995,12 +938,12 @@ func (fuo *FlightUpdateOne) sqlSave(ctx context.Context) (_node *Flight, err err
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := fuo.mutation.HasAirportIDs(); len(nodes) > 0 {
+	if nodes := fuo.mutation.FromAirportIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   flight.HasAirportTable,
-			Columns: []string{flight.HasAirportColumn},
+			Table:   flight.FromAirportTable,
+			Columns: []string{flight.FromAirportColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(airport.FieldID, field.TypeInt),
@@ -1011,28 +954,28 @@ func (fuo *FlightUpdateOne) sqlSave(ctx context.Context) (_node *Flight, err err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if fuo.mutation.HasCustomerCleared() {
+	if fuo.mutation.ToAirportCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   flight.HasCustomerTable,
-			Columns: []string{flight.HasCustomerColumn},
+			Table:   flight.ToAirportTable,
+			Columns: []string{flight.ToAirportColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(airport.FieldID, field.TypeInt),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := fuo.mutation.HasCustomerIDs(); len(nodes) > 0 {
+	if nodes := fuo.mutation.ToAirportIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   flight.HasCustomerTable,
-			Columns: []string{flight.HasCustomerColumn},
+			Table:   flight.ToAirportTable,
+			Columns: []string{flight.ToAirportColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(airport.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

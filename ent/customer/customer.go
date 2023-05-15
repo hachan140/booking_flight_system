@@ -32,8 +32,8 @@ const (
 	FieldMemberID = "member_id"
 	// EdgeHasMember holds the string denoting the has_member edge name in mutations.
 	EdgeHasMember = "has_member"
-	// EdgeHasFlight holds the string denoting the has_flight edge name in mutations.
-	EdgeHasFlight = "has_flight"
+	// EdgeHasBooking holds the string denoting the has_booking edge name in mutations.
+	EdgeHasBooking = "has_booking"
 	// Table holds the table name of the customer in the database.
 	Table = "customers"
 	// HasMemberTable is the table that holds the has_member relation/edge.
@@ -43,13 +43,13 @@ const (
 	HasMemberInverseTable = "members"
 	// HasMemberColumn is the table column denoting the has_member relation/edge.
 	HasMemberColumn = "member_id"
-	// HasFlightTable is the table that holds the has_flight relation/edge.
-	HasFlightTable = "flights"
-	// HasFlightInverseTable is the table name for the Flight entity.
-	// It exists in this package in order to avoid circular dependency with the "flight" package.
-	HasFlightInverseTable = "flights"
-	// HasFlightColumn is the table column denoting the has_flight relation/edge.
-	HasFlightColumn = "customer_id"
+	// HasBookingTable is the table that holds the has_booking relation/edge.
+	HasBookingTable = "bookings"
+	// HasBookingInverseTable is the table name for the Booking entity.
+	// It exists in this package in order to avoid circular dependency with the "booking" package.
+	HasBookingInverseTable = "bookings"
+	// HasBookingColumn is the table column denoting the has_booking relation/edge.
+	HasBookingColumn = "customer_id"
 )
 
 // Columns holds all SQL columns for customer fields.
@@ -147,17 +147,17 @@ func ByHasMemberField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByHasFlightCount orders the results by has_flight count.
-func ByHasFlightCount(opts ...sql.OrderTermOption) OrderOption {
+// ByHasBookingCount orders the results by has_booking count.
+func ByHasBookingCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newHasFlightStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newHasBookingStep(), opts...)
 	}
 }
 
-// ByHasFlight orders the results by has_flight terms.
-func ByHasFlight(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByHasBooking orders the results by has_booking terms.
+func ByHasBooking(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newHasFlightStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newHasBookingStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newHasMemberStep() *sqlgraph.Step {
@@ -167,10 +167,10 @@ func newHasMemberStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2O, true, HasMemberTable, HasMemberColumn),
 	)
 }
-func newHasFlightStep() *sqlgraph.Step {
+func newHasBookingStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(HasFlightInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, HasFlightTable, HasFlightColumn),
+		sqlgraph.To(HasBookingInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, HasBookingTable, HasBookingColumn),
 	)
 }

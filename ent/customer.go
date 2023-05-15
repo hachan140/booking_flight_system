@@ -44,15 +44,15 @@ type Customer struct {
 type CustomerEdges struct {
 	// HasMember holds the value of the has_member edge.
 	HasMember *Member `json:"has_member,omitempty"`
-	// HasFlight holds the value of the has_flight edge.
-	HasFlight []*Flight `json:"has_flight,omitempty"`
+	// HasBooking holds the value of the has_booking edge.
+	HasBooking []*Booking `json:"has_booking,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [2]bool
 	// totalCount holds the count of the edges above.
 	totalCount [2]map[string]int
 
-	namedHasFlight map[string][]*Flight
+	namedHasBooking map[string][]*Booking
 }
 
 // HasMemberOrErr returns the HasMember value or an error if the edge
@@ -68,13 +68,13 @@ func (e CustomerEdges) HasMemberOrErr() (*Member, error) {
 	return nil, &NotLoadedError{edge: "has_member"}
 }
 
-// HasFlightOrErr returns the HasFlight value or an error if the edge
+// HasBookingOrErr returns the HasBooking value or an error if the edge
 // was not loaded in eager-loading.
-func (e CustomerEdges) HasFlightOrErr() ([]*Flight, error) {
+func (e CustomerEdges) HasBookingOrErr() ([]*Booking, error) {
 	if e.loadedTypes[1] {
-		return e.HasFlight, nil
+		return e.HasBooking, nil
 	}
-	return nil, &NotLoadedError{edge: "has_flight"}
+	return nil, &NotLoadedError{edge: "has_booking"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -175,9 +175,9 @@ func (c *Customer) QueryHasMember() *MemberQuery {
 	return NewCustomerClient(c.config).QueryHasMember(c)
 }
 
-// QueryHasFlight queries the "has_flight" edge of the Customer entity.
-func (c *Customer) QueryHasFlight() *FlightQuery {
-	return NewCustomerClient(c.config).QueryHasFlight(c)
+// QueryHasBooking queries the "has_booking" edge of the Customer entity.
+func (c *Customer) QueryHasBooking() *BookingQuery {
+	return NewCustomerClient(c.config).QueryHasBooking(c)
 }
 
 // Update returns a builder for updating this Customer.
@@ -230,27 +230,27 @@ func (c *Customer) String() string {
 	return builder.String()
 }
 
-// NamedHasFlight returns the HasFlight named value or an error if the edge was not
+// NamedHasBooking returns the HasBooking named value or an error if the edge was not
 // loaded in eager-loading with this name.
-func (c *Customer) NamedHasFlight(name string) ([]*Flight, error) {
-	if c.Edges.namedHasFlight == nil {
+func (c *Customer) NamedHasBooking(name string) ([]*Booking, error) {
+	if c.Edges.namedHasBooking == nil {
 		return nil, &NotLoadedError{edge: name}
 	}
-	nodes, ok := c.Edges.namedHasFlight[name]
+	nodes, ok := c.Edges.namedHasBooking[name]
 	if !ok {
 		return nil, &NotLoadedError{edge: name}
 	}
 	return nodes, nil
 }
 
-func (c *Customer) appendNamedHasFlight(name string, edges ...*Flight) {
-	if c.Edges.namedHasFlight == nil {
-		c.Edges.namedHasFlight = make(map[string][]*Flight)
+func (c *Customer) appendNamedHasBooking(name string, edges ...*Booking) {
+	if c.Edges.namedHasBooking == nil {
+		c.Edges.namedHasBooking = make(map[string][]*Booking)
 	}
 	if len(edges) == 0 {
-		c.Edges.namedHasFlight[name] = []*Flight{}
+		c.Edges.namedHasBooking[name] = []*Booking{}
 	} else {
-		c.Edges.namedHasFlight[name] = append(c.Edges.namedHasFlight[name], edges...)
+		c.Edges.namedHasBooking[name] = append(c.Edges.namedHasBooking[name], edges...)
 	}
 }
 

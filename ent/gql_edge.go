@@ -8,14 +8,26 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 )
 
-func (a *Airport) HasFlight(ctx context.Context) (result []*Flight, err error) {
+func (a *Airport) FromFlight(ctx context.Context) (result []*Flight, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = a.NamedHasFlight(graphql.GetFieldContext(ctx).Field.Alias)
+		result, err = a.NamedFromFlight(graphql.GetFieldContext(ctx).Field.Alias)
 	} else {
-		result, err = a.Edges.HasFlightOrErr()
+		result, err = a.Edges.FromFlightOrErr()
 	}
 	if IsNotLoaded(err) {
-		result, err = a.QueryHasFlight().All(ctx)
+		result, err = a.QueryFromFlight().All(ctx)
+	}
+	return result, err
+}
+
+func (a *Airport) ToFlight(ctx context.Context) (result []*Flight, err error) {
+	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
+		result, err = a.NamedToFlight(graphql.GetFieldContext(ctx).Field.Alias)
+	} else {
+		result, err = a.Edges.ToFlightOrErr()
+	}
+	if IsNotLoaded(err) {
+		result, err = a.QueryToFlight().All(ctx)
 	}
 	return result, err
 }
@@ -28,6 +40,14 @@ func (b *Booking) HasFlight(ctx context.Context) (*Flight, error) {
 	return result, MaskNotFound(err)
 }
 
+func (b *Booking) HasCustomer(ctx context.Context) (*Customer, error) {
+	result, err := b.Edges.HasCustomerOrErr()
+	if IsNotLoaded(err) {
+		result, err = b.QueryHasCustomer().Only(ctx)
+	}
+	return result, MaskNotFound(err)
+}
+
 func (c *Customer) HasMember(ctx context.Context) (*Member, error) {
 	result, err := c.Edges.HasMemberOrErr()
 	if IsNotLoaded(err) {
@@ -36,14 +56,14 @@ func (c *Customer) HasMember(ctx context.Context) (*Member, error) {
 	return result, MaskNotFound(err)
 }
 
-func (c *Customer) HasFlight(ctx context.Context) (result []*Flight, err error) {
+func (c *Customer) HasBooking(ctx context.Context) (result []*Booking, err error) {
 	if fc := graphql.GetFieldContext(ctx); fc != nil && fc.Field.Alias != "" {
-		result, err = c.NamedHasFlight(graphql.GetFieldContext(ctx).Field.Alias)
+		result, err = c.NamedHasBooking(graphql.GetFieldContext(ctx).Field.Alias)
 	} else {
-		result, err = c.Edges.HasFlightOrErr()
+		result, err = c.Edges.HasBookingOrErr()
 	}
 	if IsNotLoaded(err) {
-		result, err = c.QueryHasFlight().All(ctx)
+		result, err = c.QueryHasBooking().All(ctx)
 	}
 	return result, err
 }
@@ -68,18 +88,18 @@ func (f *Flight) HasBooking(ctx context.Context) (result []*Booking, err error) 
 	return result, err
 }
 
-func (f *Flight) HasAirport(ctx context.Context) (*Airport, error) {
-	result, err := f.Edges.HasAirportOrErr()
+func (f *Flight) FromAirport(ctx context.Context) (*Airport, error) {
+	result, err := f.Edges.FromAirportOrErr()
 	if IsNotLoaded(err) {
-		result, err = f.QueryHasAirport().Only(ctx)
+		result, err = f.QueryFromAirport().Only(ctx)
 	}
 	return result, MaskNotFound(err)
 }
 
-func (f *Flight) HasCustomer(ctx context.Context) (*Customer, error) {
-	result, err := f.Edges.HasCustomerOrErr()
+func (f *Flight) ToAirport(ctx context.Context) (*Airport, error) {
+	result, err := f.Edges.ToAirportOrErr()
 	if IsNotLoaded(err) {
-		result, err = f.QueryHasCustomer().Only(ctx)
+		result, err = f.QueryToAirport().Only(ctx)
 	}
 	return result, MaskNotFound(err)
 }

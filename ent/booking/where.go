@@ -75,6 +75,11 @@ func Status(v string) predicate.Booking {
 	return predicate.Booking(sql.FieldEQ(FieldStatus, v))
 }
 
+// CustomerID applies equality check predicate on the "customer_id" field. It's identical to CustomerIDEQ.
+func CustomerID(v int) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldCustomerID, v))
+}
+
 // FlightID applies equality check predicate on the "flight_id" field. It's identical to FlightIDEQ.
 func FlightID(v int) predicate.Booking {
 	return predicate.Booking(sql.FieldEQ(FieldFlightID, v))
@@ -290,6 +295,36 @@ func StatusContainsFold(v string) predicate.Booking {
 	return predicate.Booking(sql.FieldContainsFold(FieldStatus, v))
 }
 
+// CustomerIDEQ applies the EQ predicate on the "customer_id" field.
+func CustomerIDEQ(v int) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldCustomerID, v))
+}
+
+// CustomerIDNEQ applies the NEQ predicate on the "customer_id" field.
+func CustomerIDNEQ(v int) predicate.Booking {
+	return predicate.Booking(sql.FieldNEQ(FieldCustomerID, v))
+}
+
+// CustomerIDIn applies the In predicate on the "customer_id" field.
+func CustomerIDIn(vs ...int) predicate.Booking {
+	return predicate.Booking(sql.FieldIn(FieldCustomerID, vs...))
+}
+
+// CustomerIDNotIn applies the NotIn predicate on the "customer_id" field.
+func CustomerIDNotIn(vs ...int) predicate.Booking {
+	return predicate.Booking(sql.FieldNotIn(FieldCustomerID, vs...))
+}
+
+// CustomerIDIsNil applies the IsNil predicate on the "customer_id" field.
+func CustomerIDIsNil() predicate.Booking {
+	return predicate.Booking(sql.FieldIsNull(FieldCustomerID))
+}
+
+// CustomerIDNotNil applies the NotNil predicate on the "customer_id" field.
+func CustomerIDNotNil() predicate.Booking {
+	return predicate.Booking(sql.FieldNotNull(FieldCustomerID))
+}
+
 // FlightIDEQ applies the EQ predicate on the "flight_id" field.
 func FlightIDEQ(v int) predicate.Booking {
 	return predicate.Booking(sql.FieldEQ(FieldFlightID, v))
@@ -335,6 +370,29 @@ func HasHasFlight() predicate.Booking {
 func HasHasFlightWith(preds ...predicate.Flight) predicate.Booking {
 	return predicate.Booking(func(s *sql.Selector) {
 		step := newHasFlightStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasHasCustomer applies the HasEdge predicate on the "has_customer" edge.
+func HasHasCustomer() predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, HasCustomerTable, HasCustomerColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasHasCustomerWith applies the HasEdge predicate on the "has_customer" edge with a given conditions (other predicates).
+func HasHasCustomerWith(preds ...predicate.Customer) predicate.Booking {
+	return predicate.Booking(func(s *sql.Selector) {
+		step := newHasCustomerStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

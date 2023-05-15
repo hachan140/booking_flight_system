@@ -8,6 +8,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -18,6 +19,34 @@ type PlaneCreate struct {
 	config
 	mutation *PlaneMutation
 	hooks    []Hook
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (pc *PlaneCreate) SetCreatedAt(t time.Time) *PlaneCreate {
+	pc.mutation.SetCreatedAt(t)
+	return pc
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (pc *PlaneCreate) SetNillableCreatedAt(t *time.Time) *PlaneCreate {
+	if t != nil {
+		pc.SetCreatedAt(*t)
+	}
+	return pc
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (pc *PlaneCreate) SetUpdatedAt(t time.Time) *PlaneCreate {
+	pc.mutation.SetUpdatedAt(t)
+	return pc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (pc *PlaneCreate) SetNillableUpdatedAt(t *time.Time) *PlaneCreate {
+	if t != nil {
+		pc.SetUpdatedAt(*t)
+	}
+	return pc
 }
 
 // SetName sets the "name" field.
@@ -32,9 +61,25 @@ func (pc *PlaneCreate) SetEconomyClassSlots(i int64) *PlaneCreate {
 	return pc
 }
 
+// SetNillableEconomyClassSlots sets the "economy_class_slots" field if the given value is not nil.
+func (pc *PlaneCreate) SetNillableEconomyClassSlots(i *int64) *PlaneCreate {
+	if i != nil {
+		pc.SetEconomyClassSlots(*i)
+	}
+	return pc
+}
+
 // SetBusinessClassSlots sets the "business_class_slots" field.
 func (pc *PlaneCreate) SetBusinessClassSlots(i int64) *PlaneCreate {
 	pc.mutation.SetBusinessClassSlots(i)
+	return pc
+}
+
+// SetNillableBusinessClassSlots sets the "business_class_slots" field if the given value is not nil.
+func (pc *PlaneCreate) SetNillableBusinessClassSlots(i *int64) *PlaneCreate {
+	if i != nil {
+		pc.SetBusinessClassSlots(*i)
+	}
 	return pc
 }
 
@@ -102,6 +147,22 @@ func (pc *PlaneCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (pc *PlaneCreate) defaults() {
+	if _, ok := pc.mutation.CreatedAt(); !ok {
+		v := plane.DefaultCreatedAt()
+		pc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := pc.mutation.UpdatedAt(); !ok {
+		v := plane.DefaultUpdatedAt()
+		pc.mutation.SetUpdatedAt(v)
+	}
+	if _, ok := pc.mutation.EconomyClassSlots(); !ok {
+		v := plane.DefaultEconomyClassSlots
+		pc.mutation.SetEconomyClassSlots(v)
+	}
+	if _, ok := pc.mutation.BusinessClassSlots(); !ok {
+		v := plane.DefaultBusinessClassSlots
+		pc.mutation.SetBusinessClassSlots(v)
+	}
 	if _, ok := pc.mutation.Status(); !ok {
 		v := plane.DefaultStatus
 		pc.mutation.SetStatus(v)
@@ -110,6 +171,12 @@ func (pc *PlaneCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (pc *PlaneCreate) check() error {
+	if _, ok := pc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Plane.created_at"`)}
+	}
+	if _, ok := pc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Plane.updated_at"`)}
+	}
 	if _, ok := pc.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Plane.name"`)}
 	}
@@ -158,6 +225,14 @@ func (pc *PlaneCreate) createSpec() (*Plane, *sqlgraph.CreateSpec) {
 		_node = &Plane{config: pc.config}
 		_spec = sqlgraph.NewCreateSpec(plane.Table, sqlgraph.NewFieldSpec(plane.FieldID, field.TypeInt))
 	)
+	if value, ok := pc.mutation.CreatedAt(); ok {
+		_spec.SetField(plane.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := pc.mutation.UpdatedAt(); ok {
+		_spec.SetField(plane.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if value, ok := pc.mutation.Name(); ok {
 		_spec.SetField(plane.FieldName, field.TypeString, value)
 		_node.Name = value

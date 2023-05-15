@@ -4,6 +4,7 @@ package ent
 
 import (
 	"booking-flight-system/ent/booking"
+	"booking-flight-system/ent/customer"
 	"booking-flight-system/ent/flight"
 	"context"
 	"errors"
@@ -61,6 +62,20 @@ func (bc *BookingCreate) SetStatus(s string) *BookingCreate {
 	return bc
 }
 
+// SetCustomerID sets the "customer_id" field.
+func (bc *BookingCreate) SetCustomerID(i int) *BookingCreate {
+	bc.mutation.SetCustomerID(i)
+	return bc
+}
+
+// SetNillableCustomerID sets the "customer_id" field if the given value is not nil.
+func (bc *BookingCreate) SetNillableCustomerID(i *int) *BookingCreate {
+	if i != nil {
+		bc.SetCustomerID(*i)
+	}
+	return bc
+}
+
 // SetFlightID sets the "flight_id" field.
 func (bc *BookingCreate) SetFlightID(i int) *BookingCreate {
 	bc.mutation.SetFlightID(i)
@@ -92,6 +107,25 @@ func (bc *BookingCreate) SetNillableHasFlightID(id *int) *BookingCreate {
 // SetHasFlight sets the "has_flight" edge to the Flight entity.
 func (bc *BookingCreate) SetHasFlight(f *Flight) *BookingCreate {
 	return bc.SetHasFlightID(f.ID)
+}
+
+// SetHasCustomerID sets the "has_customer" edge to the Customer entity by ID.
+func (bc *BookingCreate) SetHasCustomerID(id int) *BookingCreate {
+	bc.mutation.SetHasCustomerID(id)
+	return bc
+}
+
+// SetNillableHasCustomerID sets the "has_customer" edge to the Customer entity by ID if the given value is not nil.
+func (bc *BookingCreate) SetNillableHasCustomerID(id *int) *BookingCreate {
+	if id != nil {
+		bc = bc.SetHasCustomerID(*id)
+	}
+	return bc
+}
+
+// SetHasCustomer sets the "has_customer" edge to the Customer entity.
+func (bc *BookingCreate) SetHasCustomer(c *Customer) *BookingCreate {
+	return bc.SetHasCustomerID(c.ID)
 }
 
 // Mutation returns the BookingMutation object of the builder.
@@ -215,6 +249,23 @@ func (bc *BookingCreate) createSpec() (*Booking, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.FlightID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := bc.mutation.HasCustomerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   booking.HasCustomerTable,
+			Columns: []string{booking.HasCustomerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.CustomerID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

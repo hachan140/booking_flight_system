@@ -35,24 +35,36 @@ type Airport struct {
 
 // AirportEdges holds the relations/edges for other nodes in the graph.
 type AirportEdges struct {
-	// HasFlight holds the value of the has_flight edge.
-	HasFlight []*Flight `json:"has_flight,omitempty"`
+	// FromFlight holds the value of the from_flight edge.
+	FromFlight []*Flight `json:"from_flight,omitempty"`
+	// ToFlight holds the value of the to_flight edge.
+	ToFlight []*Flight `json:"to_flight,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 	// totalCount holds the count of the edges above.
-	totalCount [1]map[string]int
+	totalCount [2]map[string]int
 
-	namedHasFlight map[string][]*Flight
+	namedFromFlight map[string][]*Flight
+	namedToFlight   map[string][]*Flight
 }
 
-// HasFlightOrErr returns the HasFlight value or an error if the edge
+// FromFlightOrErr returns the FromFlight value or an error if the edge
 // was not loaded in eager-loading.
-func (e AirportEdges) HasFlightOrErr() ([]*Flight, error) {
+func (e AirportEdges) FromFlightOrErr() ([]*Flight, error) {
 	if e.loadedTypes[0] {
-		return e.HasFlight, nil
+		return e.FromFlight, nil
 	}
-	return nil, &NotLoadedError{edge: "has_flight"}
+	return nil, &NotLoadedError{edge: "from_flight"}
+}
+
+// ToFlightOrErr returns the ToFlight value or an error if the edge
+// was not loaded in eager-loading.
+func (e AirportEdges) ToFlightOrErr() ([]*Flight, error) {
+	if e.loadedTypes[1] {
+		return e.ToFlight, nil
+	}
+	return nil, &NotLoadedError{edge: "to_flight"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -134,9 +146,14 @@ func (a *Airport) Value(name string) (ent.Value, error) {
 	return a.selectValues.Get(name)
 }
 
-// QueryHasFlight queries the "has_flight" edge of the Airport entity.
-func (a *Airport) QueryHasFlight() *FlightQuery {
-	return NewAirportClient(a.config).QueryHasFlight(a)
+// QueryFromFlight queries the "from_flight" edge of the Airport entity.
+func (a *Airport) QueryFromFlight() *FlightQuery {
+	return NewAirportClient(a.config).QueryFromFlight(a)
+}
+
+// QueryToFlight queries the "to_flight" edge of the Airport entity.
+func (a *Airport) QueryToFlight() *FlightQuery {
+	return NewAirportClient(a.config).QueryToFlight(a)
 }
 
 // Update returns a builder for updating this Airport.
@@ -184,27 +201,51 @@ func (a *Airport) String() string {
 	return builder.String()
 }
 
-// NamedHasFlight returns the HasFlight named value or an error if the edge was not
+// NamedFromFlight returns the FromFlight named value or an error if the edge was not
 // loaded in eager-loading with this name.
-func (a *Airport) NamedHasFlight(name string) ([]*Flight, error) {
-	if a.Edges.namedHasFlight == nil {
+func (a *Airport) NamedFromFlight(name string) ([]*Flight, error) {
+	if a.Edges.namedFromFlight == nil {
 		return nil, &NotLoadedError{edge: name}
 	}
-	nodes, ok := a.Edges.namedHasFlight[name]
+	nodes, ok := a.Edges.namedFromFlight[name]
 	if !ok {
 		return nil, &NotLoadedError{edge: name}
 	}
 	return nodes, nil
 }
 
-func (a *Airport) appendNamedHasFlight(name string, edges ...*Flight) {
-	if a.Edges.namedHasFlight == nil {
-		a.Edges.namedHasFlight = make(map[string][]*Flight)
+func (a *Airport) appendNamedFromFlight(name string, edges ...*Flight) {
+	if a.Edges.namedFromFlight == nil {
+		a.Edges.namedFromFlight = make(map[string][]*Flight)
 	}
 	if len(edges) == 0 {
-		a.Edges.namedHasFlight[name] = []*Flight{}
+		a.Edges.namedFromFlight[name] = []*Flight{}
 	} else {
-		a.Edges.namedHasFlight[name] = append(a.Edges.namedHasFlight[name], edges...)
+		a.Edges.namedFromFlight[name] = append(a.Edges.namedFromFlight[name], edges...)
+	}
+}
+
+// NamedToFlight returns the ToFlight named value or an error if the edge was not
+// loaded in eager-loading with this name.
+func (a *Airport) NamedToFlight(name string) ([]*Flight, error) {
+	if a.Edges.namedToFlight == nil {
+		return nil, &NotLoadedError{edge: name}
+	}
+	nodes, ok := a.Edges.namedToFlight[name]
+	if !ok {
+		return nil, &NotLoadedError{edge: name}
+	}
+	return nodes, nil
+}
+
+func (a *Airport) appendNamedToFlight(name string, edges ...*Flight) {
+	if a.Edges.namedToFlight == nil {
+		a.Edges.namedToFlight = make(map[string][]*Flight)
+	}
+	if len(edges) == 0 {
+		a.Edges.namedToFlight[name] = []*Flight{}
+	} else {
+		a.Edges.namedToFlight[name] = append(a.Edges.namedToFlight[name], edges...)
 	}
 }
 

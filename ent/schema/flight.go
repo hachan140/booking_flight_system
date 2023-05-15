@@ -22,12 +22,12 @@ func (Flight) Fields() []ent.Field {
 		field.String("name").NotEmpty(),
 		field.Time("depart_at"),
 		field.Time("land_at"),
-		field.Int("available_ec_slot"),
-		field.Int("available_bc_slot"),
+		field.Int("available_ec_slot").Nillable(),
+		field.Int("available_bc_slot").Nillable(),
 		field.Enum("status").NamedValues("flying", "scheduled", "canceled", "landed").Default("landed"),
 		field.Int("plane_id").Optional(),
-		field.Int("airport_id").Optional(),
-		field.Int("customer_id").Optional(),
+		field.Int("from_airport_id").Optional(),
+		field.Int("to_airport_id").Optional(),
 	}
 }
 
@@ -36,8 +36,8 @@ func (Flight) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("has_plane", Plane.Type).Ref("flights").Field("plane_id").Unique(),
 		edge.To("has_booking", Booking.Type),
-		edge.From("has_airport", Airport.Type).Ref("has_flight").Field("airport_id").Unique(),
-		edge.From("has_customer", Customer.Type).Ref("has_flight").Field("customer_id").Unique(),
+		edge.From("from_airport", Airport.Type).Ref("from_flight").Field("from_airport_id").Unique(),
+		edge.From("to_airport", Airport.Type).Ref("to_flight").Field("to_airport_id").Unique(),
 	}
 }
 func (Flight) Annotations() []schema.Annotation {

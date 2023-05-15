@@ -22,10 +22,14 @@ const (
 	FieldCode = "code"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
+	// FieldCustomerID holds the string denoting the customer_id field in the database.
+	FieldCustomerID = "customer_id"
 	// FieldFlightID holds the string denoting the flight_id field in the database.
 	FieldFlightID = "flight_id"
 	// EdgeHasFlight holds the string denoting the has_flight edge name in mutations.
 	EdgeHasFlight = "has_flight"
+	// EdgeHasCustomer holds the string denoting the has_customer edge name in mutations.
+	EdgeHasCustomer = "has_customer"
 	// Table holds the table name of the booking in the database.
 	Table = "bookings"
 	// HasFlightTable is the table that holds the has_flight relation/edge.
@@ -35,6 +39,13 @@ const (
 	HasFlightInverseTable = "flights"
 	// HasFlightColumn is the table column denoting the has_flight relation/edge.
 	HasFlightColumn = "flight_id"
+	// HasCustomerTable is the table that holds the has_customer relation/edge.
+	HasCustomerTable = "bookings"
+	// HasCustomerInverseTable is the table name for the Customer entity.
+	// It exists in this package in order to avoid circular dependency with the "customer" package.
+	HasCustomerInverseTable = "customers"
+	// HasCustomerColumn is the table column denoting the has_customer relation/edge.
+	HasCustomerColumn = "customer_id"
 )
 
 // Columns holds all SQL columns for booking fields.
@@ -44,6 +55,7 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldCode,
 	FieldStatus,
+	FieldCustomerID,
 	FieldFlightID,
 }
 
@@ -96,6 +108,11 @@ func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
 }
 
+// ByCustomerID orders the results by the customer_id field.
+func ByCustomerID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCustomerID, opts...).ToFunc()
+}
+
 // ByFlightID orders the results by the flight_id field.
 func ByFlightID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldFlightID, opts...).ToFunc()
@@ -107,10 +124,24 @@ func ByHasFlightField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newHasFlightStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByHasCustomerField orders the results by has_customer field.
+func ByHasCustomerField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newHasCustomerStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newHasFlightStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(HasFlightInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, true, HasFlightTable, HasFlightColumn),
+	)
+}
+func newHasCustomerStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(HasCustomerInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, HasCustomerTable, HasCustomerColumn),
 	)
 }

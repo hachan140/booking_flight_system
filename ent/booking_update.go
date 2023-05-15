@@ -4,6 +4,7 @@ package ent
 
 import (
 	"booking-flight-system/ent/booking"
+	"booking-flight-system/ent/customer"
 	"booking-flight-system/ent/flight"
 	"booking-flight-system/ent/predicate"
 	"context"
@@ -61,6 +62,26 @@ func (bu *BookingUpdate) SetStatus(s string) *BookingUpdate {
 	return bu
 }
 
+// SetCustomerID sets the "customer_id" field.
+func (bu *BookingUpdate) SetCustomerID(i int) *BookingUpdate {
+	bu.mutation.SetCustomerID(i)
+	return bu
+}
+
+// SetNillableCustomerID sets the "customer_id" field if the given value is not nil.
+func (bu *BookingUpdate) SetNillableCustomerID(i *int) *BookingUpdate {
+	if i != nil {
+		bu.SetCustomerID(*i)
+	}
+	return bu
+}
+
+// ClearCustomerID clears the value of the "customer_id" field.
+func (bu *BookingUpdate) ClearCustomerID() *BookingUpdate {
+	bu.mutation.ClearCustomerID()
+	return bu
+}
+
 // SetFlightID sets the "flight_id" field.
 func (bu *BookingUpdate) SetFlightID(i int) *BookingUpdate {
 	bu.mutation.SetFlightID(i)
@@ -100,6 +121,25 @@ func (bu *BookingUpdate) SetHasFlight(f *Flight) *BookingUpdate {
 	return bu.SetHasFlightID(f.ID)
 }
 
+// SetHasCustomerID sets the "has_customer" edge to the Customer entity by ID.
+func (bu *BookingUpdate) SetHasCustomerID(id int) *BookingUpdate {
+	bu.mutation.SetHasCustomerID(id)
+	return bu
+}
+
+// SetNillableHasCustomerID sets the "has_customer" edge to the Customer entity by ID if the given value is not nil.
+func (bu *BookingUpdate) SetNillableHasCustomerID(id *int) *BookingUpdate {
+	if id != nil {
+		bu = bu.SetHasCustomerID(*id)
+	}
+	return bu
+}
+
+// SetHasCustomer sets the "has_customer" edge to the Customer entity.
+func (bu *BookingUpdate) SetHasCustomer(c *Customer) *BookingUpdate {
+	return bu.SetHasCustomerID(c.ID)
+}
+
 // Mutation returns the BookingMutation object of the builder.
 func (bu *BookingUpdate) Mutation() *BookingMutation {
 	return bu.mutation
@@ -108,6 +148,12 @@ func (bu *BookingUpdate) Mutation() *BookingMutation {
 // ClearHasFlight clears the "has_flight" edge to the Flight entity.
 func (bu *BookingUpdate) ClearHasFlight() *BookingUpdate {
 	bu.mutation.ClearHasFlight()
+	return bu
+}
+
+// ClearHasCustomer clears the "has_customer" edge to the Customer entity.
+func (bu *BookingUpdate) ClearHasCustomer() *BookingUpdate {
+	bu.mutation.ClearHasCustomer()
 	return bu
 }
 
@@ -210,6 +256,35 @@ func (bu *BookingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if bu.mutation.HasCustomerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   booking.HasCustomerTable,
+			Columns: []string{booking.HasCustomerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := bu.mutation.HasCustomerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   booking.HasCustomerTable,
+			Columns: []string{booking.HasCustomerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, bu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{booking.Label}
@@ -262,6 +337,26 @@ func (buo *BookingUpdateOne) SetStatus(s string) *BookingUpdateOne {
 	return buo
 }
 
+// SetCustomerID sets the "customer_id" field.
+func (buo *BookingUpdateOne) SetCustomerID(i int) *BookingUpdateOne {
+	buo.mutation.SetCustomerID(i)
+	return buo
+}
+
+// SetNillableCustomerID sets the "customer_id" field if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableCustomerID(i *int) *BookingUpdateOne {
+	if i != nil {
+		buo.SetCustomerID(*i)
+	}
+	return buo
+}
+
+// ClearCustomerID clears the value of the "customer_id" field.
+func (buo *BookingUpdateOne) ClearCustomerID() *BookingUpdateOne {
+	buo.mutation.ClearCustomerID()
+	return buo
+}
+
 // SetFlightID sets the "flight_id" field.
 func (buo *BookingUpdateOne) SetFlightID(i int) *BookingUpdateOne {
 	buo.mutation.SetFlightID(i)
@@ -301,6 +396,25 @@ func (buo *BookingUpdateOne) SetHasFlight(f *Flight) *BookingUpdateOne {
 	return buo.SetHasFlightID(f.ID)
 }
 
+// SetHasCustomerID sets the "has_customer" edge to the Customer entity by ID.
+func (buo *BookingUpdateOne) SetHasCustomerID(id int) *BookingUpdateOne {
+	buo.mutation.SetHasCustomerID(id)
+	return buo
+}
+
+// SetNillableHasCustomerID sets the "has_customer" edge to the Customer entity by ID if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableHasCustomerID(id *int) *BookingUpdateOne {
+	if id != nil {
+		buo = buo.SetHasCustomerID(*id)
+	}
+	return buo
+}
+
+// SetHasCustomer sets the "has_customer" edge to the Customer entity.
+func (buo *BookingUpdateOne) SetHasCustomer(c *Customer) *BookingUpdateOne {
+	return buo.SetHasCustomerID(c.ID)
+}
+
 // Mutation returns the BookingMutation object of the builder.
 func (buo *BookingUpdateOne) Mutation() *BookingMutation {
 	return buo.mutation
@@ -309,6 +423,12 @@ func (buo *BookingUpdateOne) Mutation() *BookingMutation {
 // ClearHasFlight clears the "has_flight" edge to the Flight entity.
 func (buo *BookingUpdateOne) ClearHasFlight() *BookingUpdateOne {
 	buo.mutation.ClearHasFlight()
+	return buo
+}
+
+// ClearHasCustomer clears the "has_customer" edge to the Customer entity.
+func (buo *BookingUpdateOne) ClearHasCustomer() *BookingUpdateOne {
+	buo.mutation.ClearHasCustomer()
 	return buo
 }
 
@@ -434,6 +554,35 @@ func (buo *BookingUpdateOne) sqlSave(ctx context.Context) (_node *Booking, err e
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(flight.FieldID, field.TypeInt),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if buo.mutation.HasCustomerCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   booking.HasCustomerTable,
+			Columns: []string{booking.HasCustomerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := buo.mutation.HasCustomerIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   booking.HasCustomerTable,
+			Columns: []string{booking.HasCustomerColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {

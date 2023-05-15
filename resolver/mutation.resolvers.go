@@ -12,6 +12,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 )
 
 // SignUp is the resolver for the sign_up field.
@@ -61,7 +62,11 @@ func (r *mutationResolver) DeleteByID(ctx context.Context, id int) (*string, err
 
 // FindMemberByName is the resolver for the find_member_by_name field.
 func (r *mutationResolver) FindMemberByName(ctx context.Context, name string) ([]*ent.Member, error) {
-	panic(fmt.Errorf("not implemented: FindMemberByName - find_member_by_name"))
+	mem, err := r.client.Member.Query().Where(member.FullNameContainsFold(strings.ToLower(name))).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return mem, nil
 }
 
 // ChangePassword is the resolver for the change_password field.
@@ -167,6 +172,36 @@ func (r *mutationResolver) FindPlaneByID(ctx context.Context, id int) (*ent.Plan
 		return nil, err
 	}
 	return plane, nil
+}
+
+// CreateFlight is the resolver for the create_flight field.
+func (r *mutationResolver) CreateFlight(ctx context.Context, input ent.CreateFlight) (*ent.Flight, error) {
+	plane, err := r.client.Plane.Get(ctx, input.PlaneID)
+	if err != nil {
+		return nil, err
+	}
+	return r.client.Flight.Create().SetName(input.Name).SetDepartAt(input.DepartAt).SetLandAt(input.LandAt).SetToAirportID(input.ToID).SetFromAirportID(input.FromID).SetPlaneID(input.PlaneID).SetAvailableBcSlot(int(plane.BusinessClassSlots)).SetAvailableEcSlot(int(plane.EconomyClassSlots)).Save(ctx)
+
+}
+
+// CancelFlight is the resolver for the cancel_flight field.
+func (r *mutationResolver) CancelFlight(ctx context.Context) (*string, error) {
+	panic(fmt.Errorf("not implemented: CancelFlight - cancel_flight"))
+}
+
+// UpdateFlightSlot is the resolver for the update_flight_slot field.
+func (r *mutationResolver) UpdateFlightSlot(ctx context.Context) (*ent.Flight, error) {
+	panic(fmt.Errorf("not implemented: UpdateFlightSlot - update_flight_slot"))
+}
+
+// UpdateFlightStatus is the resolver for the update_flight_status field.
+func (r *mutationResolver) UpdateFlightStatus(ctx context.Context, status string) (*ent.Flight, error) {
+	panic(fmt.Errorf("not implemented: UpdateFlightStatus - update_flight_status"))
+}
+
+// SearchFlight is the resolver for the search_flight field.
+func (r *mutationResolver) SearchFlight(ctx context.Context, departAt string, destAt string) ([]*ent.Flight, error) {
+	panic(fmt.Errorf("not implemented: SearchFlight - search_flight"))
 }
 
 // Mutation returns graphql1.MutationResolver implementation.

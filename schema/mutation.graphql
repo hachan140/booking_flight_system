@@ -25,5 +25,12 @@ type Mutation{
     delete_plane(id:Int!): String
     find_plane_by_id(id: Int!): Plane!
 
+    #FLIGHTS
+    create_flight(input:CreateFlight!): Flight!
+    cancel_flight: String
+    update_flight_slot: Flight!
+    update_flight_status(status: String!):Flight!
+    search_flight(depart_at: String!, dest_at: String!): [Flight!]
+
 }
 

@@ -35,18 +35,18 @@ const (
 	FieldStatus = "status"
 	// FieldPlaneID holds the string denoting the plane_id field in the database.
 	FieldPlaneID = "plane_id"
-	// FieldAirportID holds the string denoting the airport_id field in the database.
-	FieldAirportID = "airport_id"
-	// FieldCustomerID holds the string denoting the customer_id field in the database.
-	FieldCustomerID = "customer_id"
+	// FieldFromAirportID holds the string denoting the from_airport_id field in the database.
+	FieldFromAirportID = "from_airport_id"
+	// FieldToAirportID holds the string denoting the to_airport_id field in the database.
+	FieldToAirportID = "to_airport_id"
 	// EdgeHasPlane holds the string denoting the has_plane edge name in mutations.
 	EdgeHasPlane = "has_plane"
 	// EdgeHasBooking holds the string denoting the has_booking edge name in mutations.
 	EdgeHasBooking = "has_booking"
-	// EdgeHasAirport holds the string denoting the has_airport edge name in mutations.
-	EdgeHasAirport = "has_airport"
-	// EdgeHasCustomer holds the string denoting the has_customer edge name in mutations.
-	EdgeHasCustomer = "has_customer"
+	// EdgeFromAirport holds the string denoting the from_airport edge name in mutations.
+	EdgeFromAirport = "from_airport"
+	// EdgeToAirport holds the string denoting the to_airport edge name in mutations.
+	EdgeToAirport = "to_airport"
 	// Table holds the table name of the flight in the database.
 	Table = "flights"
 	// HasPlaneTable is the table that holds the has_plane relation/edge.
@@ -63,20 +63,20 @@ const (
 	HasBookingInverseTable = "bookings"
 	// HasBookingColumn is the table column denoting the has_booking relation/edge.
 	HasBookingColumn = "flight_id"
-	// HasAirportTable is the table that holds the has_airport relation/edge.
-	HasAirportTable = "flights"
-	// HasAirportInverseTable is the table name for the Airport entity.
+	// FromAirportTable is the table that holds the from_airport relation/edge.
+	FromAirportTable = "flights"
+	// FromAirportInverseTable is the table name for the Airport entity.
 	// It exists in this package in order to avoid circular dependency with the "airport" package.
-	HasAirportInverseTable = "airports"
-	// HasAirportColumn is the table column denoting the has_airport relation/edge.
-	HasAirportColumn = "airport_id"
-	// HasCustomerTable is the table that holds the has_customer relation/edge.
-	HasCustomerTable = "flights"
-	// HasCustomerInverseTable is the table name for the Customer entity.
-	// It exists in this package in order to avoid circular dependency with the "customer" package.
-	HasCustomerInverseTable = "customers"
-	// HasCustomerColumn is the table column denoting the has_customer relation/edge.
-	HasCustomerColumn = "customer_id"
+	FromAirportInverseTable = "airports"
+	// FromAirportColumn is the table column denoting the from_airport relation/edge.
+	FromAirportColumn = "from_airport_id"
+	// ToAirportTable is the table that holds the to_airport relation/edge.
+	ToAirportTable = "flights"
+	// ToAirportInverseTable is the table name for the Airport entity.
+	// It exists in this package in order to avoid circular dependency with the "airport" package.
+	ToAirportInverseTable = "airports"
+	// ToAirportColumn is the table column denoting the to_airport relation/edge.
+	ToAirportColumn = "to_airport_id"
 )
 
 // Columns holds all SQL columns for flight fields.
@@ -91,8 +91,8 @@ var Columns = []string{
 	FieldAvailableBcSlot,
 	FieldStatus,
 	FieldPlaneID,
-	FieldAirportID,
-	FieldCustomerID,
+	FieldFromAirportID,
+	FieldToAirportID,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -195,14 +195,14 @@ func ByPlaneID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPlaneID, opts...).ToFunc()
 }
 
-// ByAirportID orders the results by the airport_id field.
-func ByAirportID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAirportID, opts...).ToFunc()
+// ByFromAirportID orders the results by the from_airport_id field.
+func ByFromAirportID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFromAirportID, opts...).ToFunc()
 }
 
-// ByCustomerID orders the results by the customer_id field.
-func ByCustomerID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCustomerID, opts...).ToFunc()
+// ByToAirportID orders the results by the to_airport_id field.
+func ByToAirportID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldToAirportID, opts...).ToFunc()
 }
 
 // ByHasPlaneField orders the results by has_plane field.
@@ -226,17 +226,17 @@ func ByHasBooking(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByHasAirportField orders the results by has_airport field.
-func ByHasAirportField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByFromAirportField orders the results by from_airport field.
+func ByFromAirportField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newHasAirportStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newFromAirportStep(), sql.OrderByField(field, opts...))
 	}
 }
 
-// ByHasCustomerField orders the results by has_customer field.
-func ByHasCustomerField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByToAirportField orders the results by to_airport field.
+func ByToAirportField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newHasCustomerStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newToAirportStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newHasPlaneStep() *sqlgraph.Step {
@@ -253,18 +253,18 @@ func newHasBookingStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, HasBookingTable, HasBookingColumn),
 	)
 }
-func newHasAirportStep() *sqlgraph.Step {
+func newFromAirportStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(HasAirportInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, HasAirportTable, HasAirportColumn),
+		sqlgraph.To(FromAirportInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, FromAirportTable, FromAirportColumn),
 	)
 }
-func newHasCustomerStep() *sqlgraph.Step {
+func newToAirportStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(HasCustomerInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, HasCustomerTable, HasCustomerColumn),
+		sqlgraph.To(ToAirportInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ToAirportTable, ToAirportColumn),
 	)
 }
 

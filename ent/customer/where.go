@@ -528,21 +528,21 @@ func HasHasMemberWith(preds ...predicate.Member) predicate.Customer {
 	})
 }
 
-// HasHasFlight applies the HasEdge predicate on the "has_flight" edge.
-func HasHasFlight() predicate.Customer {
+// HasHasBooking applies the HasEdge predicate on the "has_booking" edge.
+func HasHasBooking() predicate.Customer {
 	return predicate.Customer(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, HasFlightTable, HasFlightColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, HasBookingTable, HasBookingColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasHasFlightWith applies the HasEdge predicate on the "has_flight" edge with a given conditions (other predicates).
-func HasHasFlightWith(preds ...predicate.Flight) predicate.Customer {
+// HasHasBookingWith applies the HasEdge predicate on the "has_booking" edge with a given conditions (other predicates).
+func HasHasBookingWith(preds ...predicate.Booking) predicate.Customer {
 	return predicate.Customer(func(s *sql.Selector) {
-		step := newHasFlightStep()
+		step := newHasBookingStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

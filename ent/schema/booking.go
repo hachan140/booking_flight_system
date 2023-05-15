@@ -21,6 +21,7 @@ func (Booking) Fields() []ent.Field {
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.String("code").NotEmpty().Unique(),
 		field.String("status"),
+		field.Int("customer_id").Optional(),
 		field.Int("flight_id").Optional(),
 	}
 }
@@ -29,6 +30,7 @@ func (Booking) Fields() []ent.Field {
 func (Booking) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("has_flight", Flight.Type).Ref("has_booking").Field("flight_id").Unique(),
+		edge.From("has_customer", Customer.Type).Ref("has_booking").Field("customer_id").Unique(),
 	}
 }
 

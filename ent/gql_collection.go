@@ -36,7 +36,7 @@ func (a *AirportQuery) collectField(ctx context.Context, opCtx *graphql.Operatio
 	)
 	for _, field := range graphql.CollectFields(opCtx, collected.Selections, satisfies) {
 		switch field.Name {
-		case "hasFlight":
+		case "fromFlight":
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
@@ -45,7 +45,19 @@ func (a *AirportQuery) collectField(ctx context.Context, opCtx *graphql.Operatio
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			a.WithNamedHasFlight(alias, func(wq *FlightQuery) {
+			a.WithNamedFromFlight(alias, func(wq *FlightQuery) {
+				*wq = *query
+			})
+		case "toFlight":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&FlightClient{config: a.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			a.WithNamedToFlight(alias, func(wq *FlightQuery) {
 				*wq = *query
 			})
 		case "createdAt":
@@ -149,6 +161,20 @@ func (b *BookingQuery) collectField(ctx context.Context, opCtx *graphql.Operatio
 				selectedFields = append(selectedFields, booking.FieldFlightID)
 				fieldSeen[booking.FieldFlightID] = struct{}{}
 			}
+		case "hasCustomer":
+			var (
+				alias = field.Alias
+				path  = append(path, alias)
+				query = (&CustomerClient{config: b.config}).Query()
+			)
+			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
+				return err
+			}
+			b.withHasCustomer = query
+			if _, ok := fieldSeen[booking.FieldCustomerID]; !ok {
+				selectedFields = append(selectedFields, booking.FieldCustomerID)
+				fieldSeen[booking.FieldCustomerID] = struct{}{}
+			}
 		case "createdAt":
 			if _, ok := fieldSeen[booking.FieldCreatedAt]; !ok {
 				selectedFields = append(selectedFields, booking.FieldCreatedAt)
@@ -168,6 +194,11 @@ func (b *BookingQuery) collectField(ctx context.Context, opCtx *graphql.Operatio
 			if _, ok := fieldSeen[booking.FieldStatus]; !ok {
 				selectedFields = append(selectedFields, booking.FieldStatus)
 				fieldSeen[booking.FieldStatus] = struct{}{}
+			}
+		case "customerID":
+			if _, ok := fieldSeen[booking.FieldCustomerID]; !ok {
+				selectedFields = append(selectedFields, booking.FieldCustomerID)
+				fieldSeen[booking.FieldCustomerID] = struct{}{}
 			}
 		case "flightID":
 			if _, ok := fieldSeen[booking.FieldFlightID]; !ok {
@@ -250,16 +281,16 @@ func (c *CustomerQuery) collectField(ctx context.Context, opCtx *graphql.Operati
 				selectedFields = append(selectedFields, customer.FieldMemberID)
 				fieldSeen[customer.FieldMemberID] = struct{}{}
 			}
-		case "hasFlight":
+		case "hasBooking":
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
-				query = (&FlightClient{config: c.config}).Query()
+				query = (&BookingClient{config: c.config}).Query()
 			)
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			c.WithNamedHasFlight(alias, func(wq *FlightQuery) {
+			c.WithNamedHasBooking(alias, func(wq *BookingQuery) {
 				*wq = *query
 			})
 		case "createdAt":
@@ -390,7 +421,7 @@ func (f *FlightQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 			f.WithNamedHasBooking(alias, func(wq *BookingQuery) {
 				*wq = *query
 			})
-		case "hasAirport":
+		case "fromAirport":
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
@@ -399,24 +430,24 @@ func (f *FlightQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			f.withHasAirport = query
-			if _, ok := fieldSeen[flight.FieldAirportID]; !ok {
-				selectedFields = append(selectedFields, flight.FieldAirportID)
-				fieldSeen[flight.FieldAirportID] = struct{}{}
+			f.withFromAirport = query
+			if _, ok := fieldSeen[flight.FieldFromAirportID]; !ok {
+				selectedFields = append(selectedFields, flight.FieldFromAirportID)
+				fieldSeen[flight.FieldFromAirportID] = struct{}{}
 			}
-		case "hasCustomer":
+		case "toAirport":
 			var (
 				alias = field.Alias
 				path  = append(path, alias)
-				query = (&CustomerClient{config: f.config}).Query()
+				query = (&AirportClient{config: f.config}).Query()
 			)
 			if err := query.collectField(ctx, opCtx, field, path, satisfies...); err != nil {
 				return err
 			}
-			f.withHasCustomer = query
-			if _, ok := fieldSeen[flight.FieldCustomerID]; !ok {
-				selectedFields = append(selectedFields, flight.FieldCustomerID)
-				fieldSeen[flight.FieldCustomerID] = struct{}{}
+			f.withToAirport = query
+			if _, ok := fieldSeen[flight.FieldToAirportID]; !ok {
+				selectedFields = append(selectedFields, flight.FieldToAirportID)
+				fieldSeen[flight.FieldToAirportID] = struct{}{}
 			}
 		case "createdAt":
 			if _, ok := fieldSeen[flight.FieldCreatedAt]; !ok {
@@ -463,15 +494,15 @@ func (f *FlightQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 				selectedFields = append(selectedFields, flight.FieldPlaneID)
 				fieldSeen[flight.FieldPlaneID] = struct{}{}
 			}
-		case "airportID":
-			if _, ok := fieldSeen[flight.FieldAirportID]; !ok {
-				selectedFields = append(selectedFields, flight.FieldAirportID)
-				fieldSeen[flight.FieldAirportID] = struct{}{}
+		case "fromAirportID":
+			if _, ok := fieldSeen[flight.FieldFromAirportID]; !ok {
+				selectedFields = append(selectedFields, flight.FieldFromAirportID)
+				fieldSeen[flight.FieldFromAirportID] = struct{}{}
 			}
-		case "customerID":
-			if _, ok := fieldSeen[flight.FieldCustomerID]; !ok {
-				selectedFields = append(selectedFields, flight.FieldCustomerID)
-				fieldSeen[flight.FieldCustomerID] = struct{}{}
+		case "toAirportID":
+			if _, ok := fieldSeen[flight.FieldToAirportID]; !ok {
+				selectedFields = append(selectedFields, flight.FieldToAirportID)
+				fieldSeen[flight.FieldToAirportID] = struct{}{}
 			}
 		case "id":
 		case "__typename":
@@ -659,6 +690,16 @@ func (pl *PlaneQuery) collectField(ctx context.Context, opCtx *graphql.Operation
 			pl.WithNamedFlights(alias, func(wq *FlightQuery) {
 				*wq = *query
 			})
+		case "createdAt":
+			if _, ok := fieldSeen[plane.FieldCreatedAt]; !ok {
+				selectedFields = append(selectedFields, plane.FieldCreatedAt)
+				fieldSeen[plane.FieldCreatedAt] = struct{}{}
+			}
+		case "updatedAt":
+			if _, ok := fieldSeen[plane.FieldUpdatedAt]; !ok {
+				selectedFields = append(selectedFields, plane.FieldUpdatedAt)
+				fieldSeen[plane.FieldUpdatedAt] = struct{}{}
+			}
 		case "name":
 			if _, ok := fieldSeen[plane.FieldName]; !ok {
 				selectedFields = append(selectedFields, plane.FieldName)

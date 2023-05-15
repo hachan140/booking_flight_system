@@ -49,23 +49,26 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Airport struct {
-		CreatedAt func(childComplexity int) int
-		HasFlight func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Lat       func(childComplexity int) int
-		Long      func(childComplexity int) int
-		Name      func(childComplexity int) int
-		UpdatedAt func(childComplexity int) int
+		CreatedAt  func(childComplexity int) int
+		FromFlight func(childComplexity int) int
+		ID         func(childComplexity int) int
+		Lat        func(childComplexity int) int
+		Long       func(childComplexity int) int
+		Name       func(childComplexity int) int
+		ToFlight   func(childComplexity int) int
+		UpdatedAt  func(childComplexity int) int
 	}
 
 	Booking struct {
-		Code      func(childComplexity int) int
-		CreatedAt func(childComplexity int) int
-		FlightID  func(childComplexity int) int
-		HasFlight func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Status    func(childComplexity int) int
-		UpdatedAt func(childComplexity int) int
+		Code        func(childComplexity int) int
+		CreatedAt   func(childComplexity int) int
+		CustomerID  func(childComplexity int) int
+		FlightID    func(childComplexity int) int
+		HasCustomer func(childComplexity int) int
+		HasFlight   func(childComplexity int) int
+		ID          func(childComplexity int) int
+		Status      func(childComplexity int) int
+		UpdatedAt   func(childComplexity int) int
 	}
 
 	Customer struct {
@@ -74,7 +77,7 @@ type ComplexityRoot struct {
 		Dob         func(childComplexity int) int
 		Email       func(childComplexity int) int
 		FullName    func(childComplexity int) int
-		HasFlight   func(childComplexity int) int
+		HasBooking  func(childComplexity int) int
 		HasMember   func(childComplexity int) int
 		ID          func(childComplexity int) int
 		MemberID    func(childComplexity int) int
@@ -83,21 +86,21 @@ type ComplexityRoot struct {
 	}
 
 	Flight struct {
-		AirportID       func(childComplexity int) int
 		AvailableBcSlot func(childComplexity int) int
 		AvailableEcSlot func(childComplexity int) int
 		CreatedAt       func(childComplexity int) int
-		CustomerID      func(childComplexity int) int
 		DepartAt        func(childComplexity int) int
-		HasAirport      func(childComplexity int) int
+		FromAirport     func(childComplexity int) int
+		FromAirportID   func(childComplexity int) int
 		HasBooking      func(childComplexity int) int
-		HasCustomer     func(childComplexity int) int
 		HasPlane        func(childComplexity int) int
 		ID              func(childComplexity int) int
 		LandAt          func(childComplexity int) int
 		Name            func(childComplexity int) int
 		PlaneID         func(childComplexity int) int
 		Status          func(childComplexity int) int
+		ToAirport       func(childComplexity int) int
+		ToAirportID     func(childComplexity int) int
 		UpdatedAt       func(childComplexity int) int
 	}
 
@@ -115,8 +118,10 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
+		CancelFlight        func(childComplexity int) int
 		ChangePassword      func(childComplexity int, oldPassword string, newPassword string) int
 		CreateAirport       func(childComplexity int, input ent.CreateAirportInput) int
+		CreateFlight        func(childComplexity int, input ent.CreateFlight) int
 		CreatePlane         func(childComplexity int, input ent.CreatePlaneInput) int
 		DeleteAirport       func(childComplexity int, id int) int
 		DeleteByID          func(childComplexity int, id int) int
@@ -125,9 +130,12 @@ type ComplexityRoot struct {
 		FindMemberByName    func(childComplexity int, name string) int
 		FindPlaneByID       func(childComplexity int, id int) int
 		Login               func(childComplexity int, email string, password string) int
+		SearchFlight        func(childComplexity int, departAt string, destAt string) int
 		Self                func(childComplexity int) int
 		SignUp              func(childComplexity int, input ent.CreateMemberInput) int
 		UpdateAirport       func(childComplexity int, id int, input ent.UpdateAirportInput) int
+		UpdateFlightSlot    func(childComplexity int) int
+		UpdateFlightStatus  func(childComplexity int, status string) int
 		UpdateMemberProfile func(childComplexity int, input *ent.UpdateMemberInput) int
 		UpdatePlane         func(childComplexity int, id int, input ent.UpdatePlaneInput) int
 	}
@@ -141,11 +149,13 @@ type ComplexityRoot struct {
 
 	Plane struct {
 		BusinessClassSlots func(childComplexity int) int
+		CreatedAt          func(childComplexity int) int
 		EconomyClassSlots  func(childComplexity int) int
 		Flights            func(childComplexity int) int
 		ID                 func(childComplexity int) int
 		Name               func(childComplexity int) int
 		Status             func(childComplexity int) int
+		UpdatedAt          func(childComplexity int) int
 	}
 
 	Query struct {
@@ -181,6 +191,11 @@ type MutationResolver interface {
 	UpdatePlane(ctx context.Context, id int, input ent.UpdatePlaneInput) (*ent.Plane, error)
 	DeletePlane(ctx context.Context, id int) (*string, error)
 	FindPlaneByID(ctx context.Context, id int) (*ent.Plane, error)
+	CreateFlight(ctx context.Context, input ent.CreateFlight) (*ent.Flight, error)
+	CancelFlight(ctx context.Context) (*string, error)
+	UpdateFlightSlot(ctx context.Context) (*ent.Flight, error)
+	UpdateFlightStatus(ctx context.Context, status string) (*ent.Flight, error)
+	SearchFlight(ctx context.Context, departAt string, destAt string) ([]*ent.Flight, error)
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id string) (ent.Noder, error)
@@ -215,12 +230,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Airport.CreatedAt(childComplexity), true
 
-	case "Airport.hasFlight":
-		if e.complexity.Airport.HasFlight == nil {
+	case "Airport.fromFlight":
+		if e.complexity.Airport.FromFlight == nil {
 			break
 		}
 
-		return e.complexity.Airport.HasFlight(childComplexity), true
+		return e.complexity.Airport.FromFlight(childComplexity), true
 
 	case "Airport.id":
 		if e.complexity.Airport.ID == nil {
@@ -250,6 +265,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Airport.Name(childComplexity), true
 
+	case "Airport.toFlight":
+		if e.complexity.Airport.ToFlight == nil {
+			break
+		}
+
+		return e.complexity.Airport.ToFlight(childComplexity), true
+
 	case "Airport.updatedAt":
 		if e.complexity.Airport.UpdatedAt == nil {
 			break
@@ -271,12 +293,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Booking.CreatedAt(childComplexity), true
 
+	case "Booking.customerID":
+		if e.complexity.Booking.CustomerID == nil {
+			break
+		}
+
+		return e.complexity.Booking.CustomerID(childComplexity), true
+
 	case "Booking.flightID":
 		if e.complexity.Booking.FlightID == nil {
 			break
 		}
 
 		return e.complexity.Booking.FlightID(childComplexity), true
+
+	case "Booking.hasCustomer":
+		if e.complexity.Booking.HasCustomer == nil {
+			break
+		}
+
+		return e.complexity.Booking.HasCustomer(childComplexity), true
 
 	case "Booking.hasFlight":
 		if e.complexity.Booking.HasFlight == nil {
@@ -341,12 +377,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Customer.FullName(childComplexity), true
 
-	case "Customer.hasFlight":
-		if e.complexity.Customer.HasFlight == nil {
+	case "Customer.hasBooking":
+		if e.complexity.Customer.HasBooking == nil {
 			break
 		}
 
-		return e.complexity.Customer.HasFlight(childComplexity), true
+		return e.complexity.Customer.HasBooking(childComplexity), true
 
 	case "Customer.hasMember":
 		if e.complexity.Customer.HasMember == nil {
@@ -383,13 +419,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Customer.UpdatedAt(childComplexity), true
 
-	case "Flight.airportID":
-		if e.complexity.Flight.AirportID == nil {
-			break
-		}
-
-		return e.complexity.Flight.AirportID(childComplexity), true
-
 	case "Flight.availableBcSlot":
 		if e.complexity.Flight.AvailableBcSlot == nil {
 			break
@@ -411,13 +440,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Flight.CreatedAt(childComplexity), true
 
-	case "Flight.customerID":
-		if e.complexity.Flight.CustomerID == nil {
-			break
-		}
-
-		return e.complexity.Flight.CustomerID(childComplexity), true
-
 	case "Flight.departAt":
 		if e.complexity.Flight.DepartAt == nil {
 			break
@@ -425,12 +447,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Flight.DepartAt(childComplexity), true
 
-	case "Flight.hasAirport":
-		if e.complexity.Flight.HasAirport == nil {
+	case "Flight.fromAirport":
+		if e.complexity.Flight.FromAirport == nil {
 			break
 		}
 
-		return e.complexity.Flight.HasAirport(childComplexity), true
+		return e.complexity.Flight.FromAirport(childComplexity), true
+
+	case "Flight.fromAirportID":
+		if e.complexity.Flight.FromAirportID == nil {
+			break
+		}
+
+		return e.complexity.Flight.FromAirportID(childComplexity), true
 
 	case "Flight.hasBooking":
 		if e.complexity.Flight.HasBooking == nil {
@@ -438,13 +467,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Flight.HasBooking(childComplexity), true
-
-	case "Flight.hasCustomer":
-		if e.complexity.Flight.HasCustomer == nil {
-			break
-		}
-
-		return e.complexity.Flight.HasCustomer(childComplexity), true
 
 	case "Flight.hasPlane":
 		if e.complexity.Flight.HasPlane == nil {
@@ -487,6 +509,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Flight.Status(childComplexity), true
+
+	case "Flight.toAirport":
+		if e.complexity.Flight.ToAirport == nil {
+			break
+		}
+
+		return e.complexity.Flight.ToAirport(childComplexity), true
+
+	case "Flight.toAirportID":
+		if e.complexity.Flight.ToAirportID == nil {
+			break
+		}
+
+		return e.complexity.Flight.ToAirportID(childComplexity), true
 
 	case "Flight.updatedAt":
 		if e.complexity.Flight.UpdatedAt == nil {
@@ -565,6 +601,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Member.UpdatedAt(childComplexity), true
 
+	case "Mutation.cancel_flight":
+		if e.complexity.Mutation.CancelFlight == nil {
+			break
+		}
+
+		return e.complexity.Mutation.CancelFlight(childComplexity), true
+
 	case "Mutation.change_password":
 		if e.complexity.Mutation.ChangePassword == nil {
 			break
@@ -588,6 +631,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateAirport(childComplexity, args["input"].(ent.CreateAirportInput)), true
+
+	case "Mutation.create_flight":
+		if e.complexity.Mutation.CreateFlight == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_create_flight_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateFlight(childComplexity, args["input"].(ent.CreateFlight)), true
 
 	case "Mutation.create_plane":
 		if e.complexity.Mutation.CreatePlane == nil {
@@ -685,6 +740,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.Login(childComplexity, args["email"].(string), args["password"].(string)), true
 
+	case "Mutation.search_flight":
+		if e.complexity.Mutation.SearchFlight == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_search_flight_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.SearchFlight(childComplexity, args["depart_at"].(string), args["dest_at"].(string)), true
+
 	case "Mutation.self":
 		if e.complexity.Mutation.Self == nil {
 			break
@@ -715,6 +782,25 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateAirport(childComplexity, args["id"].(int), args["input"].(ent.UpdateAirportInput)), true
+
+	case "Mutation.update_flight_slot":
+		if e.complexity.Mutation.UpdateFlightSlot == nil {
+			break
+		}
+
+		return e.complexity.Mutation.UpdateFlightSlot(childComplexity), true
+
+	case "Mutation.update_flight_status":
+		if e.complexity.Mutation.UpdateFlightStatus == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_update_flight_status_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateFlightStatus(childComplexity, args["status"].(string)), true
 
 	case "Mutation.update_member_profile":
 		if e.complexity.Mutation.UpdateMemberProfile == nil {
@@ -775,6 +861,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Plane.BusinessClassSlots(childComplexity), true
 
+	case "Plane.createdAt":
+		if e.complexity.Plane.CreatedAt == nil {
+			break
+		}
+
+		return e.complexity.Plane.CreatedAt(childComplexity), true
+
 	case "Plane.economyClassSlots":
 		if e.complexity.Plane.EconomyClassSlots == nil {
 			break
@@ -809,6 +902,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Plane.Status(childComplexity), true
+
+	case "Plane.updatedAt":
+		if e.complexity.Plane.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Plane.UpdatedAt(childComplexity), true
 
 	case "Query.airports":
 		if e.complexity.Query.Airports == nil {
@@ -903,6 +1003,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateAirportInput,
 		ec.unmarshalInputCreateBookingInput,
 		ec.unmarshalInputCreateCustomerInput,
+		ec.unmarshalInputCreateFlight,
 		ec.unmarshalInputCreateFlightInput,
 		ec.unmarshalInputCreateMemberInput,
 		ec.unmarshalInputCreatePlaneInput,
@@ -985,7 +1086,8 @@ type Airport implements Node {
   name: String!
   lat: Float!
   long: Float!
-  hasFlight: [Flight!]
+  fromFlight: [Flight!]
+  toFlight: [Flight!]
 }
 """
 AirportWhereInput is used for filtering Airport objects.
@@ -1054,9 +1156,12 @@ input AirportWhereInput {
   longGTE: Float
   longLT: Float
   longLTE: Float
-  """has_flight edge predicates"""
-  hasHasFlight: Boolean
-  hasHasFlightWith: [FlightWhereInput!]
+  """from_flight edge predicates"""
+  hasFromFlight: Boolean
+  hasFromFlightWith: [FlightWhereInput!]
+  """to_flight edge predicates"""
+  hasToFlight: Boolean
+  hasToFlightWith: [FlightWhereInput!]
 }
 type Booking implements Node {
   id: ID!
@@ -1064,8 +1169,10 @@ type Booking implements Node {
   updatedAt: Time!
   code: String!
   status: String!
+  customerID: ID
   flightID: ID
   hasFlight: Flight
+  hasCustomer: Customer
 }
 """
 BookingWhereInput is used for filtering Booking objects.
@@ -1130,6 +1237,13 @@ input BookingWhereInput {
   statusHasSuffix: String
   statusEqualFold: String
   statusContainsFold: String
+  """customer_id field predicates"""
+  customerID: ID
+  customerIDNEQ: ID
+  customerIDIn: [ID!]
+  customerIDNotIn: [ID!]
+  customerIDIsNil: Boolean
+  customerIDNotNil: Boolean
   """flight_id field predicates"""
   flightID: ID
   flightIDNEQ: ID
@@ -1140,6 +1254,9 @@ input BookingWhereInput {
   """has_flight edge predicates"""
   hasHasFlight: Boolean
   hasHasFlightWith: [FlightWhereInput!]
+  """has_customer edge predicates"""
+  hasHasCustomer: Boolean
+  hasHasCustomerWith: [CustomerWhereInput!]
 }
 """
 CreateAirportInput is used for create Airport object.
@@ -1151,7 +1268,8 @@ input CreateAirportInput {
   name: String!
   lat: Float!
   long: Float!
-  hasFlightIDs: [ID!]
+  fromFlightIDs: [ID!]
+  toFlightIDs: [ID!]
 }
 """
 CreateBookingInput is used for create Booking object.
@@ -1163,6 +1281,7 @@ input CreateBookingInput {
   code: String!
   status: String!
   hasFlightID: ID
+  hasCustomerID: ID
 }
 """
 CreateCustomerInput is used for create Customer object.
@@ -1177,7 +1296,7 @@ input CreateCustomerInput {
   dob: Time!
   cid: String!
   hasMemberID: ID
-  hasFlightIDs: [ID!]
+  hasBookingIDs: [ID!]
 }
 """
 CreateFlightInput is used for create Flight object.
@@ -1194,8 +1313,8 @@ input CreateFlightInput {
   status: FlightStatus
   hasPlaneID: ID
   hasBookingIDs: [ID!]
-  hasAirportID: ID
-  hasCustomerID: ID
+  fromAirportID: ID
+  toAirportID: ID
 }
 """
 CreateMemberInput is used for create Member object.
@@ -1218,9 +1337,11 @@ CreatePlaneInput is used for create Plane object.
 Input was generated by ent.
 """
 input CreatePlaneInput {
+  createdAt: Time
+  updatedAt: Time
   name: String!
-  economyClassSlots: Int!
-  businessClassSlots: Int!
+  economyClassSlots: Int
+  businessClassSlots: Int
   status: PlaneStatus
   flightIDs: [ID!]
 }
@@ -1240,7 +1361,7 @@ type Customer implements Node {
   cid: String!
   memberID: ID
   hasMember: Member
-  hasFlight: [Flight!]
+  hasBooking: [Booking!]
 }
 """
 CustomerWhereInput is used for filtering Customer objects.
@@ -1352,9 +1473,9 @@ input CustomerWhereInput {
   """has_member edge predicates"""
   hasHasMember: Boolean
   hasHasMemberWith: [MemberWhereInput!]
-  """has_flight edge predicates"""
-  hasHasFlight: Boolean
-  hasHasFlightWith: [FlightWhereInput!]
+  """has_booking edge predicates"""
+  hasHasBooking: Boolean
+  hasHasBookingWith: [BookingWhereInput!]
 }
 type Flight implements Node {
   id: ID!
@@ -1367,12 +1488,12 @@ type Flight implements Node {
   availableBcSlot: Int!
   status: FlightStatus!
   planeID: ID
-  airportID: ID
-  customerID: ID
+  fromAirportID: ID
+  toAirportID: ID
   hasPlane: Plane
   hasBooking: [Booking!]
-  hasAirport: Airport
-  hasCustomer: Customer
+  fromAirport: Airport
+  toAirport: Airport
 }
 """FlightStatus is enum for the field status"""
 enum FlightStatus @goModel(model: "booking-flight-system/ent/flight.Status") {
@@ -1476,32 +1597,32 @@ input FlightWhereInput {
   planeIDNotIn: [ID!]
   planeIDIsNil: Boolean
   planeIDNotNil: Boolean
-  """airport_id field predicates"""
-  airportID: ID
-  airportIDNEQ: ID
-  airportIDIn: [ID!]
-  airportIDNotIn: [ID!]
-  airportIDIsNil: Boolean
-  airportIDNotNil: Boolean
-  """customer_id field predicates"""
-  customerID: ID
-  customerIDNEQ: ID
-  customerIDIn: [ID!]
-  customerIDNotIn: [ID!]
-  customerIDIsNil: Boolean
-  customerIDNotNil: Boolean
+  """from_airport_id field predicates"""
+  fromAirportID: ID
+  fromAirportIDNEQ: ID
+  fromAirportIDIn: [ID!]
+  fromAirportIDNotIn: [ID!]
+  fromAirportIDIsNil: Boolean
+  fromAirportIDNotNil: Boolean
+  """to_airport_id field predicates"""
+  toAirportID: ID
+  toAirportIDNEQ: ID
+  toAirportIDIn: [ID!]
+  toAirportIDNotIn: [ID!]
+  toAirportIDIsNil: Boolean
+  toAirportIDNotNil: Boolean
   """has_plane edge predicates"""
   hasHasPlane: Boolean
   hasHasPlaneWith: [PlaneWhereInput!]
   """has_booking edge predicates"""
   hasHasBooking: Boolean
   hasHasBookingWith: [BookingWhereInput!]
-  """has_airport edge predicates"""
-  hasHasAirport: Boolean
-  hasHasAirportWith: [AirportWhereInput!]
-  """has_customer edge predicates"""
-  hasHasCustomer: Boolean
-  hasHasCustomerWith: [CustomerWhereInput!]
+  """from_airport edge predicates"""
+  hasFromAirport: Boolean
+  hasFromAirportWith: [AirportWhereInput!]
+  """to_airport edge predicates"""
+  hasToAirport: Boolean
+  hasToAirportWith: [AirportWhereInput!]
 }
 type Member implements Node {
   id: ID!
@@ -1661,6 +1782,8 @@ type PageInfo {
 }
 type Plane implements Node {
   id: ID!
+  createdAt: Time!
+  updatedAt: Time!
   name: String!
   economyClassSlots: Int!
   businessClassSlots: Int!
@@ -1688,6 +1811,24 @@ input PlaneWhereInput {
   idGTE: ID
   idLT: ID
   idLTE: ID
+  """created_at field predicates"""
+  createdAt: Time
+  createdAtNEQ: Time
+  createdAtIn: [Time!]
+  createdAtNotIn: [Time!]
+  createdAtGT: Time
+  createdAtGTE: Time
+  createdAtLT: Time
+  createdAtLTE: Time
+  """updated_at field predicates"""
+  updatedAt: Time
+  updatedAtNEQ: Time
+  updatedAtIn: [Time!]
+  updatedAtNotIn: [Time!]
+  updatedAtGT: Time
+  updatedAtGTE: Time
+  updatedAtLT: Time
+  updatedAtLTE: Time
   """name field predicates"""
   name: String
   nameNEQ: String
@@ -1759,9 +1900,12 @@ input UpdateAirportInput {
   name: String
   lat: Float
   long: Float
-  addHasFlightIDs: [ID!]
-  removeHasFlightIDs: [ID!]
-  clearHasFlight: Boolean
+  addFromFlightIDs: [ID!]
+  removeFromFlightIDs: [ID!]
+  clearFromFlight: Boolean
+  addToFlightIDs: [ID!]
+  removeToFlightIDs: [ID!]
+  clearToFlight: Boolean
 }
 """
 UpdateBookingInput is used for update Booking object.
@@ -1774,6 +1918,8 @@ input UpdateBookingInput {
   status: String
   hasFlightID: ID
   clearHasFlight: Boolean
+  hasCustomerID: ID
+  clearHasCustomer: Boolean
 }
 """
 UpdateCustomerInput is used for update Customer object.
@@ -1789,9 +1935,9 @@ input UpdateCustomerInput {
   cid: String
   hasMemberID: ID
   clearHasMember: Boolean
-  addHasFlightIDs: [ID!]
-  removeHasFlightIDs: [ID!]
-  clearHasFlight: Boolean
+  addHasBookingIDs: [ID!]
+  removeHasBookingIDs: [ID!]
+  clearHasBooking: Boolean
 }
 """
 UpdateFlightInput is used for update Flight object.
@@ -1811,10 +1957,10 @@ input UpdateFlightInput {
   addHasBookingIDs: [ID!]
   removeHasBookingIDs: [ID!]
   clearHasBooking: Boolean
-  hasAirportID: ID
-  clearHasAirport: Boolean
-  hasCustomerID: ID
-  clearHasCustomer: Boolean
+  fromAirportID: ID
+  clearFromAirport: Boolean
+  toAirportID: ID
+  clearToAirport: Boolean
 }
 """
 UpdateMemberInput is used for update Member object.
@@ -1839,6 +1985,8 @@ UpdatePlaneInput is used for update Plane object.
 Input was generated by ent.
 """
 input UpdatePlaneInput {
+  createdAt: Time
+  updatedAt: Time
   name: String
   economyClassSlots: Int
   businessClassSlots: Int
@@ -1848,7 +1996,17 @@ input UpdatePlaneInput {
   clearFlights: Boolean
 }
 `, BuiltIn: false},
-	{Name: "../schema/member.graphql", Input: ``, BuiltIn: false},
+	{Name: "../schema/flight.graphql", Input: `input CreateFlight {
+    name: String!
+    departAt: Time!
+    landAt: Time!
+    availableEcSlot: Int!
+    availableBcSlot: Int!
+    toID: Int!
+    fromID: Int!
+    planeID: Int!
+
+}`, BuiltIn: false},
 	{Name: "../schema/mutation.graphql", Input: `type Token {
     token: String!
     expired_at: Time!
@@ -1875,6 +2033,13 @@ type Mutation{
     update_plane(id:Int!, input: UpdatePlaneInput!): Plane!
     delete_plane(id:Int!): String
     find_plane_by_id(id: Int!): Plane!
+
+    #FLIGHTS
+    create_flight(input:CreateFlight!): Flight!
+    cancel_flight: String
+    update_flight_slot: Flight!
+    update_flight_status(status: String!):Flight!
+    search_flight(depart_at: String!, dest_at: String!): [Flight!]
 
 }
 
@@ -1917,6 +2082,21 @@ func (ec *executionContext) field_Mutation_create_airport_args(ctx context.Conte
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNCreateAirportInput2bookingᚑflightᚑsystemᚋentᚐCreateAirportInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_create_flight_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ent.CreateFlight
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateFlight2bookingᚑflightᚑsystemᚋentᚐCreateFlight(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2054,6 +2234,30 @@ func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawAr
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_search_flight_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["depart_at"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("depart_at"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["depart_at"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["dest_at"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dest_at"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["dest_at"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_sign_up_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2090,6 +2294,21 @@ func (ec *executionContext) field_Mutation_update_airport_args(ctx context.Conte
 		}
 	}
 	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_update_flight_status_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["status"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["status"] = arg0
 	return args, nil
 }
 
@@ -2479,8 +2698,8 @@ func (ec *executionContext) fieldContext_Airport_long(ctx context.Context, field
 	return fc, nil
 }
 
-func (ec *executionContext) _Airport_hasFlight(ctx context.Context, field graphql.CollectedField, obj *ent.Airport) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Airport_hasFlight(ctx, field)
+func (ec *executionContext) _Airport_fromFlight(ctx context.Context, field graphql.CollectedField, obj *ent.Airport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Airport_fromFlight(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2493,7 +2712,7 @@ func (ec *executionContext) _Airport_hasFlight(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.HasFlight(ctx)
+		return obj.FromFlight(ctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2507,7 +2726,7 @@ func (ec *executionContext) _Airport_hasFlight(ctx context.Context, field graphq
 	return ec.marshalOFlight2ᚕᚖbookingᚑflightᚑsystemᚋentᚐFlightᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Airport_hasFlight(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Airport_fromFlight(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Airport",
 		Field:      field,
@@ -2535,18 +2754,93 @@ func (ec *executionContext) fieldContext_Airport_hasFlight(ctx context.Context, 
 				return ec.fieldContext_Flight_status(ctx, field)
 			case "planeID":
 				return ec.fieldContext_Flight_planeID(ctx, field)
-			case "airportID":
-				return ec.fieldContext_Flight_airportID(ctx, field)
-			case "customerID":
-				return ec.fieldContext_Flight_customerID(ctx, field)
+			case "fromAirportID":
+				return ec.fieldContext_Flight_fromAirportID(ctx, field)
+			case "toAirportID":
+				return ec.fieldContext_Flight_toAirportID(ctx, field)
 			case "hasPlane":
 				return ec.fieldContext_Flight_hasPlane(ctx, field)
 			case "hasBooking":
 				return ec.fieldContext_Flight_hasBooking(ctx, field)
-			case "hasAirport":
-				return ec.fieldContext_Flight_hasAirport(ctx, field)
-			case "hasCustomer":
-				return ec.fieldContext_Flight_hasCustomer(ctx, field)
+			case "fromAirport":
+				return ec.fieldContext_Flight_fromAirport(ctx, field)
+			case "toAirport":
+				return ec.fieldContext_Flight_toAirport(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Flight", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Airport_toFlight(ctx context.Context, field graphql.CollectedField, obj *ent.Airport) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Airport_toFlight(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ToFlight(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Flight)
+	fc.Result = res
+	return ec.marshalOFlight2ᚕᚖbookingᚑflightᚑsystemᚋentᚐFlightᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Airport_toFlight(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Airport",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Flight_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Flight_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Flight_updatedAt(ctx, field)
+			case "name":
+				return ec.fieldContext_Flight_name(ctx, field)
+			case "departAt":
+				return ec.fieldContext_Flight_departAt(ctx, field)
+			case "landAt":
+				return ec.fieldContext_Flight_landAt(ctx, field)
+			case "availableEcSlot":
+				return ec.fieldContext_Flight_availableEcSlot(ctx, field)
+			case "availableBcSlot":
+				return ec.fieldContext_Flight_availableBcSlot(ctx, field)
+			case "status":
+				return ec.fieldContext_Flight_status(ctx, field)
+			case "planeID":
+				return ec.fieldContext_Flight_planeID(ctx, field)
+			case "fromAirportID":
+				return ec.fieldContext_Flight_fromAirportID(ctx, field)
+			case "toAirportID":
+				return ec.fieldContext_Flight_toAirportID(ctx, field)
+			case "hasPlane":
+				return ec.fieldContext_Flight_hasPlane(ctx, field)
+			case "hasBooking":
+				return ec.fieldContext_Flight_hasBooking(ctx, field)
+			case "fromAirport":
+				return ec.fieldContext_Flight_fromAirport(ctx, field)
+			case "toAirport":
+				return ec.fieldContext_Flight_toAirport(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Flight", field.Name)
 		},
@@ -2774,6 +3068,47 @@ func (ec *executionContext) fieldContext_Booking_status(ctx context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Booking_customerID(ctx context.Context, field graphql.CollectedField, obj *ent.Booking) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Booking_customerID(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CustomerID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalOID2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Booking_customerID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Booking",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Booking_flightID(ctx context.Context, field graphql.CollectedField, obj *ent.Booking) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Booking_flightID(ctx, field)
 	if err != nil {
@@ -2871,20 +3206,85 @@ func (ec *executionContext) fieldContext_Booking_hasFlight(ctx context.Context, 
 				return ec.fieldContext_Flight_status(ctx, field)
 			case "planeID":
 				return ec.fieldContext_Flight_planeID(ctx, field)
-			case "airportID":
-				return ec.fieldContext_Flight_airportID(ctx, field)
-			case "customerID":
-				return ec.fieldContext_Flight_customerID(ctx, field)
+			case "fromAirportID":
+				return ec.fieldContext_Flight_fromAirportID(ctx, field)
+			case "toAirportID":
+				return ec.fieldContext_Flight_toAirportID(ctx, field)
 			case "hasPlane":
 				return ec.fieldContext_Flight_hasPlane(ctx, field)
 			case "hasBooking":
 				return ec.fieldContext_Flight_hasBooking(ctx, field)
-			case "hasAirport":
-				return ec.fieldContext_Flight_hasAirport(ctx, field)
-			case "hasCustomer":
-				return ec.fieldContext_Flight_hasCustomer(ctx, field)
+			case "fromAirport":
+				return ec.fieldContext_Flight_fromAirport(ctx, field)
+			case "toAirport":
+				return ec.fieldContext_Flight_toAirport(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Flight", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Booking_hasCustomer(ctx context.Context, field graphql.CollectedField, obj *ent.Booking) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Booking_hasCustomer(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.HasCustomer(ctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Customer)
+	fc.Result = res
+	return ec.marshalOCustomer2ᚖbookingᚑflightᚑsystemᚋentᚐCustomer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Booking_hasCustomer(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Booking",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Customer_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Customer_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Customer_updatedAt(ctx, field)
+			case "email":
+				return ec.fieldContext_Customer_email(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_Customer_phoneNumber(ctx, field)
+			case "fullName":
+				return ec.fieldContext_Customer_fullName(ctx, field)
+			case "dob":
+				return ec.fieldContext_Customer_dob(ctx, field)
+			case "cid":
+				return ec.fieldContext_Customer_cid(ctx, field)
+			case "memberID":
+				return ec.fieldContext_Customer_memberID(ctx, field)
+			case "hasMember":
+				return ec.fieldContext_Customer_hasMember(ctx, field)
+			case "hasBooking":
+				return ec.fieldContext_Customer_hasBooking(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Customer", field.Name)
 		},
 	}
 	return fc, nil
@@ -3346,8 +3746,8 @@ func (ec *executionContext) fieldContext_Customer_hasMember(ctx context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _Customer_hasFlight(ctx context.Context, field graphql.CollectedField, obj *ent.Customer) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Customer_hasFlight(ctx, field)
+func (ec *executionContext) _Customer_hasBooking(ctx context.Context, field graphql.CollectedField, obj *ent.Customer) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Customer_hasBooking(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3360,7 +3760,7 @@ func (ec *executionContext) _Customer_hasFlight(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.HasFlight(ctx)
+		return obj.HasBooking(ctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3369,12 +3769,12 @@ func (ec *executionContext) _Customer_hasFlight(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.([]*ent.Flight)
+	res := resTmp.([]*ent.Booking)
 	fc.Result = res
-	return ec.marshalOFlight2ᚕᚖbookingᚑflightᚑsystemᚋentᚐFlightᚄ(ctx, field.Selections, res)
+	return ec.marshalOBooking2ᚕᚖbookingᚑflightᚑsystemᚋentᚐBookingᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Customer_hasFlight(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Customer_hasBooking(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Customer",
 		Field:      field,
@@ -3383,39 +3783,25 @@ func (ec *executionContext) fieldContext_Customer_hasFlight(ctx context.Context,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Flight_id(ctx, field)
+				return ec.fieldContext_Booking_id(ctx, field)
 			case "createdAt":
-				return ec.fieldContext_Flight_createdAt(ctx, field)
+				return ec.fieldContext_Booking_createdAt(ctx, field)
 			case "updatedAt":
-				return ec.fieldContext_Flight_updatedAt(ctx, field)
-			case "name":
-				return ec.fieldContext_Flight_name(ctx, field)
-			case "departAt":
-				return ec.fieldContext_Flight_departAt(ctx, field)
-			case "landAt":
-				return ec.fieldContext_Flight_landAt(ctx, field)
-			case "availableEcSlot":
-				return ec.fieldContext_Flight_availableEcSlot(ctx, field)
-			case "availableBcSlot":
-				return ec.fieldContext_Flight_availableBcSlot(ctx, field)
+				return ec.fieldContext_Booking_updatedAt(ctx, field)
+			case "code":
+				return ec.fieldContext_Booking_code(ctx, field)
 			case "status":
-				return ec.fieldContext_Flight_status(ctx, field)
-			case "planeID":
-				return ec.fieldContext_Flight_planeID(ctx, field)
-			case "airportID":
-				return ec.fieldContext_Flight_airportID(ctx, field)
+				return ec.fieldContext_Booking_status(ctx, field)
 			case "customerID":
-				return ec.fieldContext_Flight_customerID(ctx, field)
-			case "hasPlane":
-				return ec.fieldContext_Flight_hasPlane(ctx, field)
-			case "hasBooking":
-				return ec.fieldContext_Flight_hasBooking(ctx, field)
-			case "hasAirport":
-				return ec.fieldContext_Flight_hasAirport(ctx, field)
+				return ec.fieldContext_Booking_customerID(ctx, field)
+			case "flightID":
+				return ec.fieldContext_Booking_flightID(ctx, field)
+			case "hasFlight":
+				return ec.fieldContext_Booking_hasFlight(ctx, field)
 			case "hasCustomer":
-				return ec.fieldContext_Flight_hasCustomer(ctx, field)
+				return ec.fieldContext_Booking_hasCustomer(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Flight", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Booking", field.Name)
 		},
 	}
 	return fc, nil
@@ -3711,9 +4097,9 @@ func (ec *executionContext) _Flight_availableEcSlot(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Flight_availableEcSlot(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3755,9 +4141,9 @@ func (ec *executionContext) _Flight_availableBcSlot(ctx context.Context, field g
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Flight_availableBcSlot(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3858,8 +4244,8 @@ func (ec *executionContext) fieldContext_Flight_planeID(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Flight_airportID(ctx context.Context, field graphql.CollectedField, obj *ent.Flight) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Flight_airportID(ctx, field)
+func (ec *executionContext) _Flight_fromAirportID(ctx context.Context, field graphql.CollectedField, obj *ent.Flight) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Flight_fromAirportID(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3872,7 +4258,7 @@ func (ec *executionContext) _Flight_airportID(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AirportID, nil
+		return obj.FromAirportID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3886,7 +4272,7 @@ func (ec *executionContext) _Flight_airportID(ctx context.Context, field graphql
 	return ec.marshalOID2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Flight_airportID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Flight_fromAirportID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Flight",
 		Field:      field,
@@ -3899,8 +4285,8 @@ func (ec *executionContext) fieldContext_Flight_airportID(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Flight_customerID(ctx context.Context, field graphql.CollectedField, obj *ent.Flight) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Flight_customerID(ctx, field)
+func (ec *executionContext) _Flight_toAirportID(ctx context.Context, field graphql.CollectedField, obj *ent.Flight) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Flight_toAirportID(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -3913,7 +4299,7 @@ func (ec *executionContext) _Flight_customerID(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.CustomerID, nil
+		return obj.ToAirportID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3927,7 +4313,7 @@ func (ec *executionContext) _Flight_customerID(ctx context.Context, field graphq
 	return ec.marshalOID2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Flight_customerID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Flight_toAirportID(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Flight",
 		Field:      field,
@@ -3978,6 +4364,10 @@ func (ec *executionContext) fieldContext_Flight_hasPlane(ctx context.Context, fi
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Plane_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Plane_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Plane_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_Plane_name(ctx, field)
 			case "economyClassSlots":
@@ -4041,10 +4431,14 @@ func (ec *executionContext) fieldContext_Flight_hasBooking(ctx context.Context, 
 				return ec.fieldContext_Booking_code(ctx, field)
 			case "status":
 				return ec.fieldContext_Booking_status(ctx, field)
+			case "customerID":
+				return ec.fieldContext_Booking_customerID(ctx, field)
 			case "flightID":
 				return ec.fieldContext_Booking_flightID(ctx, field)
 			case "hasFlight":
 				return ec.fieldContext_Booking_hasFlight(ctx, field)
+			case "hasCustomer":
+				return ec.fieldContext_Booking_hasCustomer(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Booking", field.Name)
 		},
@@ -4052,8 +4446,8 @@ func (ec *executionContext) fieldContext_Flight_hasBooking(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Flight_hasAirport(ctx context.Context, field graphql.CollectedField, obj *ent.Flight) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Flight_hasAirport(ctx, field)
+func (ec *executionContext) _Flight_fromAirport(ctx context.Context, field graphql.CollectedField, obj *ent.Flight) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Flight_fromAirport(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4066,7 +4460,7 @@ func (ec *executionContext) _Flight_hasAirport(ctx context.Context, field graphq
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.HasAirport(ctx)
+		return obj.FromAirport(ctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4080,7 +4474,7 @@ func (ec *executionContext) _Flight_hasAirport(ctx context.Context, field graphq
 	return ec.marshalOAirport2ᚖbookingᚑflightᚑsystemᚋentᚐAirport(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Flight_hasAirport(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Flight_fromAirport(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Flight",
 		Field:      field,
@@ -4100,8 +4494,10 @@ func (ec *executionContext) fieldContext_Flight_hasAirport(ctx context.Context, 
 				return ec.fieldContext_Airport_lat(ctx, field)
 			case "long":
 				return ec.fieldContext_Airport_long(ctx, field)
-			case "hasFlight":
-				return ec.fieldContext_Airport_hasFlight(ctx, field)
+			case "fromFlight":
+				return ec.fieldContext_Airport_fromFlight(ctx, field)
+			case "toFlight":
+				return ec.fieldContext_Airport_toFlight(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Airport", field.Name)
 		},
@@ -4109,8 +4505,8 @@ func (ec *executionContext) fieldContext_Flight_hasAirport(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Flight_hasCustomer(ctx context.Context, field graphql.CollectedField, obj *ent.Flight) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Flight_hasCustomer(ctx, field)
+func (ec *executionContext) _Flight_toAirport(ctx context.Context, field graphql.CollectedField, obj *ent.Flight) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Flight_toAirport(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4123,7 +4519,7 @@ func (ec *executionContext) _Flight_hasCustomer(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.HasCustomer(ctx)
+		return obj.ToAirport(ctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4132,12 +4528,12 @@ func (ec *executionContext) _Flight_hasCustomer(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*ent.Customer)
+	res := resTmp.(*ent.Airport)
 	fc.Result = res
-	return ec.marshalOCustomer2ᚖbookingᚑflightᚑsystemᚋentᚐCustomer(ctx, field.Selections, res)
+	return ec.marshalOAirport2ᚖbookingᚑflightᚑsystemᚋentᚐAirport(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Flight_hasCustomer(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Flight_toAirport(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Flight",
 		Field:      field,
@@ -4146,29 +4542,23 @@ func (ec *executionContext) fieldContext_Flight_hasCustomer(ctx context.Context,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Customer_id(ctx, field)
+				return ec.fieldContext_Airport_id(ctx, field)
 			case "createdAt":
-				return ec.fieldContext_Customer_createdAt(ctx, field)
+				return ec.fieldContext_Airport_createdAt(ctx, field)
 			case "updatedAt":
-				return ec.fieldContext_Customer_updatedAt(ctx, field)
-			case "email":
-				return ec.fieldContext_Customer_email(ctx, field)
-			case "phoneNumber":
-				return ec.fieldContext_Customer_phoneNumber(ctx, field)
-			case "fullName":
-				return ec.fieldContext_Customer_fullName(ctx, field)
-			case "dob":
-				return ec.fieldContext_Customer_dob(ctx, field)
-			case "cid":
-				return ec.fieldContext_Customer_cid(ctx, field)
-			case "memberID":
-				return ec.fieldContext_Customer_memberID(ctx, field)
-			case "hasMember":
-				return ec.fieldContext_Customer_hasMember(ctx, field)
-			case "hasFlight":
-				return ec.fieldContext_Customer_hasFlight(ctx, field)
+				return ec.fieldContext_Airport_updatedAt(ctx, field)
+			case "name":
+				return ec.fieldContext_Airport_name(ctx, field)
+			case "lat":
+				return ec.fieldContext_Airport_lat(ctx, field)
+			case "long":
+				return ec.fieldContext_Airport_long(ctx, field)
+			case "fromFlight":
+				return ec.fieldContext_Airport_fromFlight(ctx, field)
+			case "toFlight":
+				return ec.fieldContext_Airport_toFlight(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Customer", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Airport", field.Name)
 		},
 	}
 	return fc, nil
@@ -4623,8 +5013,8 @@ func (ec *executionContext) fieldContext_Member_hasCustomer(ctx context.Context,
 				return ec.fieldContext_Customer_memberID(ctx, field)
 			case "hasMember":
 				return ec.fieldContext_Customer_hasMember(ctx, field)
-			case "hasFlight":
-				return ec.fieldContext_Customer_hasFlight(ctx, field)
+			case "hasBooking":
+				return ec.fieldContext_Customer_hasBooking(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Customer", field.Name)
 		},
@@ -5142,8 +5532,10 @@ func (ec *executionContext) fieldContext_Mutation_create_airport(ctx context.Con
 				return ec.fieldContext_Airport_lat(ctx, field)
 			case "long":
 				return ec.fieldContext_Airport_long(ctx, field)
-			case "hasFlight":
-				return ec.fieldContext_Airport_hasFlight(ctx, field)
+			case "fromFlight":
+				return ec.fieldContext_Airport_fromFlight(ctx, field)
+			case "toFlight":
+				return ec.fieldContext_Airport_toFlight(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Airport", field.Name)
 		},
@@ -5213,8 +5605,10 @@ func (ec *executionContext) fieldContext_Mutation_update_airport(ctx context.Con
 				return ec.fieldContext_Airport_lat(ctx, field)
 			case "long":
 				return ec.fieldContext_Airport_long(ctx, field)
-			case "hasFlight":
-				return ec.fieldContext_Airport_hasFlight(ctx, field)
+			case "fromFlight":
+				return ec.fieldContext_Airport_fromFlight(ctx, field)
+			case "toFlight":
+				return ec.fieldContext_Airport_toFlight(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Airport", field.Name)
 		},
@@ -5336,8 +5730,10 @@ func (ec *executionContext) fieldContext_Mutation_find_airport_by_id(ctx context
 				return ec.fieldContext_Airport_lat(ctx, field)
 			case "long":
 				return ec.fieldContext_Airport_long(ctx, field)
-			case "hasFlight":
-				return ec.fieldContext_Airport_hasFlight(ctx, field)
+			case "fromFlight":
+				return ec.fieldContext_Airport_fromFlight(ctx, field)
+			case "toFlight":
+				return ec.fieldContext_Airport_toFlight(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Airport", field.Name)
 		},
@@ -5397,6 +5793,10 @@ func (ec *executionContext) fieldContext_Mutation_create_plane(ctx context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Plane_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Plane_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Plane_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_Plane_name(ctx, field)
 			case "economyClassSlots":
@@ -5466,6 +5866,10 @@ func (ec *executionContext) fieldContext_Mutation_update_plane(ctx context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Plane_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Plane_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Plane_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_Plane_name(ctx, field)
 			case "economyClassSlots":
@@ -5587,6 +5991,10 @@ func (ec *executionContext) fieldContext_Mutation_find_plane_by_id(ctx context.C
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Plane_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Plane_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Plane_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_Plane_name(ctx, field)
 			case "economyClassSlots":
@@ -5609,6 +6017,389 @@ func (ec *executionContext) fieldContext_Mutation_find_plane_by_id(ctx context.C
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_find_plane_by_id_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_create_flight(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_create_flight(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateFlight(rctx, fc.Args["input"].(ent.CreateFlight))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Flight)
+	fc.Result = res
+	return ec.marshalNFlight2ᚖbookingᚑflightᚑsystemᚋentᚐFlight(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_create_flight(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Flight_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Flight_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Flight_updatedAt(ctx, field)
+			case "name":
+				return ec.fieldContext_Flight_name(ctx, field)
+			case "departAt":
+				return ec.fieldContext_Flight_departAt(ctx, field)
+			case "landAt":
+				return ec.fieldContext_Flight_landAt(ctx, field)
+			case "availableEcSlot":
+				return ec.fieldContext_Flight_availableEcSlot(ctx, field)
+			case "availableBcSlot":
+				return ec.fieldContext_Flight_availableBcSlot(ctx, field)
+			case "status":
+				return ec.fieldContext_Flight_status(ctx, field)
+			case "planeID":
+				return ec.fieldContext_Flight_planeID(ctx, field)
+			case "fromAirportID":
+				return ec.fieldContext_Flight_fromAirportID(ctx, field)
+			case "toAirportID":
+				return ec.fieldContext_Flight_toAirportID(ctx, field)
+			case "hasPlane":
+				return ec.fieldContext_Flight_hasPlane(ctx, field)
+			case "hasBooking":
+				return ec.fieldContext_Flight_hasBooking(ctx, field)
+			case "fromAirport":
+				return ec.fieldContext_Flight_fromAirport(ctx, field)
+			case "toAirport":
+				return ec.fieldContext_Flight_toAirport(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Flight", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_create_flight_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_cancel_flight(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_cancel_flight(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CancelFlight(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_cancel_flight(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_update_flight_slot(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_update_flight_slot(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateFlightSlot(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Flight)
+	fc.Result = res
+	return ec.marshalNFlight2ᚖbookingᚑflightᚑsystemᚋentᚐFlight(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_update_flight_slot(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Flight_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Flight_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Flight_updatedAt(ctx, field)
+			case "name":
+				return ec.fieldContext_Flight_name(ctx, field)
+			case "departAt":
+				return ec.fieldContext_Flight_departAt(ctx, field)
+			case "landAt":
+				return ec.fieldContext_Flight_landAt(ctx, field)
+			case "availableEcSlot":
+				return ec.fieldContext_Flight_availableEcSlot(ctx, field)
+			case "availableBcSlot":
+				return ec.fieldContext_Flight_availableBcSlot(ctx, field)
+			case "status":
+				return ec.fieldContext_Flight_status(ctx, field)
+			case "planeID":
+				return ec.fieldContext_Flight_planeID(ctx, field)
+			case "fromAirportID":
+				return ec.fieldContext_Flight_fromAirportID(ctx, field)
+			case "toAirportID":
+				return ec.fieldContext_Flight_toAirportID(ctx, field)
+			case "hasPlane":
+				return ec.fieldContext_Flight_hasPlane(ctx, field)
+			case "hasBooking":
+				return ec.fieldContext_Flight_hasBooking(ctx, field)
+			case "fromAirport":
+				return ec.fieldContext_Flight_fromAirport(ctx, field)
+			case "toAirport":
+				return ec.fieldContext_Flight_toAirport(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Flight", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_update_flight_status(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_update_flight_status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateFlightStatus(rctx, fc.Args["status"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Flight)
+	fc.Result = res
+	return ec.marshalNFlight2ᚖbookingᚑflightᚑsystemᚋentᚐFlight(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_update_flight_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Flight_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Flight_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Flight_updatedAt(ctx, field)
+			case "name":
+				return ec.fieldContext_Flight_name(ctx, field)
+			case "departAt":
+				return ec.fieldContext_Flight_departAt(ctx, field)
+			case "landAt":
+				return ec.fieldContext_Flight_landAt(ctx, field)
+			case "availableEcSlot":
+				return ec.fieldContext_Flight_availableEcSlot(ctx, field)
+			case "availableBcSlot":
+				return ec.fieldContext_Flight_availableBcSlot(ctx, field)
+			case "status":
+				return ec.fieldContext_Flight_status(ctx, field)
+			case "planeID":
+				return ec.fieldContext_Flight_planeID(ctx, field)
+			case "fromAirportID":
+				return ec.fieldContext_Flight_fromAirportID(ctx, field)
+			case "toAirportID":
+				return ec.fieldContext_Flight_toAirportID(ctx, field)
+			case "hasPlane":
+				return ec.fieldContext_Flight_hasPlane(ctx, field)
+			case "hasBooking":
+				return ec.fieldContext_Flight_hasBooking(ctx, field)
+			case "fromAirport":
+				return ec.fieldContext_Flight_fromAirport(ctx, field)
+			case "toAirport":
+				return ec.fieldContext_Flight_toAirport(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Flight", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_update_flight_status_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_search_flight(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_search_flight(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().SearchFlight(rctx, fc.Args["depart_at"].(string), fc.Args["dest_at"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Flight)
+	fc.Result = res
+	return ec.marshalOFlight2ᚕᚖbookingᚑflightᚑsystemᚋentᚐFlightᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_search_flight(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Flight_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Flight_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Flight_updatedAt(ctx, field)
+			case "name":
+				return ec.fieldContext_Flight_name(ctx, field)
+			case "departAt":
+				return ec.fieldContext_Flight_departAt(ctx, field)
+			case "landAt":
+				return ec.fieldContext_Flight_landAt(ctx, field)
+			case "availableEcSlot":
+				return ec.fieldContext_Flight_availableEcSlot(ctx, field)
+			case "availableBcSlot":
+				return ec.fieldContext_Flight_availableBcSlot(ctx, field)
+			case "status":
+				return ec.fieldContext_Flight_status(ctx, field)
+			case "planeID":
+				return ec.fieldContext_Flight_planeID(ctx, field)
+			case "fromAirportID":
+				return ec.fieldContext_Flight_fromAirportID(ctx, field)
+			case "toAirportID":
+				return ec.fieldContext_Flight_toAirportID(ctx, field)
+			case "hasPlane":
+				return ec.fieldContext_Flight_hasPlane(ctx, field)
+			case "hasBooking":
+				return ec.fieldContext_Flight_hasBooking(ctx, field)
+			case "fromAirport":
+				return ec.fieldContext_Flight_fromAirport(ctx, field)
+			case "toAirport":
+				return ec.fieldContext_Flight_toAirport(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Flight", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_search_flight_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -5824,6 +6615,94 @@ func (ec *executionContext) fieldContext_Plane_id(ctx context.Context, field gra
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type ID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Plane_createdAt(ctx context.Context, field graphql.CollectedField, obj *ent.Plane) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Plane_createdAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CreatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Plane_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Plane",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Plane_updatedAt(ctx context.Context, field graphql.CollectedField, obj *ent.Plane) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Plane_updatedAt(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(time.Time)
+	fc.Result = res
+	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Plane_updatedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Plane",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6061,18 +6940,18 @@ func (ec *executionContext) fieldContext_Plane_flights(ctx context.Context, fiel
 				return ec.fieldContext_Flight_status(ctx, field)
 			case "planeID":
 				return ec.fieldContext_Flight_planeID(ctx, field)
-			case "airportID":
-				return ec.fieldContext_Flight_airportID(ctx, field)
-			case "customerID":
-				return ec.fieldContext_Flight_customerID(ctx, field)
+			case "fromAirportID":
+				return ec.fieldContext_Flight_fromAirportID(ctx, field)
+			case "toAirportID":
+				return ec.fieldContext_Flight_toAirportID(ctx, field)
 			case "hasPlane":
 				return ec.fieldContext_Flight_hasPlane(ctx, field)
 			case "hasBooking":
 				return ec.fieldContext_Flight_hasBooking(ctx, field)
-			case "hasAirport":
-				return ec.fieldContext_Flight_hasAirport(ctx, field)
-			case "hasCustomer":
-				return ec.fieldContext_Flight_hasCustomer(ctx, field)
+			case "fromAirport":
+				return ec.fieldContext_Flight_fromAirport(ctx, field)
+			case "toAirport":
+				return ec.fieldContext_Flight_toAirport(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Flight", field.Name)
 		},
@@ -6238,8 +7117,10 @@ func (ec *executionContext) fieldContext_Query_airports(ctx context.Context, fie
 				return ec.fieldContext_Airport_lat(ctx, field)
 			case "long":
 				return ec.fieldContext_Airport_long(ctx, field)
-			case "hasFlight":
-				return ec.fieldContext_Airport_hasFlight(ctx, field)
+			case "fromFlight":
+				return ec.fieldContext_Airport_fromFlight(ctx, field)
+			case "toFlight":
+				return ec.fieldContext_Airport_toFlight(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Airport", field.Name)
 		},
@@ -6296,10 +7177,14 @@ func (ec *executionContext) fieldContext_Query_bookings(ctx context.Context, fie
 				return ec.fieldContext_Booking_code(ctx, field)
 			case "status":
 				return ec.fieldContext_Booking_status(ctx, field)
+			case "customerID":
+				return ec.fieldContext_Booking_customerID(ctx, field)
 			case "flightID":
 				return ec.fieldContext_Booking_flightID(ctx, field)
 			case "hasFlight":
 				return ec.fieldContext_Booking_hasFlight(ctx, field)
+			case "hasCustomer":
+				return ec.fieldContext_Booking_hasCustomer(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Booking", field.Name)
 		},
@@ -6366,8 +7251,8 @@ func (ec *executionContext) fieldContext_Query_customers(ctx context.Context, fi
 				return ec.fieldContext_Customer_memberID(ctx, field)
 			case "hasMember":
 				return ec.fieldContext_Customer_hasMember(ctx, field)
-			case "hasFlight":
-				return ec.fieldContext_Customer_hasFlight(ctx, field)
+			case "hasBooking":
+				return ec.fieldContext_Customer_hasBooking(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Customer", field.Name)
 		},
@@ -6434,18 +7319,18 @@ func (ec *executionContext) fieldContext_Query_flights(ctx context.Context, fiel
 				return ec.fieldContext_Flight_status(ctx, field)
 			case "planeID":
 				return ec.fieldContext_Flight_planeID(ctx, field)
-			case "airportID":
-				return ec.fieldContext_Flight_airportID(ctx, field)
-			case "customerID":
-				return ec.fieldContext_Flight_customerID(ctx, field)
+			case "fromAirportID":
+				return ec.fieldContext_Flight_fromAirportID(ctx, field)
+			case "toAirportID":
+				return ec.fieldContext_Flight_toAirportID(ctx, field)
 			case "hasPlane":
 				return ec.fieldContext_Flight_hasPlane(ctx, field)
 			case "hasBooking":
 				return ec.fieldContext_Flight_hasBooking(ctx, field)
-			case "hasAirport":
-				return ec.fieldContext_Flight_hasAirport(ctx, field)
-			case "hasCustomer":
-				return ec.fieldContext_Flight_hasCustomer(ctx, field)
+			case "fromAirport":
+				return ec.fieldContext_Flight_fromAirport(ctx, field)
+			case "toAirport":
+				return ec.fieldContext_Flight_toAirport(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Flight", field.Name)
 		},
@@ -6560,6 +7445,10 @@ func (ec *executionContext) fieldContext_Query_planes(ctx context.Context, field
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Plane_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Plane_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Plane_updatedAt(ctx, field)
 			case "name":
 				return ec.fieldContext_Plane_name(ctx, field)
 			case "economyClassSlots":
@@ -8574,7 +9463,7 @@ func (ec *executionContext) unmarshalInputAirportWhereInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "lat", "latNEQ", "latIn", "latNotIn", "latGT", "latGTE", "latLT", "latLTE", "long", "longNEQ", "longIn", "longNotIn", "longGT", "longGTE", "longLT", "longLTE", "hasHasFlight", "hasHasFlightWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "lat", "latNEQ", "latIn", "latNotIn", "latGT", "latGTE", "latLT", "latLTE", "long", "longNEQ", "longIn", "longNotIn", "longGT", "longGTE", "longLT", "longLTE", "hasFromFlight", "hasFromFlightWith", "hasToFlight", "hasToFlightWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -9085,24 +9974,42 @@ func (ec *executionContext) unmarshalInputAirportWhereInput(ctx context.Context,
 				return it, err
 			}
 			it.LongLTE = data
-		case "hasHasFlight":
+		case "hasFromFlight":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasHasFlight"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasFromFlight"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasHasFlight = data
-		case "hasHasFlightWith":
+			it.HasFromFlight = data
+		case "hasFromFlightWith":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasHasFlightWith"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasFromFlightWith"))
 			data, err := ec.unmarshalOFlightWhereInput2ᚕᚖbookingᚑflightᚑsystemᚋentᚐFlightWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasHasFlightWith = data
+			it.HasFromFlightWith = data
+		case "hasToFlight":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasToFlight"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasToFlight = data
+		case "hasToFlightWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasToFlightWith"))
+			data, err := ec.unmarshalOFlightWhereInput2ᚕᚖbookingᚑflightᚑsystemᚋentᚐFlightWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasToFlightWith = data
 		}
 	}
 
@@ -9116,7 +10023,7 @@ func (ec *executionContext) unmarshalInputBookingWhereInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "code", "codeNEQ", "codeIn", "codeNotIn", "codeGT", "codeGTE", "codeLT", "codeLTE", "codeContains", "codeHasPrefix", "codeHasSuffix", "codeEqualFold", "codeContainsFold", "status", "statusNEQ", "statusIn", "statusNotIn", "statusGT", "statusGTE", "statusLT", "statusLTE", "statusContains", "statusHasPrefix", "statusHasSuffix", "statusEqualFold", "statusContainsFold", "flightID", "flightIDNEQ", "flightIDIn", "flightIDNotIn", "flightIDIsNil", "flightIDNotNil", "hasHasFlight", "hasHasFlightWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "code", "codeNEQ", "codeIn", "codeNotIn", "codeGT", "codeGTE", "codeLT", "codeLTE", "codeContains", "codeHasPrefix", "codeHasSuffix", "codeEqualFold", "codeContainsFold", "status", "statusNEQ", "statusIn", "statusNotIn", "statusGT", "statusGTE", "statusLT", "statusLTE", "statusContains", "statusHasPrefix", "statusHasSuffix", "statusEqualFold", "statusContainsFold", "customerID", "customerIDNEQ", "customerIDIn", "customerIDNotIn", "customerIDIsNil", "customerIDNotNil", "flightID", "flightIDNEQ", "flightIDIn", "flightIDNotIn", "flightIDIsNil", "flightIDNotNil", "hasHasFlight", "hasHasFlightWith", "hasHasCustomer", "hasHasCustomerWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -9600,6 +10507,60 @@ func (ec *executionContext) unmarshalInputBookingWhereInput(ctx context.Context,
 				return it, err
 			}
 			it.StatusContainsFold = data
+		case "customerID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("customerID"))
+			data, err := ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CustomerID = data
+		case "customerIDNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("customerIDNEQ"))
+			data, err := ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CustomerIDNEQ = data
+		case "customerIDIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("customerIDIn"))
+			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CustomerIDIn = data
+		case "customerIDNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("customerIDNotIn"))
+			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CustomerIDNotIn = data
+		case "customerIDIsNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("customerIDIsNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CustomerIDIsNil = data
+		case "customerIDNotNil":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("customerIDNotNil"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CustomerIDNotNil = data
 		case "flightID":
 			var err error
 
@@ -9672,6 +10633,24 @@ func (ec *executionContext) unmarshalInputBookingWhereInput(ctx context.Context,
 				return it, err
 			}
 			it.HasHasFlightWith = data
+		case "hasHasCustomer":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasHasCustomer"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasHasCustomer = data
+		case "hasHasCustomerWith":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasHasCustomerWith"))
+			data, err := ec.unmarshalOCustomerWhereInput2ᚕᚖbookingᚑflightᚑsystemᚋentᚐCustomerWhereInputᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasHasCustomerWith = data
 		}
 	}
 
@@ -9685,7 +10664,7 @@ func (ec *executionContext) unmarshalInputCreateAirportInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "name", "lat", "long", "hasFlightIDs"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "name", "lat", "long", "fromFlightIDs", "toFlightIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -9737,15 +10716,24 @@ func (ec *executionContext) unmarshalInputCreateAirportInput(ctx context.Context
 				return it, err
 			}
 			it.Long = data
-		case "hasFlightIDs":
+		case "fromFlightIDs":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasFlightIDs"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fromFlightIDs"))
 			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasFlightIDs = data
+			it.FromFlightIDs = data
+		case "toFlightIDs":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("toFlightIDs"))
+			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ToFlightIDs = data
 		}
 	}
 
@@ -9759,7 +10747,7 @@ func (ec *executionContext) unmarshalInputCreateBookingInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "code", "status", "hasFlightID"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "code", "status", "hasFlightID", "hasCustomerID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -9811,6 +10799,15 @@ func (ec *executionContext) unmarshalInputCreateBookingInput(ctx context.Context
 				return it, err
 			}
 			it.HasFlightID = data
+		case "hasCustomerID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCustomerID"))
+			data, err := ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasCustomerID = data
 		}
 	}
 
@@ -9824,7 +10821,7 @@ func (ec *executionContext) unmarshalInputCreateCustomerInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "email", "phoneNumber", "fullName", "dob", "cid", "hasMemberID", "hasFlightIDs"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "email", "phoneNumber", "fullName", "dob", "cid", "hasMemberID", "hasBookingIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -9903,15 +10900,107 @@ func (ec *executionContext) unmarshalInputCreateCustomerInput(ctx context.Contex
 				return it, err
 			}
 			it.HasMemberID = data
-		case "hasFlightIDs":
+		case "hasBookingIDs":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasFlightIDs"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasBookingIDs"))
 			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasFlightIDs = data
+			it.HasBookingIDs = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateFlight(ctx context.Context, obj interface{}) (ent.CreateFlight, error) {
+	var it ent.CreateFlight
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "departAt", "landAt", "availableEcSlot", "availableBcSlot", "toID", "fromID", "planeID"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "departAt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("departAt"))
+			data, err := ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.DepartAt = data
+		case "landAt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("landAt"))
+			data, err := ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.LandAt = data
+		case "availableEcSlot":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availableEcSlot"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AvailableEcSlot = data
+		case "availableBcSlot":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availableBcSlot"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AvailableBcSlot = data
+		case "toID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("toID"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ToID = data
+		case "fromID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fromID"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FromID = data
+		case "planeID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("planeID"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PlaneID = data
 		}
 	}
 
@@ -9925,7 +11014,7 @@ func (ec *executionContext) unmarshalInputCreateFlightInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "name", "departAt", "landAt", "availableEcSlot", "availableBcSlot", "status", "hasPlaneID", "hasBookingIDs", "hasAirportID", "hasCustomerID"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "name", "departAt", "landAt", "availableEcSlot", "availableBcSlot", "status", "hasPlaneID", "hasBookingIDs", "fromAirportID", "toAirportID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10022,24 +11111,24 @@ func (ec *executionContext) unmarshalInputCreateFlightInput(ctx context.Context,
 				return it, err
 			}
 			it.HasBookingIDs = data
-		case "hasAirportID":
+		case "fromAirportID":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasAirportID"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fromAirportID"))
 			data, err := ec.unmarshalOID2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasAirportID = data
-		case "hasCustomerID":
+			it.FromAirportID = data
+		case "toAirportID":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCustomerID"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("toAirportID"))
 			data, err := ec.unmarshalOID2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasCustomerID = data
+			it.ToAirportID = data
 		}
 	}
 
@@ -10163,13 +11252,31 @@ func (ec *executionContext) unmarshalInputCreatePlaneInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "economyClassSlots", "businessClassSlots", "status", "flightIDs"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "name", "economyClassSlots", "businessClassSlots", "status", "flightIDs"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "createdAt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreatedAt = data
+		case "updatedAt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdatedAt = data
 		case "name":
 			var err error
 
@@ -10183,7 +11290,7 @@ func (ec *executionContext) unmarshalInputCreatePlaneInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("economyClassSlots"))
-			data, err := ec.unmarshalNInt2int64(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10192,7 +11299,7 @@ func (ec *executionContext) unmarshalInputCreatePlaneInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("businessClassSlots"))
-			data, err := ec.unmarshalNInt2int64(ctx, v)
+			data, err := ec.unmarshalOInt2ᚖint64(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10228,7 +11335,7 @@ func (ec *executionContext) unmarshalInputCustomerWhereInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailEqualFold", "emailContainsFold", "phoneNumber", "phoneNumberNEQ", "phoneNumberIn", "phoneNumberNotIn", "phoneNumberGT", "phoneNumberGTE", "phoneNumberLT", "phoneNumberLTE", "phoneNumberContains", "phoneNumberHasPrefix", "phoneNumberHasSuffix", "phoneNumberEqualFold", "phoneNumberContainsFold", "fullName", "fullNameNEQ", "fullNameIn", "fullNameNotIn", "fullNameGT", "fullNameGTE", "fullNameLT", "fullNameLTE", "fullNameContains", "fullNameHasPrefix", "fullNameHasSuffix", "fullNameEqualFold", "fullNameContainsFold", "dob", "dobNEQ", "dobIn", "dobNotIn", "dobGT", "dobGTE", "dobLT", "dobLTE", "cid", "cidNEQ", "cidIn", "cidNotIn", "cidGT", "cidGTE", "cidLT", "cidLTE", "cidContains", "cidHasPrefix", "cidHasSuffix", "cidEqualFold", "cidContainsFold", "memberID", "memberIDNEQ", "memberIDIn", "memberIDNotIn", "memberIDIsNil", "memberIDNotNil", "hasHasMember", "hasHasMemberWith", "hasHasFlight", "hasHasFlightWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "email", "emailNEQ", "emailIn", "emailNotIn", "emailGT", "emailGTE", "emailLT", "emailLTE", "emailContains", "emailHasPrefix", "emailHasSuffix", "emailEqualFold", "emailContainsFold", "phoneNumber", "phoneNumberNEQ", "phoneNumberIn", "phoneNumberNotIn", "phoneNumberGT", "phoneNumberGTE", "phoneNumberLT", "phoneNumberLTE", "phoneNumberContains", "phoneNumberHasPrefix", "phoneNumberHasSuffix", "phoneNumberEqualFold", "phoneNumberContainsFold", "fullName", "fullNameNEQ", "fullNameIn", "fullNameNotIn", "fullNameGT", "fullNameGTE", "fullNameLT", "fullNameLTE", "fullNameContains", "fullNameHasPrefix", "fullNameHasSuffix", "fullNameEqualFold", "fullNameContainsFold", "dob", "dobNEQ", "dobIn", "dobNotIn", "dobGT", "dobGTE", "dobLT", "dobLTE", "cid", "cidNEQ", "cidIn", "cidNotIn", "cidGT", "cidGTE", "cidLT", "cidLTE", "cidContains", "cidHasPrefix", "cidHasSuffix", "cidEqualFold", "cidContainsFold", "memberID", "memberIDNEQ", "memberIDIn", "memberIDNotIn", "memberIDIsNil", "memberIDNotNil", "hasHasMember", "hasHasMemberWith", "hasHasBooking", "hasHasBookingWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -11090,24 +12197,24 @@ func (ec *executionContext) unmarshalInputCustomerWhereInput(ctx context.Context
 				return it, err
 			}
 			it.HasHasMemberWith = data
-		case "hasHasFlight":
+		case "hasHasBooking":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasHasFlight"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasHasBooking"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasHasFlight = data
-		case "hasHasFlightWith":
+			it.HasHasBooking = data
+		case "hasHasBookingWith":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasHasFlightWith"))
-			data, err := ec.unmarshalOFlightWhereInput2ᚕᚖbookingᚑflightᚑsystemᚋentᚐFlightWhereInputᚄ(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasHasBookingWith"))
+			data, err := ec.unmarshalOBookingWhereInput2ᚕᚖbookingᚑflightᚑsystemᚋentᚐBookingWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasHasFlightWith = data
+			it.HasHasBookingWith = data
 		}
 	}
 
@@ -11121,7 +12228,7 @@ func (ec *executionContext) unmarshalInputFlightWhereInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "departAt", "departAtNEQ", "departAtIn", "departAtNotIn", "departAtGT", "departAtGTE", "departAtLT", "departAtLTE", "landAt", "landAtNEQ", "landAtIn", "landAtNotIn", "landAtGT", "landAtGTE", "landAtLT", "landAtLTE", "availableEcSlot", "availableEcSlotNEQ", "availableEcSlotIn", "availableEcSlotNotIn", "availableEcSlotGT", "availableEcSlotGTE", "availableEcSlotLT", "availableEcSlotLTE", "availableBcSlot", "availableBcSlotNEQ", "availableBcSlotIn", "availableBcSlotNotIn", "availableBcSlotGT", "availableBcSlotGTE", "availableBcSlotLT", "availableBcSlotLTE", "status", "statusNEQ", "statusIn", "statusNotIn", "planeID", "planeIDNEQ", "planeIDIn", "planeIDNotIn", "planeIDIsNil", "planeIDNotNil", "airportID", "airportIDNEQ", "airportIDIn", "airportIDNotIn", "airportIDIsNil", "airportIDNotNil", "customerID", "customerIDNEQ", "customerIDIn", "customerIDNotIn", "customerIDIsNil", "customerIDNotNil", "hasHasPlane", "hasHasPlaneWith", "hasHasBooking", "hasHasBookingWith", "hasHasAirport", "hasHasAirportWith", "hasHasCustomer", "hasHasCustomerWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "departAt", "departAtNEQ", "departAtIn", "departAtNotIn", "departAtGT", "departAtGTE", "departAtLT", "departAtLTE", "landAt", "landAtNEQ", "landAtIn", "landAtNotIn", "landAtGT", "landAtGTE", "landAtLT", "landAtLTE", "availableEcSlot", "availableEcSlotNEQ", "availableEcSlotIn", "availableEcSlotNotIn", "availableEcSlotGT", "availableEcSlotGTE", "availableEcSlotLT", "availableEcSlotLTE", "availableBcSlot", "availableBcSlotNEQ", "availableBcSlotIn", "availableBcSlotNotIn", "availableBcSlotGT", "availableBcSlotGTE", "availableBcSlotLT", "availableBcSlotLTE", "status", "statusNEQ", "statusIn", "statusNotIn", "planeID", "planeIDNEQ", "planeIDIn", "planeIDNotIn", "planeIDIsNil", "planeIDNotNil", "fromAirportID", "fromAirportIDNEQ", "fromAirportIDIn", "fromAirportIDNotIn", "fromAirportIDIsNil", "fromAirportIDNotNil", "toAirportID", "toAirportIDNEQ", "toAirportIDIn", "toAirportIDNotIn", "toAirportIDIsNil", "toAirportIDNotNil", "hasHasPlane", "hasHasPlaneWith", "hasHasBooking", "hasHasBookingWith", "hasFromAirport", "hasFromAirportWith", "hasToAirport", "hasToAirportWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -11866,114 +12973,114 @@ func (ec *executionContext) unmarshalInputFlightWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.PlaneIDNotNil = data
-		case "airportID":
+		case "fromAirportID":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("airportID"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fromAirportID"))
 			data, err := ec.unmarshalOID2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AirportID = data
-		case "airportIDNEQ":
+			it.FromAirportID = data
+		case "fromAirportIDNEQ":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("airportIDNEQ"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fromAirportIDNEQ"))
 			data, err := ec.unmarshalOID2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AirportIDNEQ = data
-		case "airportIDIn":
+			it.FromAirportIDNEQ = data
+		case "fromAirportIDIn":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("airportIDIn"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fromAirportIDIn"))
 			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AirportIDIn = data
-		case "airportIDNotIn":
+			it.FromAirportIDIn = data
+		case "fromAirportIDNotIn":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("airportIDNotIn"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fromAirportIDNotIn"))
 			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AirportIDNotIn = data
-		case "airportIDIsNil":
+			it.FromAirportIDNotIn = data
+		case "fromAirportIDIsNil":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("airportIDIsNil"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fromAirportIDIsNil"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AirportIDIsNil = data
-		case "airportIDNotNil":
+			it.FromAirportIDIsNil = data
+		case "fromAirportIDNotNil":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("airportIDNotNil"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fromAirportIDNotNil"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AirportIDNotNil = data
-		case "customerID":
+			it.FromAirportIDNotNil = data
+		case "toAirportID":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("customerID"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("toAirportID"))
 			data, err := ec.unmarshalOID2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.CustomerID = data
-		case "customerIDNEQ":
+			it.ToAirportID = data
+		case "toAirportIDNEQ":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("customerIDNEQ"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("toAirportIDNEQ"))
 			data, err := ec.unmarshalOID2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.CustomerIDNEQ = data
-		case "customerIDIn":
+			it.ToAirportIDNEQ = data
+		case "toAirportIDIn":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("customerIDIn"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("toAirportIDIn"))
 			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.CustomerIDIn = data
-		case "customerIDNotIn":
+			it.ToAirportIDIn = data
+		case "toAirportIDNotIn":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("customerIDNotIn"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("toAirportIDNotIn"))
 			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.CustomerIDNotIn = data
-		case "customerIDIsNil":
+			it.ToAirportIDNotIn = data
+		case "toAirportIDIsNil":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("customerIDIsNil"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("toAirportIDIsNil"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.CustomerIDIsNil = data
-		case "customerIDNotNil":
+			it.ToAirportIDIsNil = data
+		case "toAirportIDNotNil":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("customerIDNotNil"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("toAirportIDNotNil"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.CustomerIDNotNil = data
+			it.ToAirportIDNotNil = data
 		case "hasHasPlane":
 			var err error
 
@@ -12010,42 +13117,42 @@ func (ec *executionContext) unmarshalInputFlightWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.HasHasBookingWith = data
-		case "hasHasAirport":
+		case "hasFromAirport":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasHasAirport"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasFromAirport"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasHasAirport = data
-		case "hasHasAirportWith":
+			it.HasFromAirport = data
+		case "hasFromAirportWith":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasHasAirportWith"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasFromAirportWith"))
 			data, err := ec.unmarshalOAirportWhereInput2ᚕᚖbookingᚑflightᚑsystemᚋentᚐAirportWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasHasAirportWith = data
-		case "hasHasCustomer":
+			it.HasFromAirportWith = data
+		case "hasToAirport":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasHasCustomer"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasToAirport"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasHasCustomer = data
-		case "hasHasCustomerWith":
+			it.HasToAirport = data
+		case "hasToAirportWith":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasHasCustomerWith"))
-			data, err := ec.unmarshalOCustomerWhereInput2ᚕᚖbookingᚑflightᚑsystemᚋentᚐCustomerWhereInputᚄ(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasToAirportWith"))
+			data, err := ec.unmarshalOAirportWhereInput2ᚕᚖbookingᚑflightᚑsystemᚋentᚐAirportWhereInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasHasCustomerWith = data
+			it.HasToAirportWith = data
 		}
 	}
 
@@ -12970,7 +14077,7 @@ func (ec *executionContext) unmarshalInputPlaneWhereInput(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "economyClassSlots", "economyClassSlotsNEQ", "economyClassSlotsIn", "economyClassSlotsNotIn", "economyClassSlotsGT", "economyClassSlotsGTE", "economyClassSlotsLT", "economyClassSlotsLTE", "businessClassSlots", "businessClassSlotsNEQ", "businessClassSlotsIn", "businessClassSlotsNotIn", "businessClassSlotsGT", "businessClassSlotsGTE", "businessClassSlotsLT", "businessClassSlotsLTE", "status", "statusNEQ", "statusIn", "statusNotIn", "hasFlights", "hasFlightsWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "name", "nameNEQ", "nameIn", "nameNotIn", "nameGT", "nameGTE", "nameLT", "nameLTE", "nameContains", "nameHasPrefix", "nameHasSuffix", "nameEqualFold", "nameContainsFold", "economyClassSlots", "economyClassSlotsNEQ", "economyClassSlotsIn", "economyClassSlotsNotIn", "economyClassSlotsGT", "economyClassSlotsGTE", "economyClassSlotsLT", "economyClassSlotsLTE", "businessClassSlots", "businessClassSlotsNEQ", "businessClassSlotsIn", "businessClassSlotsNotIn", "businessClassSlotsGT", "businessClassSlotsGTE", "businessClassSlotsLT", "businessClassSlotsLTE", "status", "statusNEQ", "statusIn", "statusNotIn", "hasFlights", "hasFlightsWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13076,6 +14183,150 @@ func (ec *executionContext) unmarshalInputPlaneWhereInput(ctx context.Context, o
 				return it, err
 			}
 			it.IDLTE = data
+		case "createdAt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreatedAt = data
+		case "createdAtNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreatedAtNEQ = data
+		case "createdAtIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreatedAtIn = data
+		case "createdAtNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreatedAtNotIn = data
+		case "createdAtGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreatedAtGT = data
+		case "createdAtGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreatedAtGTE = data
+		case "createdAtLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreatedAtLT = data
+		case "createdAtLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAtLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreatedAtLTE = data
+		case "updatedAt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdatedAt = data
+		case "updatedAtNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtNEQ"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdatedAtNEQ = data
+		case "updatedAtIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdatedAtIn = data
+		case "updatedAtNotIn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtNotIn"))
+			data, err := ec.unmarshalOTime2ᚕtimeᚐTimeᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdatedAtNotIn = data
+		case "updatedAtGT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtGT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdatedAtGT = data
+		case "updatedAtGTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtGTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdatedAtGTE = data
+		case "updatedAtLT":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtLT"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdatedAtLT = data
+		case "updatedAtLTE":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAtLTE"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdatedAtLTE = data
 		case "name":
 			var err error
 
@@ -13404,7 +14655,7 @@ func (ec *executionContext) unmarshalInputUpdateAirportInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "name", "lat", "long", "addHasFlightIDs", "removeHasFlightIDs", "clearHasFlight"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "name", "lat", "long", "addFromFlightIDs", "removeFromFlightIDs", "clearFromFlight", "addToFlightIDs", "removeToFlightIDs", "clearToFlight"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13456,33 +14707,60 @@ func (ec *executionContext) unmarshalInputUpdateAirportInput(ctx context.Context
 				return it, err
 			}
 			it.Long = data
-		case "addHasFlightIDs":
+		case "addFromFlightIDs":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addHasFlightIDs"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addFromFlightIDs"))
 			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AddHasFlightIDs = data
-		case "removeHasFlightIDs":
+			it.AddFromFlightIDs = data
+		case "removeFromFlightIDs":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeHasFlightIDs"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeFromFlightIDs"))
 			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.RemoveHasFlightIDs = data
-		case "clearHasFlight":
+			it.RemoveFromFlightIDs = data
+		case "clearFromFlight":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearHasFlight"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearFromFlight"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ClearHasFlight = data
+			it.ClearFromFlight = data
+		case "addToFlightIDs":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addToFlightIDs"))
+			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.AddToFlightIDs = data
+		case "removeToFlightIDs":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeToFlightIDs"))
+			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.RemoveToFlightIDs = data
+		case "clearToFlight":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearToFlight"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearToFlight = data
 		}
 	}
 
@@ -13496,7 +14774,7 @@ func (ec *executionContext) unmarshalInputUpdateBookingInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "code", "status", "hasFlightID", "clearHasFlight"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "code", "status", "hasFlightID", "clearHasFlight", "hasCustomerID", "clearHasCustomer"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13557,6 +14835,24 @@ func (ec *executionContext) unmarshalInputUpdateBookingInput(ctx context.Context
 				return it, err
 			}
 			it.ClearHasFlight = data
+		case "hasCustomerID":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCustomerID"))
+			data, err := ec.unmarshalOID2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.HasCustomerID = data
+		case "clearHasCustomer":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearHasCustomer"))
+			data, err := ec.unmarshalOBoolean2bool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ClearHasCustomer = data
 		}
 	}
 
@@ -13570,7 +14866,7 @@ func (ec *executionContext) unmarshalInputUpdateCustomerInput(ctx context.Contex
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "email", "phoneNumber", "fullName", "dob", "cid", "hasMemberID", "clearHasMember", "addHasFlightIDs", "removeHasFlightIDs", "clearHasFlight"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "email", "phoneNumber", "fullName", "dob", "cid", "hasMemberID", "clearHasMember", "addHasBookingIDs", "removeHasBookingIDs", "clearHasBooking"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13658,33 +14954,33 @@ func (ec *executionContext) unmarshalInputUpdateCustomerInput(ctx context.Contex
 				return it, err
 			}
 			it.ClearHasMember = data
-		case "addHasFlightIDs":
+		case "addHasBookingIDs":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addHasFlightIDs"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("addHasBookingIDs"))
 			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.AddHasFlightIDs = data
-		case "removeHasFlightIDs":
+			it.AddHasBookingIDs = data
+		case "removeHasBookingIDs":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeHasFlightIDs"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("removeHasBookingIDs"))
 			data, err := ec.unmarshalOID2ᚕintᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.RemoveHasFlightIDs = data
-		case "clearHasFlight":
+			it.RemoveHasBookingIDs = data
+		case "clearHasBooking":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearHasFlight"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearHasBooking"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ClearHasFlight = data
+			it.ClearHasBooking = data
 		}
 	}
 
@@ -13698,7 +14994,7 @@ func (ec *executionContext) unmarshalInputUpdateFlightInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "name", "departAt", "landAt", "availableEcSlot", "availableBcSlot", "status", "hasPlaneID", "clearHasPlane", "addHasBookingIDs", "removeHasBookingIDs", "clearHasBooking", "hasAirportID", "clearHasAirport", "hasCustomerID", "clearHasCustomer"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "name", "departAt", "landAt", "availableEcSlot", "availableBcSlot", "status", "hasPlaneID", "clearHasPlane", "addHasBookingIDs", "removeHasBookingIDs", "clearHasBooking", "fromAirportID", "clearFromAirport", "toAirportID", "clearToAirport"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -13822,42 +15118,42 @@ func (ec *executionContext) unmarshalInputUpdateFlightInput(ctx context.Context,
 				return it, err
 			}
 			it.ClearHasBooking = data
-		case "hasAirportID":
+		case "fromAirportID":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasAirportID"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fromAirportID"))
 			data, err := ec.unmarshalOID2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasAirportID = data
-		case "clearHasAirport":
+			it.FromAirportID = data
+		case "clearFromAirport":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearHasAirport"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearFromAirport"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ClearHasAirport = data
-		case "hasCustomerID":
+			it.ClearFromAirport = data
+		case "toAirportID":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("hasCustomerID"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("toAirportID"))
 			data, err := ec.unmarshalOID2ᚖint(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.HasCustomerID = data
-		case "clearHasCustomer":
+			it.ToAirportID = data
+		case "clearToAirport":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearHasCustomer"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("clearToAirport"))
 			data, err := ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.ClearHasCustomer = data
+			it.ClearToAirport = data
 		}
 	}
 
@@ -13999,13 +15295,31 @@ func (ec *executionContext) unmarshalInputUpdatePlaneInput(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "economyClassSlots", "businessClassSlots", "status", "addFlightIDs", "removeFlightIDs", "clearFlights"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "name", "economyClassSlots", "businessClassSlots", "status", "addFlightIDs", "removeFlightIDs", "clearFlights"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "createdAt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("createdAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CreatedAt = data
+		case "updatedAt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("updatedAt"))
+			data, err := ec.unmarshalOTime2ᚖtimeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.UpdatedAt = data
 		case "name":
 			var err error
 
@@ -14174,7 +15488,7 @@ func (ec *executionContext) _Airport(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "hasFlight":
+		case "fromFlight":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -14183,7 +15497,24 @@ func (ec *executionContext) _Airport(ctx context.Context, sel ast.SelectionSet, 
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Airport_hasFlight(ctx, field, obj)
+				res = ec._Airport_fromFlight(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "toFlight":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Airport_toFlight(ctx, field, obj)
 				return res
 			}
 
@@ -14247,6 +15578,10 @@ func (ec *executionContext) _Booking(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "customerID":
+
+			out.Values[i] = ec._Booking_customerID(ctx, field, obj)
+
 		case "flightID":
 
 			out.Values[i] = ec._Booking_flightID(ctx, field, obj)
@@ -14261,6 +15596,23 @@ func (ec *executionContext) _Booking(ctx context.Context, sel ast.SelectionSet, 
 					}
 				}()
 				res = ec._Booking_hasFlight(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "hasCustomer":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Booking_hasCustomer(ctx, field, obj)
 				return res
 			}
 
@@ -14366,7 +15718,7 @@ func (ec *executionContext) _Customer(ctx context.Context, sel ast.SelectionSet,
 				return innerFunc(ctx)
 
 			})
-		case "hasFlight":
+		case "hasBooking":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -14375,7 +15727,7 @@ func (ec *executionContext) _Customer(ctx context.Context, sel ast.SelectionSet,
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Customer_hasFlight(ctx, field, obj)
+				res = ec._Customer_hasBooking(ctx, field, obj)
 				return res
 			}
 
@@ -14471,13 +15823,13 @@ func (ec *executionContext) _Flight(ctx context.Context, sel ast.SelectionSet, o
 
 			out.Values[i] = ec._Flight_planeID(ctx, field, obj)
 
-		case "airportID":
+		case "fromAirportID":
 
-			out.Values[i] = ec._Flight_airportID(ctx, field, obj)
+			out.Values[i] = ec._Flight_fromAirportID(ctx, field, obj)
 
-		case "customerID":
+		case "toAirportID":
 
-			out.Values[i] = ec._Flight_customerID(ctx, field, obj)
+			out.Values[i] = ec._Flight_toAirportID(ctx, field, obj)
 
 		case "hasPlane":
 			field := field
@@ -14513,7 +15865,7 @@ func (ec *executionContext) _Flight(ctx context.Context, sel ast.SelectionSet, o
 				return innerFunc(ctx)
 
 			})
-		case "hasAirport":
+		case "fromAirport":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -14522,7 +15874,7 @@ func (ec *executionContext) _Flight(ctx context.Context, sel ast.SelectionSet, o
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Flight_hasAirport(ctx, field, obj)
+				res = ec._Flight_fromAirport(ctx, field, obj)
 				return res
 			}
 
@@ -14530,7 +15882,7 @@ func (ec *executionContext) _Flight(ctx context.Context, sel ast.SelectionSet, o
 				return innerFunc(ctx)
 
 			})
-		case "hasCustomer":
+		case "toAirport":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -14539,7 +15891,7 @@ func (ec *executionContext) _Flight(ctx context.Context, sel ast.SelectionSet, o
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Flight_hasCustomer(ctx, field, obj)
+				res = ec._Flight_toAirport(ctx, field, obj)
 				return res
 			}
 
@@ -14795,6 +16147,45 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "create_flight":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_create_flight(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "cancel_flight":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_cancel_flight(ctx, field)
+			})
+
+		case "update_flight_slot":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_update_flight_slot(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "update_flight_status":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_update_flight_status(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "search_flight":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_search_flight(ctx, field)
+			})
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -14862,6 +16253,20 @@ func (ec *executionContext) _Plane(ctx context.Context, sel ast.SelectionSet, ob
 		case "id":
 
 			out.Values[i] = ec._Plane_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "createdAt":
+
+			out.Values[i] = ec._Plane_createdAt(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "updatedAt":
+
+			out.Values[i] = ec._Plane_updatedAt(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
@@ -15640,6 +17045,11 @@ func (ec *executionContext) unmarshalNCreateAirportInput2bookingᚑflightᚑsyst
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNCreateFlight2bookingᚑflightᚑsystemᚋentᚐCreateFlight(ctx context.Context, v interface{}) (ent.CreateFlight, error) {
+	res, err := ec.unmarshalInputCreateFlight(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNCreateMemberInput2bookingᚑflightᚑsystemᚋentᚐCreateMemberInput(ctx context.Context, v interface{}) (ent.CreateMemberInput, error) {
 	res, err := ec.unmarshalInputCreateMemberInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -15707,6 +17117,10 @@ func (ec *executionContext) marshalNCustomer2ᚖbookingᚑflightᚑsystemᚋent�
 func (ec *executionContext) unmarshalNCustomerWhereInput2ᚖbookingᚑflightᚑsystemᚋentᚐCustomerWhereInput(ctx context.Context, v interface{}) (*ent.CustomerWhereInput, error) {
 	res, err := ec.unmarshalInputCustomerWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFlight2bookingᚑflightᚑsystemᚋentᚐFlight(ctx context.Context, sel ast.SelectionSet, v ent.Flight) graphql.Marshaler {
+	return ec._Flight(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNFlight2ᚕᚖbookingᚑflightᚑsystemᚋentᚐFlightᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Flight) graphql.Marshaler {
@@ -15898,6 +17312,27 @@ func (ec *executionContext) unmarshalNInt2int64(ctx context.Context, v interface
 
 func (ec *executionContext) marshalNInt2int64(ctx context.Context, sel ast.SelectionSet, v int64) graphql.Marshaler {
 	res := graphql.MarshalInt64(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	res := graphql.MarshalInt(*v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")

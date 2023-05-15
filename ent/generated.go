@@ -6,6 +6,17 @@ import (
 	"time"
 )
 
+type CreateFlight struct {
+	Name            string    `json:"name"`
+	DepartAt        time.Time `json:"departAt"`
+	LandAt          time.Time `json:"landAt"`
+	AvailableEcSlot int       `json:"availableEcSlot"`
+	AvailableBcSlot int       `json:"availableBcSlot"`
+	ToID            int       `json:"toID"`
+	FromID          int       `json:"fromID"`
+	PlaneID         int       `json:"planeID"`
+}
+
 type Token struct {
 	Token     string    `json:"token"`
 	ExpiredAt time.Time `json:"expired_at"`

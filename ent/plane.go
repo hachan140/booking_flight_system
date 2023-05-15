@@ -6,6 +6,7 @@ import (
 	"booking-flight-system/ent/plane"
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
@@ -16,6 +17,10 @@ type Plane struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID int `json:"id,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// EconomyClassSlots holds the value of the "economy_class_slots" field.
@@ -61,6 +66,8 @@ func (*Plane) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case plane.FieldName, plane.FieldStatus:
 			values[i] = new(sql.NullString)
+		case plane.FieldCreatedAt, plane.FieldUpdatedAt:
+			values[i] = new(sql.NullTime)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -82,6 +89,18 @@ func (pl *Plane) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", value)
 			}
 			pl.ID = int(value.Int64)
+		case plane.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				pl.CreatedAt = value.Time
+			}
+		case plane.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				pl.UpdatedAt = value.Time
+			}
 		case plane.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
@@ -147,6 +166,12 @@ func (pl *Plane) String() string {
 	var builder strings.Builder
 	builder.WriteString("Plane(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", pl.ID))
+	builder.WriteString("created_at=")
+	builder.WriteString(pl.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(pl.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(pl.Name)
 	builder.WriteString(", ")

@@ -131,8 +131,26 @@ func init() {
 	member.DefaultRole = memberDescRole.Default.(int)
 	planeFields := schema.Plane{}.Fields()
 	_ = planeFields
+	// planeDescCreatedAt is the schema descriptor for created_at field.
+	planeDescCreatedAt := planeFields[0].Descriptor()
+	// plane.DefaultCreatedAt holds the default value on creation for the created_at field.
+	plane.DefaultCreatedAt = planeDescCreatedAt.Default.(func() time.Time)
+	// planeDescUpdatedAt is the schema descriptor for updated_at field.
+	planeDescUpdatedAt := planeFields[1].Descriptor()
+	// plane.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	plane.DefaultUpdatedAt = planeDescUpdatedAt.Default.(func() time.Time)
+	// plane.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	plane.UpdateDefaultUpdatedAt = planeDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// planeDescName is the schema descriptor for name field.
-	planeDescName := planeFields[0].Descriptor()
+	planeDescName := planeFields[2].Descriptor()
 	// plane.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	plane.NameValidator = planeDescName.Validators[0].(func(string) error)
+	// planeDescEconomyClassSlots is the schema descriptor for economy_class_slots field.
+	planeDescEconomyClassSlots := planeFields[3].Descriptor()
+	// plane.DefaultEconomyClassSlots holds the default value on creation for the economy_class_slots field.
+	plane.DefaultEconomyClassSlots = planeDescEconomyClassSlots.Default.(int64)
+	// planeDescBusinessClassSlots is the schema descriptor for business_class_slots field.
+	planeDescBusinessClassSlots := planeFields[4].Descriptor()
+	// plane.DefaultBusinessClassSlots holds the default value on creation for the business_class_slots field.
+	plane.DefaultBusinessClassSlots = planeDescBusinessClassSlots.Default.(int64)
 }

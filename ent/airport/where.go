@@ -305,21 +305,44 @@ func LongLTE(v float64) predicate.Airport {
 	return predicate.Airport(sql.FieldLTE(FieldLong, v))
 }
 
-// HasHasFlight applies the HasEdge predicate on the "has_flight" edge.
-func HasHasFlight() predicate.Airport {
+// HasFromFlight applies the HasEdge predicate on the "from_flight" edge.
+func HasFromFlight() predicate.Airport {
 	return predicate.Airport(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, HasFlightTable, HasFlightColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, FromFlightTable, FromFlightColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasHasFlightWith applies the HasEdge predicate on the "has_flight" edge with a given conditions (other predicates).
-func HasHasFlightWith(preds ...predicate.Flight) predicate.Airport {
+// HasFromFlightWith applies the HasEdge predicate on the "from_flight" edge with a given conditions (other predicates).
+func HasFromFlightWith(preds ...predicate.Flight) predicate.Airport {
 	return predicate.Airport(func(s *sql.Selector) {
-		step := newHasFlightStep()
+		step := newFromFlightStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasToFlight applies the HasEdge predicate on the "to_flight" edge.
+func HasToFlight() predicate.Airport {
+	return predicate.Airport(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ToFlightTable, ToFlightColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasToFlightWith applies the HasEdge predicate on the "to_flight" edge with a given conditions (other predicates).
+func HasToFlightWith(preds ...predicate.Flight) predicate.Airport {
+	return predicate.Airport(func(s *sql.Selector) {
+		step := newToFlightStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

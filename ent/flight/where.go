@@ -95,14 +95,14 @@ func PlaneID(v int) predicate.Flight {
 	return predicate.Flight(sql.FieldEQ(FieldPlaneID, v))
 }
 
-// AirportID applies equality check predicate on the "airport_id" field. It's identical to AirportIDEQ.
-func AirportID(v int) predicate.Flight {
-	return predicate.Flight(sql.FieldEQ(FieldAirportID, v))
+// FromAirportID applies equality check predicate on the "from_airport_id" field. It's identical to FromAirportIDEQ.
+func FromAirportID(v int) predicate.Flight {
+	return predicate.Flight(sql.FieldEQ(FieldFromAirportID, v))
 }
 
-// CustomerID applies equality check predicate on the "customer_id" field. It's identical to CustomerIDEQ.
-func CustomerID(v int) predicate.Flight {
-	return predicate.Flight(sql.FieldEQ(FieldCustomerID, v))
+// ToAirportID applies equality check predicate on the "to_airport_id" field. It's identical to ToAirportIDEQ.
+func ToAirportID(v int) predicate.Flight {
+	return predicate.Flight(sql.FieldEQ(FieldToAirportID, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -460,64 +460,64 @@ func PlaneIDNotNil() predicate.Flight {
 	return predicate.Flight(sql.FieldNotNull(FieldPlaneID))
 }
 
-// AirportIDEQ applies the EQ predicate on the "airport_id" field.
-func AirportIDEQ(v int) predicate.Flight {
-	return predicate.Flight(sql.FieldEQ(FieldAirportID, v))
+// FromAirportIDEQ applies the EQ predicate on the "from_airport_id" field.
+func FromAirportIDEQ(v int) predicate.Flight {
+	return predicate.Flight(sql.FieldEQ(FieldFromAirportID, v))
 }
 
-// AirportIDNEQ applies the NEQ predicate on the "airport_id" field.
-func AirportIDNEQ(v int) predicate.Flight {
-	return predicate.Flight(sql.FieldNEQ(FieldAirportID, v))
+// FromAirportIDNEQ applies the NEQ predicate on the "from_airport_id" field.
+func FromAirportIDNEQ(v int) predicate.Flight {
+	return predicate.Flight(sql.FieldNEQ(FieldFromAirportID, v))
 }
 
-// AirportIDIn applies the In predicate on the "airport_id" field.
-func AirportIDIn(vs ...int) predicate.Flight {
-	return predicate.Flight(sql.FieldIn(FieldAirportID, vs...))
+// FromAirportIDIn applies the In predicate on the "from_airport_id" field.
+func FromAirportIDIn(vs ...int) predicate.Flight {
+	return predicate.Flight(sql.FieldIn(FieldFromAirportID, vs...))
 }
 
-// AirportIDNotIn applies the NotIn predicate on the "airport_id" field.
-func AirportIDNotIn(vs ...int) predicate.Flight {
-	return predicate.Flight(sql.FieldNotIn(FieldAirportID, vs...))
+// FromAirportIDNotIn applies the NotIn predicate on the "from_airport_id" field.
+func FromAirportIDNotIn(vs ...int) predicate.Flight {
+	return predicate.Flight(sql.FieldNotIn(FieldFromAirportID, vs...))
 }
 
-// AirportIDIsNil applies the IsNil predicate on the "airport_id" field.
-func AirportIDIsNil() predicate.Flight {
-	return predicate.Flight(sql.FieldIsNull(FieldAirportID))
+// FromAirportIDIsNil applies the IsNil predicate on the "from_airport_id" field.
+func FromAirportIDIsNil() predicate.Flight {
+	return predicate.Flight(sql.FieldIsNull(FieldFromAirportID))
 }
 
-// AirportIDNotNil applies the NotNil predicate on the "airport_id" field.
-func AirportIDNotNil() predicate.Flight {
-	return predicate.Flight(sql.FieldNotNull(FieldAirportID))
+// FromAirportIDNotNil applies the NotNil predicate on the "from_airport_id" field.
+func FromAirportIDNotNil() predicate.Flight {
+	return predicate.Flight(sql.FieldNotNull(FieldFromAirportID))
 }
 
-// CustomerIDEQ applies the EQ predicate on the "customer_id" field.
-func CustomerIDEQ(v int) predicate.Flight {
-	return predicate.Flight(sql.FieldEQ(FieldCustomerID, v))
+// ToAirportIDEQ applies the EQ predicate on the "to_airport_id" field.
+func ToAirportIDEQ(v int) predicate.Flight {
+	return predicate.Flight(sql.FieldEQ(FieldToAirportID, v))
 }
 
-// CustomerIDNEQ applies the NEQ predicate on the "customer_id" field.
-func CustomerIDNEQ(v int) predicate.Flight {
-	return predicate.Flight(sql.FieldNEQ(FieldCustomerID, v))
+// ToAirportIDNEQ applies the NEQ predicate on the "to_airport_id" field.
+func ToAirportIDNEQ(v int) predicate.Flight {
+	return predicate.Flight(sql.FieldNEQ(FieldToAirportID, v))
 }
 
-// CustomerIDIn applies the In predicate on the "customer_id" field.
-func CustomerIDIn(vs ...int) predicate.Flight {
-	return predicate.Flight(sql.FieldIn(FieldCustomerID, vs...))
+// ToAirportIDIn applies the In predicate on the "to_airport_id" field.
+func ToAirportIDIn(vs ...int) predicate.Flight {
+	return predicate.Flight(sql.FieldIn(FieldToAirportID, vs...))
 }
 
-// CustomerIDNotIn applies the NotIn predicate on the "customer_id" field.
-func CustomerIDNotIn(vs ...int) predicate.Flight {
-	return predicate.Flight(sql.FieldNotIn(FieldCustomerID, vs...))
+// ToAirportIDNotIn applies the NotIn predicate on the "to_airport_id" field.
+func ToAirportIDNotIn(vs ...int) predicate.Flight {
+	return predicate.Flight(sql.FieldNotIn(FieldToAirportID, vs...))
 }
 
-// CustomerIDIsNil applies the IsNil predicate on the "customer_id" field.
-func CustomerIDIsNil() predicate.Flight {
-	return predicate.Flight(sql.FieldIsNull(FieldCustomerID))
+// ToAirportIDIsNil applies the IsNil predicate on the "to_airport_id" field.
+func ToAirportIDIsNil() predicate.Flight {
+	return predicate.Flight(sql.FieldIsNull(FieldToAirportID))
 }
 
-// CustomerIDNotNil applies the NotNil predicate on the "customer_id" field.
-func CustomerIDNotNil() predicate.Flight {
-	return predicate.Flight(sql.FieldNotNull(FieldCustomerID))
+// ToAirportIDNotNil applies the NotNil predicate on the "to_airport_id" field.
+func ToAirportIDNotNil() predicate.Flight {
+	return predicate.Flight(sql.FieldNotNull(FieldToAirportID))
 }
 
 // HasHasPlane applies the HasEdge predicate on the "has_plane" edge.
@@ -566,21 +566,21 @@ func HasHasBookingWith(preds ...predicate.Booking) predicate.Flight {
 	})
 }
 
-// HasHasAirport applies the HasEdge predicate on the "has_airport" edge.
-func HasHasAirport() predicate.Flight {
+// HasFromAirport applies the HasEdge predicate on the "from_airport" edge.
+func HasFromAirport() predicate.Flight {
 	return predicate.Flight(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, HasAirportTable, HasAirportColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, FromAirportTable, FromAirportColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasHasAirportWith applies the HasEdge predicate on the "has_airport" edge with a given conditions (other predicates).
-func HasHasAirportWith(preds ...predicate.Airport) predicate.Flight {
+// HasFromAirportWith applies the HasEdge predicate on the "from_airport" edge with a given conditions (other predicates).
+func HasFromAirportWith(preds ...predicate.Airport) predicate.Flight {
 	return predicate.Flight(func(s *sql.Selector) {
-		step := newHasAirportStep()
+		step := newFromAirportStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -589,21 +589,21 @@ func HasHasAirportWith(preds ...predicate.Airport) predicate.Flight {
 	})
 }
 
-// HasHasCustomer applies the HasEdge predicate on the "has_customer" edge.
-func HasHasCustomer() predicate.Flight {
+// HasToAirport applies the HasEdge predicate on the "to_airport" edge.
+func HasToAirport() predicate.Flight {
 	return predicate.Flight(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, HasCustomerTable, HasCustomerColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, ToAirportTable, ToAirportColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasHasCustomerWith applies the HasEdge predicate on the "has_customer" edge with a given conditions (other predicates).
-func HasHasCustomerWith(preds ...predicate.Customer) predicate.Flight {
+// HasToAirportWith applies the HasEdge predicate on the "to_airport" edge with a given conditions (other predicates).
+func HasToAirportWith(preds ...predicate.Airport) predicate.Flight {
 	return predicate.Flight(func(s *sql.Selector) {
-		step := newHasCustomerStep()
+		step := newToAirportStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

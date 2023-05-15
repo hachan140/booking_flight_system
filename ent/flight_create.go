@@ -5,7 +5,6 @@ package ent
 import (
 	"booking-flight-system/ent/airport"
 	"booking-flight-system/ent/booking"
-	"booking-flight-system/ent/customer"
 	"booking-flight-system/ent/flight"
 	"booking-flight-system/ent/plane"
 	"context"
@@ -110,30 +109,30 @@ func (fc *FlightCreate) SetNillablePlaneID(i *int) *FlightCreate {
 	return fc
 }
 
-// SetAirportID sets the "airport_id" field.
-func (fc *FlightCreate) SetAirportID(i int) *FlightCreate {
-	fc.mutation.SetAirportID(i)
+// SetFromAirportID sets the "from_airport_id" field.
+func (fc *FlightCreate) SetFromAirportID(i int) *FlightCreate {
+	fc.mutation.SetFromAirportID(i)
 	return fc
 }
 
-// SetNillableAirportID sets the "airport_id" field if the given value is not nil.
-func (fc *FlightCreate) SetNillableAirportID(i *int) *FlightCreate {
+// SetNillableFromAirportID sets the "from_airport_id" field if the given value is not nil.
+func (fc *FlightCreate) SetNillableFromAirportID(i *int) *FlightCreate {
 	if i != nil {
-		fc.SetAirportID(*i)
+		fc.SetFromAirportID(*i)
 	}
 	return fc
 }
 
-// SetCustomerID sets the "customer_id" field.
-func (fc *FlightCreate) SetCustomerID(i int) *FlightCreate {
-	fc.mutation.SetCustomerID(i)
+// SetToAirportID sets the "to_airport_id" field.
+func (fc *FlightCreate) SetToAirportID(i int) *FlightCreate {
+	fc.mutation.SetToAirportID(i)
 	return fc
 }
 
-// SetNillableCustomerID sets the "customer_id" field if the given value is not nil.
-func (fc *FlightCreate) SetNillableCustomerID(i *int) *FlightCreate {
+// SetNillableToAirportID sets the "to_airport_id" field if the given value is not nil.
+func (fc *FlightCreate) SetNillableToAirportID(i *int) *FlightCreate {
 	if i != nil {
-		fc.SetCustomerID(*i)
+		fc.SetToAirportID(*i)
 	}
 	return fc
 }
@@ -172,42 +171,14 @@ func (fc *FlightCreate) AddHasBooking(b ...*Booking) *FlightCreate {
 	return fc.AddHasBookingIDs(ids...)
 }
 
-// SetHasAirportID sets the "has_airport" edge to the Airport entity by ID.
-func (fc *FlightCreate) SetHasAirportID(id int) *FlightCreate {
-	fc.mutation.SetHasAirportID(id)
-	return fc
+// SetFromAirport sets the "from_airport" edge to the Airport entity.
+func (fc *FlightCreate) SetFromAirport(a *Airport) *FlightCreate {
+	return fc.SetFromAirportID(a.ID)
 }
 
-// SetNillableHasAirportID sets the "has_airport" edge to the Airport entity by ID if the given value is not nil.
-func (fc *FlightCreate) SetNillableHasAirportID(id *int) *FlightCreate {
-	if id != nil {
-		fc = fc.SetHasAirportID(*id)
-	}
-	return fc
-}
-
-// SetHasAirport sets the "has_airport" edge to the Airport entity.
-func (fc *FlightCreate) SetHasAirport(a *Airport) *FlightCreate {
-	return fc.SetHasAirportID(a.ID)
-}
-
-// SetHasCustomerID sets the "has_customer" edge to the Customer entity by ID.
-func (fc *FlightCreate) SetHasCustomerID(id int) *FlightCreate {
-	fc.mutation.SetHasCustomerID(id)
-	return fc
-}
-
-// SetNillableHasCustomerID sets the "has_customer" edge to the Customer entity by ID if the given value is not nil.
-func (fc *FlightCreate) SetNillableHasCustomerID(id *int) *FlightCreate {
-	if id != nil {
-		fc = fc.SetHasCustomerID(*id)
-	}
-	return fc
-}
-
-// SetHasCustomer sets the "has_customer" edge to the Customer entity.
-func (fc *FlightCreate) SetHasCustomer(c *Customer) *FlightCreate {
-	return fc.SetHasCustomerID(c.ID)
+// SetToAirport sets the "to_airport" edge to the Airport entity.
+func (fc *FlightCreate) SetToAirport(a *Airport) *FlightCreate {
+	return fc.SetToAirportID(a.ID)
 }
 
 // Mutation returns the FlightMutation object of the builder.
@@ -343,11 +314,11 @@ func (fc *FlightCreate) createSpec() (*Flight, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := fc.mutation.AvailableEcSlot(); ok {
 		_spec.SetField(flight.FieldAvailableEcSlot, field.TypeInt, value)
-		_node.AvailableEcSlot = value
+		_node.AvailableEcSlot = &value
 	}
 	if value, ok := fc.mutation.AvailableBcSlot(); ok {
 		_spec.SetField(flight.FieldAvailableBcSlot, field.TypeInt, value)
-		_node.AvailableBcSlot = value
+		_node.AvailableBcSlot = &value
 	}
 	if value, ok := fc.mutation.Status(); ok {
 		_spec.SetField(flight.FieldStatus, field.TypeEnum, value)
@@ -386,12 +357,12 @@ func (fc *FlightCreate) createSpec() (*Flight, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := fc.mutation.HasAirportIDs(); len(nodes) > 0 {
+	if nodes := fc.mutation.FromAirportIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   flight.HasAirportTable,
-			Columns: []string{flight.HasAirportColumn},
+			Table:   flight.FromAirportTable,
+			Columns: []string{flight.FromAirportColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(airport.FieldID, field.TypeInt),
@@ -400,24 +371,24 @@ func (fc *FlightCreate) createSpec() (*Flight, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.AirportID = nodes[0]
+		_node.FromAirportID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := fc.mutation.HasCustomerIDs(); len(nodes) > 0 {
+	if nodes := fc.mutation.ToAirportIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   flight.HasCustomerTable,
-			Columns: []string{flight.HasCustomerColumn},
+			Table:   flight.ToAirportTable,
+			Columns: []string{flight.ToAirportColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(customer.FieldID, field.TypeInt),
+				IDSpec: sqlgraph.NewFieldSpec(airport.FieldID, field.TypeInt),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.CustomerID = nodes[0]
+		_node.ToAirportID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

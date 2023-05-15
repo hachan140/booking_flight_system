@@ -4,6 +4,7 @@ package ent
 
 import (
 	"booking-flight-system/ent/booking"
+	"booking-flight-system/ent/customer"
 	"booking-flight-system/ent/flight"
 	"booking-flight-system/ent/predicate"
 	"context"
@@ -18,13 +19,14 @@ import (
 // BookingQuery is the builder for querying Booking entities.
 type BookingQuery struct {
 	config
-	ctx           *QueryContext
-	order         []booking.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.Booking
-	withHasFlight *FlightQuery
-	modifiers     []func(*sql.Selector)
-	loadTotal     []func(context.Context, []*Booking) error
+	ctx             *QueryContext
+	order           []booking.OrderOption
+	inters          []Interceptor
+	predicates      []predicate.Booking
+	withHasFlight   *FlightQuery
+	withHasCustomer *CustomerQuery
+	modifiers       []func(*sql.Selector)
+	loadTotal       []func(context.Context, []*Booking) error
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -76,6 +78,28 @@ func (bq *BookingQuery) QueryHasFlight() *FlightQuery {
 			sqlgraph.From(booking.Table, booking.FieldID, selector),
 			sqlgraph.To(flight.Table, flight.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, booking.HasFlightTable, booking.HasFlightColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryHasCustomer chains the current query on the "has_customer" edge.
+func (bq *BookingQuery) QueryHasCustomer() *CustomerQuery {
+	query := (&CustomerClient{config: bq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := bq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := bq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(booking.Table, booking.FieldID, selector),
+			sqlgraph.To(customer.Table, customer.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, booking.HasCustomerTable, booking.HasCustomerColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(bq.driver.Dialect(), step)
 		return fromU, nil
@@ -270,12 +294,13 @@ func (bq *BookingQuery) Clone() *BookingQuery {
 		return nil
 	}
 	return &BookingQuery{
-		config:        bq.config,
-		ctx:           bq.ctx.Clone(),
-		order:         append([]booking.OrderOption{}, bq.order...),
-		inters:        append([]Interceptor{}, bq.inters...),
-		predicates:    append([]predicate.Booking{}, bq.predicates...),
-		withHasFlight: bq.withHasFlight.Clone(),
+		config:          bq.config,
+		ctx:             bq.ctx.Clone(),
+		order:           append([]booking.OrderOption{}, bq.order...),
+		inters:          append([]Interceptor{}, bq.inters...),
+		predicates:      append([]predicate.Booking{}, bq.predicates...),
+		withHasFlight:   bq.withHasFlight.Clone(),
+		withHasCustomer: bq.withHasCustomer.Clone(),
 		// clone intermediate query.
 		sql:  bq.sql.Clone(),
 		path: bq.path,
@@ -290,6 +315,17 @@ func (bq *BookingQuery) WithHasFlight(opts ...func(*FlightQuery)) *BookingQuery 
 		opt(query)
 	}
 	bq.withHasFlight = query
+	return bq
+}
+
+// WithHasCustomer tells the query-builder to eager-load the nodes that are connected to
+// the "has_customer" edge. The optional arguments are used to configure the query builder of the edge.
+func (bq *BookingQuery) WithHasCustomer(opts ...func(*CustomerQuery)) *BookingQuery {
+	query := (&CustomerClient{config: bq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	bq.withHasCustomer = query
 	return bq
 }
 
@@ -371,8 +407,9 @@ func (bq *BookingQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book
 	var (
 		nodes       = []*Booking{}
 		_spec       = bq.querySpec()
-		loadedTypes = [1]bool{
+		loadedTypes = [2]bool{
 			bq.withHasFlight != nil,
+			bq.withHasCustomer != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -399,6 +436,12 @@ func (bq *BookingQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Book
 	if query := bq.withHasFlight; query != nil {
 		if err := bq.loadHasFlight(ctx, query, nodes, nil,
 			func(n *Booking, e *Flight) { n.Edges.HasFlight = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := bq.withHasCustomer; query != nil {
+		if err := bq.loadHasCustomer(ctx, query, nodes, nil,
+			func(n *Booking, e *Customer) { n.Edges.HasCustomer = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -439,6 +482,35 @@ func (bq *BookingQuery) loadHasFlight(ctx context.Context, query *FlightQuery, n
 	}
 	return nil
 }
+func (bq *BookingQuery) loadHasCustomer(ctx context.Context, query *CustomerQuery, nodes []*Booking, init func(*Booking), assign func(*Booking, *Customer)) error {
+	ids := make([]int, 0, len(nodes))
+	nodeids := make(map[int][]*Booking)
+	for i := range nodes {
+		fk := nodes[i].CustomerID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(customer.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "customer_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 
 func (bq *BookingQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := bq.querySpec()
@@ -470,6 +542,9 @@ func (bq *BookingQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if bq.withHasFlight != nil {
 			_spec.Node.AddColumnOnce(booking.FieldFlightID)
+		}
+		if bq.withHasCustomer != nil {
+			_spec.Node.AddColumnOnce(booking.FieldCustomerID)
 		}
 	}
 	if ps := bq.predicates; len(ps) > 0 {

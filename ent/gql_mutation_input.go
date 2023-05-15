@@ -10,12 +10,13 @@ import (
 
 // CreateAirportInput represents a mutation input for creating airports.
 type CreateAirportInput struct {
-	CreatedAt    *time.Time
-	UpdatedAt    *time.Time
-	Name         string
-	Lat          float64
-	Long         float64
-	HasFlightIDs []int
+	CreatedAt     *time.Time
+	UpdatedAt     *time.Time
+	Name          string
+	Lat           float64
+	Long          float64
+	FromFlightIDs []int
+	ToFlightIDs   []int
 }
 
 // Mutate applies the CreateAirportInput on the AirportMutation builder.
@@ -29,8 +30,11 @@ func (i *CreateAirportInput) Mutate(m *AirportMutation) {
 	m.SetName(i.Name)
 	m.SetLat(i.Lat)
 	m.SetLong(i.Long)
-	if v := i.HasFlightIDs; len(v) > 0 {
-		m.AddHasFlightIDs(v...)
+	if v := i.FromFlightIDs; len(v) > 0 {
+		m.AddFromFlightIDs(v...)
+	}
+	if v := i.ToFlightIDs; len(v) > 0 {
+		m.AddToFlightIDs(v...)
 	}
 }
 
@@ -42,14 +46,17 @@ func (c *AirportCreate) SetInput(i CreateAirportInput) *AirportCreate {
 
 // UpdateAirportInput represents a mutation input for updating airports.
 type UpdateAirportInput struct {
-	CreatedAt          *time.Time
-	UpdatedAt          *time.Time
-	Name               *string
-	Lat                *float64
-	Long               *float64
-	ClearHasFlight     bool
-	AddHasFlightIDs    []int
-	RemoveHasFlightIDs []int
+	CreatedAt           *time.Time
+	UpdatedAt           *time.Time
+	Name                *string
+	Lat                 *float64
+	Long                *float64
+	ClearFromFlight     bool
+	AddFromFlightIDs    []int
+	RemoveFromFlightIDs []int
+	ClearToFlight       bool
+	AddToFlightIDs      []int
+	RemoveToFlightIDs   []int
 }
 
 // Mutate applies the UpdateAirportInput on the AirportMutation builder.
@@ -69,14 +76,23 @@ func (i *UpdateAirportInput) Mutate(m *AirportMutation) {
 	if v := i.Long; v != nil {
 		m.SetLong(*v)
 	}
-	if i.ClearHasFlight {
-		m.ClearHasFlight()
+	if i.ClearFromFlight {
+		m.ClearFromFlight()
 	}
-	if v := i.AddHasFlightIDs; len(v) > 0 {
-		m.AddHasFlightIDs(v...)
+	if v := i.AddFromFlightIDs; len(v) > 0 {
+		m.AddFromFlightIDs(v...)
 	}
-	if v := i.RemoveHasFlightIDs; len(v) > 0 {
-		m.RemoveHasFlightIDs(v...)
+	if v := i.RemoveFromFlightIDs; len(v) > 0 {
+		m.RemoveFromFlightIDs(v...)
+	}
+	if i.ClearToFlight {
+		m.ClearToFlight()
+	}
+	if v := i.AddToFlightIDs; len(v) > 0 {
+		m.AddToFlightIDs(v...)
+	}
+	if v := i.RemoveToFlightIDs; len(v) > 0 {
+		m.RemoveToFlightIDs(v...)
 	}
 }
 
@@ -94,11 +110,12 @@ func (c *AirportUpdateOne) SetInput(i UpdateAirportInput) *AirportUpdateOne {
 
 // CreateBookingInput represents a mutation input for creating bookings.
 type CreateBookingInput struct {
-	CreatedAt   *time.Time
-	UpdatedAt   *time.Time
-	Code        string
-	Status      string
-	HasFlightID *int
+	CreatedAt     *time.Time
+	UpdatedAt     *time.Time
+	Code          string
+	Status        string
+	HasFlightID   *int
+	HasCustomerID *int
 }
 
 // Mutate applies the CreateBookingInput on the BookingMutation builder.
@@ -114,6 +131,9 @@ func (i *CreateBookingInput) Mutate(m *BookingMutation) {
 	if v := i.HasFlightID; v != nil {
 		m.SetHasFlightID(*v)
 	}
+	if v := i.HasCustomerID; v != nil {
+		m.SetHasCustomerID(*v)
+	}
 }
 
 // SetInput applies the change-set in the CreateBookingInput on the BookingCreate builder.
@@ -124,12 +144,14 @@ func (c *BookingCreate) SetInput(i CreateBookingInput) *BookingCreate {
 
 // UpdateBookingInput represents a mutation input for updating bookings.
 type UpdateBookingInput struct {
-	CreatedAt      *time.Time
-	UpdatedAt      *time.Time
-	Code           *string
-	Status         *string
-	ClearHasFlight bool
-	HasFlightID    *int
+	CreatedAt        *time.Time
+	UpdatedAt        *time.Time
+	Code             *string
+	Status           *string
+	ClearHasFlight   bool
+	HasFlightID      *int
+	ClearHasCustomer bool
+	HasCustomerID    *int
 }
 
 // Mutate applies the UpdateBookingInput on the BookingMutation builder.
@@ -152,6 +174,12 @@ func (i *UpdateBookingInput) Mutate(m *BookingMutation) {
 	if v := i.HasFlightID; v != nil {
 		m.SetHasFlightID(*v)
 	}
+	if i.ClearHasCustomer {
+		m.ClearHasCustomer()
+	}
+	if v := i.HasCustomerID; v != nil {
+		m.SetHasCustomerID(*v)
+	}
 }
 
 // SetInput applies the change-set in the UpdateBookingInput on the BookingUpdate builder.
@@ -168,15 +196,15 @@ func (c *BookingUpdateOne) SetInput(i UpdateBookingInput) *BookingUpdateOne {
 
 // CreateCustomerInput represents a mutation input for creating customers.
 type CreateCustomerInput struct {
-	CreatedAt    *time.Time
-	UpdatedAt    *time.Time
-	Email        string
-	PhoneNumber  string
-	FullName     string
-	Dob          time.Time
-	Cid          string
-	HasMemberID  *int
-	HasFlightIDs []int
+	CreatedAt     *time.Time
+	UpdatedAt     *time.Time
+	Email         string
+	PhoneNumber   string
+	FullName      string
+	Dob           time.Time
+	Cid           string
+	HasMemberID   *int
+	HasBookingIDs []int
 }
 
 // Mutate applies the CreateCustomerInput on the CustomerMutation builder.
@@ -195,8 +223,8 @@ func (i *CreateCustomerInput) Mutate(m *CustomerMutation) {
 	if v := i.HasMemberID; v != nil {
 		m.SetHasMemberID(*v)
 	}
-	if v := i.HasFlightIDs; len(v) > 0 {
-		m.AddHasFlightIDs(v...)
+	if v := i.HasBookingIDs; len(v) > 0 {
+		m.AddHasBookingIDs(v...)
 	}
 }
 
@@ -208,18 +236,18 @@ func (c *CustomerCreate) SetInput(i CreateCustomerInput) *CustomerCreate {
 
 // UpdateCustomerInput represents a mutation input for updating customers.
 type UpdateCustomerInput struct {
-	CreatedAt          *time.Time
-	UpdatedAt          *time.Time
-	Email              *string
-	PhoneNumber        *string
-	FullName           *string
-	Dob                *time.Time
-	Cid                *string
-	ClearHasMember     bool
-	HasMemberID        *int
-	ClearHasFlight     bool
-	AddHasFlightIDs    []int
-	RemoveHasFlightIDs []int
+	CreatedAt           *time.Time
+	UpdatedAt           *time.Time
+	Email               *string
+	PhoneNumber         *string
+	FullName            *string
+	Dob                 *time.Time
+	Cid                 *string
+	ClearHasMember      bool
+	HasMemberID         *int
+	ClearHasBooking     bool
+	AddHasBookingIDs    []int
+	RemoveHasBookingIDs []int
 }
 
 // Mutate applies the UpdateCustomerInput on the CustomerMutation builder.
@@ -251,14 +279,14 @@ func (i *UpdateCustomerInput) Mutate(m *CustomerMutation) {
 	if v := i.HasMemberID; v != nil {
 		m.SetHasMemberID(*v)
 	}
-	if i.ClearHasFlight {
-		m.ClearHasFlight()
+	if i.ClearHasBooking {
+		m.ClearHasBooking()
 	}
-	if v := i.AddHasFlightIDs; len(v) > 0 {
-		m.AddHasFlightIDs(v...)
+	if v := i.AddHasBookingIDs; len(v) > 0 {
+		m.AddHasBookingIDs(v...)
 	}
-	if v := i.RemoveHasFlightIDs; len(v) > 0 {
-		m.RemoveHasFlightIDs(v...)
+	if v := i.RemoveHasBookingIDs; len(v) > 0 {
+		m.RemoveHasBookingIDs(v...)
 	}
 }
 
@@ -286,8 +314,8 @@ type CreateFlightInput struct {
 	Status          *flight.Status
 	HasPlaneID      *int
 	HasBookingIDs   []int
-	HasAirportID    *int
-	HasCustomerID   *int
+	FromAirportID   *int
+	ToAirportID     *int
 }
 
 // Mutate applies the CreateFlightInput on the FlightMutation builder.
@@ -312,11 +340,11 @@ func (i *CreateFlightInput) Mutate(m *FlightMutation) {
 	if v := i.HasBookingIDs; len(v) > 0 {
 		m.AddHasBookingIDs(v...)
 	}
-	if v := i.HasAirportID; v != nil {
-		m.SetHasAirportID(*v)
+	if v := i.FromAirportID; v != nil {
+		m.SetFromAirportID(*v)
 	}
-	if v := i.HasCustomerID; v != nil {
-		m.SetHasCustomerID(*v)
+	if v := i.ToAirportID; v != nil {
+		m.SetToAirportID(*v)
 	}
 }
 
@@ -341,10 +369,10 @@ type UpdateFlightInput struct {
 	ClearHasBooking     bool
 	AddHasBookingIDs    []int
 	RemoveHasBookingIDs []int
-	ClearHasAirport     bool
-	HasAirportID        *int
-	ClearHasCustomer    bool
-	HasCustomerID       *int
+	ClearFromAirport    bool
+	FromAirportID       *int
+	ClearToAirport      bool
+	ToAirportID         *int
 }
 
 // Mutate applies the UpdateFlightInput on the FlightMutation builder.
@@ -388,17 +416,17 @@ func (i *UpdateFlightInput) Mutate(m *FlightMutation) {
 	if v := i.RemoveHasBookingIDs; len(v) > 0 {
 		m.RemoveHasBookingIDs(v...)
 	}
-	if i.ClearHasAirport {
-		m.ClearHasAirport()
+	if i.ClearFromAirport {
+		m.ClearFromAirport()
 	}
-	if v := i.HasAirportID; v != nil {
-		m.SetHasAirportID(*v)
+	if v := i.FromAirportID; v != nil {
+		m.SetFromAirportID(*v)
 	}
-	if i.ClearHasCustomer {
-		m.ClearHasCustomer()
+	if i.ClearToAirport {
+		m.ClearToAirport()
 	}
-	if v := i.HasCustomerID; v != nil {
-		m.SetHasCustomerID(*v)
+	if v := i.ToAirportID; v != nil {
+		m.SetToAirportID(*v)
 	}
 }
 
@@ -528,18 +556,30 @@ func (c *MemberUpdateOne) SetInput(i UpdateMemberInput) *MemberUpdateOne {
 
 // CreatePlaneInput represents a mutation input for creating planes.
 type CreatePlaneInput struct {
+	CreatedAt          *time.Time
+	UpdatedAt          *time.Time
 	Name               string
-	EconomyClassSlots  int64
-	BusinessClassSlots int64
+	EconomyClassSlots  *int64
+	BusinessClassSlots *int64
 	Status             *plane.Status
 	FlightIDs          []int
 }
 
 // Mutate applies the CreatePlaneInput on the PlaneMutation builder.
 func (i *CreatePlaneInput) Mutate(m *PlaneMutation) {
+	if v := i.CreatedAt; v != nil {
+		m.SetCreatedAt(*v)
+	}
+	if v := i.UpdatedAt; v != nil {
+		m.SetUpdatedAt(*v)
+	}
 	m.SetName(i.Name)
-	m.SetEconomyClassSlots(i.EconomyClassSlots)
-	m.SetBusinessClassSlots(i.BusinessClassSlots)
+	if v := i.EconomyClassSlots; v != nil {
+		m.SetEconomyClassSlots(*v)
+	}
+	if v := i.BusinessClassSlots; v != nil {
+		m.SetBusinessClassSlots(*v)
+	}
 	if v := i.Status; v != nil {
 		m.SetStatus(*v)
 	}
@@ -556,6 +596,8 @@ func (c *PlaneCreate) SetInput(i CreatePlaneInput) *PlaneCreate {
 
 // UpdatePlaneInput represents a mutation input for updating planes.
 type UpdatePlaneInput struct {
+	CreatedAt          *time.Time
+	UpdatedAt          *time.Time
 	Name               *string
 	EconomyClassSlots  *int64
 	BusinessClassSlots *int64
@@ -567,6 +609,12 @@ type UpdatePlaneInput struct {
 
 // Mutate applies the UpdatePlaneInput on the PlaneMutation builder.
 func (i *UpdatePlaneInput) Mutate(m *PlaneMutation) {
+	if v := i.CreatedAt; v != nil {
+		m.SetCreatedAt(*v)
+	}
+	if v := i.UpdatedAt; v != nil {
+		m.SetUpdatedAt(*v)
+	}
 	if v := i.Name; v != nil {
 		m.SetName(*v)
 	}
