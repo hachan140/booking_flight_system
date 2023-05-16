@@ -24,7 +24,7 @@ func (Flight) Fields() []ent.Field {
 		field.Time("land_at"),
 		field.Int("available_ec_slot").Nillable(),
 		field.Int("available_bc_slot").Nillable(),
-		field.Enum("status").Values("flying", "scheduled", "canceled", "landed").Default("landed"),
+		field.Enum("status").NamedValues("flying", "FLYING", "scheduled", "SCHEDULED", "canceled", "CANCELED", "landed", "LANDED").Default("LANDED"),
 		field.Int("plane_id").Optional(),
 		field.Int("from_airport_id").Optional(),
 		field.Int("to_airport_id").Optional(),

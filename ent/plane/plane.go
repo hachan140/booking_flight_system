@@ -86,8 +86,8 @@ const DefaultStatus = StatusFree
 
 // Status values.
 const (
-	StatusBooked Status = "booked"
-	StatusFree   Status = "free"
+	StatusBooked Status = "BOOKED"
+	StatusFree   Status = "FREE"
 )
 
 func (s Status) String() string {

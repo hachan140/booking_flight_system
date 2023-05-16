@@ -37,11 +37,12 @@ type Mutation{
 
     #CUSTOMER
     create_customer(input: CustomerInput!): Customer!
+    find_customer_by_cid(cid: String!): Customer!
 
     #BOOKING
     create_customer_booking(input: CustomerBooking!): Booking!
     create_member_booking(input: MemberBooking!): Booking!
     view_booking_history: [Booking!]
-    search_booking(input: SearchBooking!): [Booking!]
+    search_booking(input: SearchBooking!): Booking!
 }
 

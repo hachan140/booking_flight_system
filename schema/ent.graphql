@@ -98,13 +98,13 @@ type Booking implements Node {
 }
 """BookingSeatType is enum for the field seat_type"""
 enum BookingSeatType @goModel(model: "booking-flight-system/ent/booking.SeatType") {
-  ec
-  bc
+  EC
+  BC
 }
 """BookingStatus is enum for the field status"""
 enum BookingStatus @goModel(model: "booking-flight-system/ent/booking.Status") {
-  success
-  cancel
+  SUCCESS
+  CANCEL
 }
 """
 BookingWhereInput is used for filtering Booking objects.
@@ -428,10 +428,10 @@ type Flight implements Node {
 }
 """FlightStatus is enum for the field status"""
 enum FlightStatus @goModel(model: "booking-flight-system/ent/flight.Status") {
-  flying
-  scheduled
-  canceled
-  landed
+  FLYING
+  SCHEDULED
+  CANCELED
+  LANDED
 }
 """
 FlightWhereInput is used for filtering Flight objects.
@@ -728,8 +728,8 @@ type Plane implements Node {
 }
 """PlaneStatus is enum for the field status"""
 enum PlaneStatus @goModel(model: "booking-flight-system/ent/plane.Status") {
-  booked
-  free
+  BOOKED
+  FREE
 }
 """
 PlaneWhereInput is used for filtering Plane objects.

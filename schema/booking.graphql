@@ -1,20 +1,18 @@
 input CustomerBooking{
     seatType: BookingSeatType!
-    flight_id: ID!
-    customer_id: ID!
+    flight_id: Int!
+    customer_id: Int!
     status: BookingStatus
 }
 
 input MemberBooking{
     seatType: BookingSeatType!
-    flight_id: ID!
-    member_id: ID!
+    flight_id: Int!
     status: BookingStatus
 }
 
 input SearchBooking{
-    flight_id: ID
-    depart_at: Time
-    from_airport: String
-    to_airport: String
+    flight_id: Int!
+    booking_code: String!
+    cid: String!
 }
