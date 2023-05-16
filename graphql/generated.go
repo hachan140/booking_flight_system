@@ -2189,8 +2189,6 @@ input UpdatePlaneInput {
     name: String!
     departAt: Time!
     landAt: Time!
-    availableEcSlot: Int!
-    availableBcSlot: Int!
     toID: Int!
     fromID: Int!
     planeID: Int!
@@ -2206,11 +2204,11 @@ input UpdateFlightSlot{
 }
 
 input SearchFlight{
-    depart_at: String!
-    dest_at: String!
-    from_date: String!
-    to_date: String!
-}`, BuiltIn: false},
+    from_airport: String!
+    to_airport: String!
+    depart_at: Time!
+}
+`, BuiltIn: false},
 	{Name: "../schema/member.graphql", Input: ``, BuiltIn: false},
 	{Name: "../schema/mutation.graphql", Input: `type Token {
     token: String!
@@ -12018,7 +12016,7 @@ func (ec *executionContext) unmarshalInputCreateFlight(ctx context.Context, obj 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"name", "departAt", "landAt", "availableEcSlot", "availableBcSlot", "toID", "fromID", "planeID"}
+	fieldsInOrder := [...]string{"name", "departAt", "landAt", "toID", "fromID", "planeID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -12052,24 +12050,6 @@ func (ec *executionContext) unmarshalInputCreateFlight(ctx context.Context, obj 
 				return it, err
 			}
 			it.LandAt = data
-		case "availableEcSlot":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availableEcSlot"))
-			data, err := ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.AvailableEcSlot = data
-		case "availableBcSlot":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("availableBcSlot"))
-			data, err := ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.AvailableBcSlot = data
 		case "toID":
 			var err error
 
@@ -15966,49 +15946,40 @@ func (ec *executionContext) unmarshalInputSearchFlight(ctx context.Context, obj 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"depart_at", "dest_at", "from_date", "to_date"}
+	fieldsInOrder := [...]string{"from_airport", "to_airport", "depart_at"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "from_airport":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("from_airport"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FromAirport = data
+		case "to_airport":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to_airport"))
+			data, err := ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ToAirport = data
 		case "depart_at":
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("depart_at"))
-			data, err := ec.unmarshalNString2string(ctx, v)
+			data, err := ec.unmarshalNTime2timeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.DepartAt = data
-		case "dest_at":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dest_at"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.DestAt = data
-		case "from_date":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("from_date"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.FromDate = data
-		case "to_date":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("to_date"))
-			data, err := ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ToDate = data
 		}
 	}
 
