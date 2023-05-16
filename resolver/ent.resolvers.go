@@ -28,7 +28,7 @@ func (r *queryResolver) Airports(ctx context.Context) ([]*ent.Airport, error) {
 
 // Bookings is the resolver for the bookings field.
 func (r *queryResolver) Bookings(ctx context.Context) ([]*ent.Booking, error) {
-	panic(fmt.Errorf("not implemented: Bookings - bookings"))
+	return r.client.Booking.Query().All(ctx)
 }
 
 // Customers is the resolver for the customers field.
@@ -55,3 +55,48 @@ func (r *queryResolver) Planes(ctx context.Context) ([]*ent.Plane, error) {
 func (r *Resolver) Query() graphql1.QueryResolver { return &queryResolver{r} }
 
 type queryResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *bookingResolver) Code(ctx context.Context, obj *ent.Booking) (string, error) {
+	panic(fmt.Errorf("not implemented: Code - code"))
+}
+func (r *bookingWhereInputResolver) Code(ctx context.Context, obj *ent.BookingWhereInput, data *string) error {
+	panic(fmt.Errorf("not implemented: Code - code"))
+}
+func (r *bookingWhereInputResolver) CodeNeq(ctx context.Context, obj *ent.BookingWhereInput, data *string) error {
+	panic(fmt.Errorf("not implemented: CodeNeq - codeNEQ"))
+}
+func (r *bookingWhereInputResolver) CodeIn(ctx context.Context, obj *ent.BookingWhereInput, data []string) error {
+	panic(fmt.Errorf("not implemented: CodeIn - codeIn"))
+}
+func (r *bookingWhereInputResolver) CodeNotIn(ctx context.Context, obj *ent.BookingWhereInput, data []string) error {
+	panic(fmt.Errorf("not implemented: CodeNotIn - codeNotIn"))
+}
+func (r *bookingWhereInputResolver) CodeGt(ctx context.Context, obj *ent.BookingWhereInput, data *string) error {
+	panic(fmt.Errorf("not implemented: CodeGt - codeGT"))
+}
+func (r *bookingWhereInputResolver) CodeGte(ctx context.Context, obj *ent.BookingWhereInput, data *string) error {
+	panic(fmt.Errorf("not implemented: CodeGte - codeGTE"))
+}
+func (r *bookingWhereInputResolver) CodeLt(ctx context.Context, obj *ent.BookingWhereInput, data *string) error {
+	panic(fmt.Errorf("not implemented: CodeLt - codeLT"))
+}
+func (r *bookingWhereInputResolver) CodeLte(ctx context.Context, obj *ent.BookingWhereInput, data *string) error {
+	panic(fmt.Errorf("not implemented: CodeLte - codeLTE"))
+}
+func (r *createBookingInputResolver) Code(ctx context.Context, obj *ent.CreateBookingInput, data string) error {
+	panic(fmt.Errorf("not implemented: Code - code"))
+}
+func (r *updateBookingInputResolver) Code(ctx context.Context, obj *ent.UpdateBookingInput, data *string) error {
+	panic(fmt.Errorf("not implemented: Code - code"))
+}
+
+type bookingResolver struct{ *Resolver }
+type bookingWhereInputResolver struct{ *Resolver }
+type createBookingInputResolver struct{ *Resolver }
+type updateBookingInputResolver struct{ *Resolver }

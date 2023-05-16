@@ -91,8 +91,8 @@ type Status string
 
 // Status values.
 const (
-	StatusSuccess Status = "success"
-	StatusCancel  Status = "cancel"
+	StatusSuccess Status = "SUCCESS"
+	StatusCancel  Status = "CANCEL"
 )
 
 func (s Status) String() string {
@@ -114,8 +114,8 @@ type SeatType string
 
 // SeatType values.
 const (
-	SeatTypeEc SeatType = "ec"
-	SeatTypeBc SeatType = "bc"
+	SeatTypeEconomicClass SeatType = "EC"
+	SeatTypeBusinessClass SeatType = "BC"
 )
 
 func (st SeatType) String() string {
@@ -125,7 +125,7 @@ func (st SeatType) String() string {
 // SeatTypeValidator is a validator for the "seat_type" field enum values. It is called by the builders before save.
 func SeatTypeValidator(st SeatType) error {
 	switch st {
-	case SeatTypeEc, SeatTypeBc:
+	case SeatTypeEconomicClass, SeatTypeBusinessClass:
 		return nil
 	default:
 		return fmt.Errorf("booking: invalid enum value for seat_type field: %q", st)

@@ -124,10 +124,10 @@ const DefaultStatus = StatusLanded
 
 // Status values.
 const (
-	StatusFlying    Status = "flying"
-	StatusScheduled Status = "scheduled"
-	StatusCanceled  Status = "canceled"
-	StatusLanded    Status = "landed"
+	StatusFlying    Status = "FLYING"
+	StatusScheduled Status = "SCHEDULED"
+	StatusCanceled  Status = "CANCELED"
+	StatusLanded    Status = "LANDED"
 )
 
 func (s Status) String() string {

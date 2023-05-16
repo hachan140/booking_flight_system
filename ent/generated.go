@@ -21,8 +21,8 @@ type CreateFlight struct {
 
 type CustomerBooking struct {
 	SeatType   booking.SeatType `json:"seatType"`
-	FlightID   string           `json:"flight_id"`
-	CustomerID string           `json:"customer_id"`
+	FlightID   int              `json:"flight_id"`
+	CustomerID int              `json:"customer_id"`
 	Status     *booking.Status  `json:"status,omitempty"`
 }
 
@@ -36,16 +36,14 @@ type CustomerInput struct {
 
 type MemberBooking struct {
 	SeatType booking.SeatType `json:"seatType"`
-	FlightID string           `json:"flight_id"`
-	MemberID string           `json:"member_id"`
+	FlightID int              `json:"flight_id"`
 	Status   *booking.Status  `json:"status,omitempty"`
 }
 
 type SearchBooking struct {
-	FlightID    *string    `json:"flight_id,omitempty"`
-	DepartAt    *time.Time `json:"depart_at,omitempty"`
-	FromAirport *string    `json:"from_airport,omitempty"`
-	ToAirport   *string    `json:"to_airport,omitempty"`
+	FlightID    int    `json:"flight_id"`
+	BookingCode string `json:"booking_code"`
+	Cid         string `json:"cid"`
 }
 
 type SearchFlight struct {
