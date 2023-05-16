@@ -9,14 +9,12 @@ import (
 )
 
 type CreateFlight struct {
-	Name            string    `json:"name"`
-	DepartAt        time.Time `json:"departAt"`
-	LandAt          time.Time `json:"landAt"`
-	AvailableEcSlot int       `json:"availableEcSlot"`
-	AvailableBcSlot int       `json:"availableBcSlot"`
-	ToID            int       `json:"toID"`
-	FromID          int       `json:"fromID"`
-	PlaneID         int       `json:"planeID"`
+	Name     string    `json:"name"`
+	DepartAt time.Time `json:"departAt"`
+	LandAt   time.Time `json:"landAt"`
+	ToID     int       `json:"toID"`
+	FromID   int       `json:"fromID"`
+	PlaneID  int       `json:"planeID"`
 }
 
 type CustomerBooking struct {
@@ -47,10 +45,9 @@ type SearchBooking struct {
 }
 
 type SearchFlight struct {
-	DepartAt string `json:"depart_at"`
-	DestAt   string `json:"dest_at"`
-	FromDate string `json:"from_date"`
-	ToDate   string `json:"to_date"`
+	FromAirport string    `json:"from_airport"`
+	ToAirport   string    `json:"to_airport"`
+	DepartAt    time.Time `json:"depart_at"`
 }
 
 type Token struct {

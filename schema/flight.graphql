@@ -2,8 +2,6 @@ input CreateFlight {
     name: String!
     departAt: Time!
     landAt: Time!
-    availableEcSlot: Int!
-    availableBcSlot: Int!
     toID: Int!
     fromID: Int!
     planeID: Int!
@@ -19,8 +17,7 @@ input UpdateFlightSlot{
 }
 
 input SearchFlight{
-    depart_at: String!
-    dest_at: String!
-    from_date: String!
-    to_date: String!
+    from_airport: String!
+    to_airport: String!
+    depart_at: Time!
 }

@@ -17,7 +17,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 )
 
 // SignUp is the resolver for the sign_up field.
@@ -63,7 +62,7 @@ func (r *mutationResolver) Self(ctx context.Context) (*ent.Member, error) {
 
 // DeleteByID is the resolver for the delete_by_id field.
 func (r *mutationResolver) DeleteByID(ctx context.Context, id int) (*string, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	message := "delete success"
@@ -75,7 +74,7 @@ func (r *mutationResolver) DeleteByID(ctx context.Context, id int) (*string, err
 
 // FindMemberByName is the resolver for the find_member_by_name field.
 func (r *mutationResolver) FindMemberByName(ctx context.Context, name string) ([]*ent.Member, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	mem, err := r.client.Member.Query().Where(member.FullNameContainsFold(strings.ToLower(name))).All(ctx)
@@ -87,14 +86,11 @@ func (r *mutationResolver) FindMemberByName(ctx context.Context, name string) ([
 
 // ChangePassword is the resolver for the change_password field.
 func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword string, newPassword string) (*string, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin, member.MemberTypeMember); err != nil {
+	user, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin, member.MemberTypeMember)
+	if err != nil {
 		return nil, err
 	}
 	message := "success"
-	user, err := r.Self(ctx)
-	if err != nil {
-		return nil, errors.New("can't change password")
-	}
 	if helper.SHA256Hashing(oldPassword) != user.Password {
 		return nil, errors.New("password doesn't match")
 	}
@@ -107,12 +103,9 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 
 // UpdateMemberProfile is the resolver for the update_member_profile field.
 func (r *mutationResolver) UpdateMemberProfile(ctx context.Context, input *ent.UpdateMemberInput) (*ent.Member, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin, member.MemberTypeMember); err != nil {
-		return nil, err
-	}
-	user, err := r.Self(ctx)
+	user, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin, member.MemberTypeMember)
 	if err != nil {
-		return nil, errors.New("can't update member")
+		return nil, err
 	}
 	user, err = user.Update().
 		SetFullName(*input.FullName).
@@ -127,7 +120,7 @@ func (r *mutationResolver) UpdateMemberProfile(ctx context.Context, input *ent.U
 
 // FindMemberByEmail is the resolver for the find_member_by_email field.
 func (r *mutationResolver) FindMemberByEmail(ctx context.Context, email string) (*ent.Member, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	member, err := r.client.Member.Query().Where(member.EmailEQ(email)).Only(ctx)
@@ -139,7 +132,7 @@ func (r *mutationResolver) FindMemberByEmail(ctx context.Context, email string) 
 
 // CreateAirport is the resolver for the create_airport field.
 func (r *mutationResolver) CreateAirport(ctx context.Context, input ent.CreateAirportInput) (*ent.Airport, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	return r.client.Airport.Create().SetInput(input).Save(ctx)
@@ -147,7 +140,7 @@ func (r *mutationResolver) CreateAirport(ctx context.Context, input ent.CreateAi
 
 // UpdateAirport is the resolver for the update_airport field.
 func (r *mutationResolver) UpdateAirport(ctx context.Context, id int, input ent.UpdateAirportInput) (*ent.Airport, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	airport, err := r.FindAirportByID(ctx, id)
@@ -163,7 +156,7 @@ func (r *mutationResolver) UpdateAirport(ctx context.Context, id int, input ent.
 
 // DeleteAirport is the resolver for the delete_airport field.
 func (r *mutationResolver) DeleteAirport(ctx context.Context, id int) (*string, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	message := "success"
@@ -178,7 +171,7 @@ func (r *mutationResolver) DeleteAirport(ctx context.Context, id int) (*string, 
 
 // FindAirportByID is the resolver for the find_airport_by_id field.
 func (r *mutationResolver) FindAirportByID(ctx context.Context, id int) (*ent.Airport, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	airport, err := r.client.Airport.Get(ctx, id)
@@ -190,7 +183,7 @@ func (r *mutationResolver) FindAirportByID(ctx context.Context, id int) (*ent.Ai
 
 // FindAirportByName is the resolver for the find_airport_by_name field.
 func (r *mutationResolver) FindAirportByName(ctx context.Context, name string) (*ent.Airport, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin, member.MemberTypeMember); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin, member.MemberTypeMember); err != nil {
 		return nil, err
 	}
 	a, err := r.client.Airport.Query().Where(airport.NameEqualFold(name)).Only(ctx)
@@ -202,7 +195,7 @@ func (r *mutationResolver) FindAirportByName(ctx context.Context, name string) (
 
 // CreatePlane is the resolver for the create_plane field.
 func (r *mutationResolver) CreatePlane(ctx context.Context, input ent.CreatePlaneInput) (*ent.Plane, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	return r.client.Plane.Create().SetInput(input).Save(ctx)
@@ -210,7 +203,7 @@ func (r *mutationResolver) CreatePlane(ctx context.Context, input ent.CreatePlan
 
 // UpdatePlane is the resolver for the update_plane field.
 func (r *mutationResolver) UpdatePlane(ctx context.Context, id int, input ent.UpdatePlaneInput) (*ent.Plane, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	plane, err := r.client.Plane.UpdateOneID(id).SetInput(input).Save(ctx)
@@ -222,7 +215,7 @@ func (r *mutationResolver) UpdatePlane(ctx context.Context, id int, input ent.Up
 
 // DeletePlane is the resolver for the delete_plane field.
 func (r *mutationResolver) DeletePlane(ctx context.Context, id int) (*string, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	message := "delete success!"
@@ -234,7 +227,7 @@ func (r *mutationResolver) DeletePlane(ctx context.Context, id int) (*string, er
 
 // FindPlaneByID is the resolver for the find_plane_by_id field.
 func (r *mutationResolver) FindPlaneByID(ctx context.Context, id int) (*ent.Plane, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	plane, err := r.client.Plane.Get(ctx, id)
@@ -246,10 +239,7 @@ func (r *mutationResolver) FindPlaneByID(ctx context.Context, id int) (*ent.Plan
 
 // CreateFlight is the resolver for the create_flight field.
 func (r *mutationResolver) CreateFlight(ctx context.Context, input ent.CreateFlight) (*ent.Flight, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
-		return nil, err
-	}
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	plane, err := r.client.Plane.Get(ctx, input.PlaneID)
@@ -261,19 +251,19 @@ func (r *mutationResolver) CreateFlight(ctx context.Context, input ent.CreateFli
 
 // CancelFlight is the resolver for the cancel_flight field.
 func (r *mutationResolver) CancelFlight(ctx context.Context, id int) (*string, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	message := "cancel flight successfully"
-	flight, _ := r.FindFlightByID(ctx, id)
-	flight.Update().SetStatus("cancel").Save(ctx)
-	r.client.Booking.Update().Where(booking.FlightID(id)).SetStatus("cancel")
+	f, _ := r.FindFlightByID(ctx, id)
+	f.Update().SetStatus(flight.StatusCanceled).Save(ctx)
+	r.client.Booking.Update().Where(booking.FlightID(id)).SetStatus(booking.StatusCancel)
 	return &message, nil
 }
 
 // UpdateFlightSlot is the resolver for the update_flight_slot field.
 func (r *mutationResolver) UpdateFlightSlot(ctx context.Context) (*ent.Flight, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	panic(fmt.Errorf("not implemented: UpdateFlightSlot - update_flight_slot"))
@@ -281,7 +271,7 @@ func (r *mutationResolver) UpdateFlightSlot(ctx context.Context) (*ent.Flight, e
 
 // UpdateFlightStatus is the resolver for the update_flight_status field.
 func (r *mutationResolver) UpdateFlightStatus(ctx context.Context, id int, input *ent.UpdateFlightStatus) (*ent.Flight, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	flight, err := r.FindFlightByID(ctx, id)
@@ -294,27 +284,24 @@ func (r *mutationResolver) UpdateFlightStatus(ctx context.Context, id int, input
 
 // SearchFlight is the resolver for the search_flight field.
 func (r *mutationResolver) SearchFlight(ctx context.Context, input ent.SearchFlight) ([]*ent.Flight, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin, member.MemberTypeMember); err != nil {
-		return nil, err
-	}
-	depart, _ := r.FindAirportByName(ctx, input.DepartAt)
-	des, _ := r.FindAirportByName(ctx, input.DestAt)
-	fromDate, err := time.Parse("dd-mm-yyyy", input.FromDate)
+	fromAirport, _ := r.FindAirportByName(ctx, input.FromAirport)
+	toAirport, _ := r.FindAirportByName(ctx, input.ToAirport)
+
+	flights, err := r.client.Flight.Query().Where(flight.And(
+		flight.FromAirportID(fromAirport.ID),
+		flight.ToAirportID(toAirport.ID),
+		flight.DepartAtGTE(input.DepartAt),
+	),
+	).All(ctx)
 	if err != nil {
 		return nil, err
 	}
-	toDate, err := time.Parse("dd-mm-yyyy", input.ToDate)
-	flights, err := r.client.Flight.Query().Where(flight.And(flight.FromAirportIDEQ(depart.ID),
-		flight.ToAirportIDEQ(des.ID),
-		flight.DepartAtIn(fromDate),
-		flight.LandAtIn(toDate)),
-	).All(ctx)
 	return flights, nil
 }
 
 // FindFlightByID is the resolver for the find_flight_by_id field.
 func (r *mutationResolver) FindFlightByID(ctx context.Context, id int) (*ent.Flight, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	flight, err := r.client.Flight.Get(ctx, id)
@@ -350,10 +337,10 @@ func (r *mutationResolver) CreateCustomerBooking(ctx context.Context, input ent.
 
 // CreateMemberBooking is the resolver for the create_member_booking field.
 func (r *mutationResolver) CreateMemberBooking(ctx context.Context, input ent.MemberBooking) (*ent.Booking, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeMember); err != nil {
+	mem, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeMember)
+	if err != nil {
 		return nil, err
 	}
-	mem, _ := r.Self(ctx)
 	cus, err := r.client.Customer.Query().Where(customer.MemberID(mem.ID)).Only(ctx)
 	bookingRes, err := r.client.Booking.Create().
 		SetCode(helper.GetRandomString(cus.ID, input.FlightID)).
@@ -369,10 +356,7 @@ func (r *mutationResolver) CreateMemberBooking(ctx context.Context, input ent.Me
 
 // ViewBookingHistory is the resolver for the view_booking_history field.
 func (r *mutationResolver) ViewBookingHistory(ctx context.Context) ([]*ent.Booking, error) {
-	if err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeMember); err != nil {
-		return nil, err
-	}
-	mem, err := r.Self(ctx)
+	mem, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeMember)
 	if err != nil {
 		return nil, err
 	}
