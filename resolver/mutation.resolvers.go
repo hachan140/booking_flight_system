@@ -17,6 +17,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 )
 
 // SignUp is the resolver for the sign_up field.
@@ -263,12 +264,22 @@ func (r *mutationResolver) CancelFlight(ctx context.Context, id int) (*string, e
 	return &message, nil
 }
 
-// UpdateFlightSlot is the resolver for the update_flight_slot field.
-func (r *mutationResolver) UpdateFlightSlot(ctx context.Context) (*ent.Flight, error) {
-	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+// DecreaseFlightSlot is the resolver for the decrease_flight_slot field.
+func (r *mutationResolver) DecreaseFlightSlot(ctx context.Context, flightID int, seatType booking.SeatType) (*string, error) {
+	message := "decrease slot success"
+	fl, err := r.FindFlightByID(ctx, flightID)
+	if err != nil {
 		return nil, err
 	}
-	panic(fmt.Errorf("not implemented: UpdateFlightSlot - update_flight_slot"))
+	if seatType.String() == "EC" {
+		if _, err := fl.Update().SetAvailableEcSlot(*fl.AvailableEcSlot - 1).Save(ctx); err != nil {
+			return nil, err
+		}
+	}
+	if _, err := fl.Update().SetAvailableBcSlot(*fl.AvailableBcSlot - 1).Save(ctx); err != nil {
+		return nil, err
+	}
+	return &message, nil
 }
 
 // UpdateFlightStatus is the resolver for the update_flight_status field.
@@ -337,6 +348,9 @@ func (r *mutationResolver) CreateCustomerBooking(ctx context.Context, input ent.
 	if err != nil {
 		return nil, err
 	}
+	if _, err := r.DecreaseFlightSlot(ctx, bookingRes.FlightID, bookingRes.SeatType); err != nil {
+		return nil, err
+	}
 	return bookingRes, nil
 }
 
@@ -354,6 +368,9 @@ func (r *mutationResolver) CreateMemberBooking(ctx context.Context, input ent.Me
 		SetCustomerID(cus.ID).
 		SetFlightID(input.FlightID).Save(ctx)
 	if err != nil {
+		return nil, err
+	}
+	if _, err := r.DecreaseFlightSlot(ctx, bookingRes.FlightID, bookingRes.SeatType); err != nil {
 		return nil, err
 	}
 	return bookingRes, nil
@@ -383,10 +400,57 @@ func (r *mutationResolver) SearchBooking(ctx context.Context, input ent.SearchBo
 		booking.Code(input.BookingCode),
 		booking.CustomerID(cus.ID),
 	)).Only(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return book, nil
+}
+
+// CancelBooking is the resolver for the cancel_booking field.
+func (r *mutationResolver) CancelBooking(ctx context.Context, input ent.SearchBooking) (*string, error) {
+	message := "Cancel successfully!"
+	book, err := r.SearchBooking(ctx, input)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := book.Update().SetStatus(booking.StatusCancel).Save(ctx); err != nil {
+		return nil, err
+	}
+	slotType := book.SeatType
+	fl, err := r.FindFlightByID(ctx, input.FlightID)
+	if err != nil {
+		return nil, err
+	}
+	departAt := fl.DepartAt
+	compareTime := time.Now().Add(time.Hour * 4)
+	if departAt.Equal(compareTime) || departAt.Before(compareTime) {
+		return nil, errors.New("can't cancel booking because flight will be take off")
+	}
+	if slotType.String() == "EC" {
+		if _, err := fl.Update().SetAvailableEcSlot(*fl.AvailableEcSlot + 1).Save(ctx); err != nil {
+			return nil, err
+		}
+	}
+	if _, err := fl.Update().SetAvailableBcSlot(*fl.AvailableBcSlot + 1).Save(ctx); err != nil {
+		return nil, err
+	}
+	return &message, nil
 }
 
 // Mutation returns graphql1.MutationResolver implementation.
 func (r *Resolver) Mutation() graphql1.MutationResolver { return &mutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }
+
+// !!! WARNING !!!
+// The code below was going to be deleted when updating resolvers. It has been copied here so you have
+// one last chance to move it out of harms way if you want. There are two reasons this happens:
+//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
+//     it when you're done.
+//   - You have helper methods in this file. Move them out to keep these resolver files clean.
+func (r *mutationResolver) UpdateFlightSlot(ctx context.Context) (*ent.Flight, error) {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+		return nil, err
+	}
+	panic(fmt.Errorf("not implemented: UpdateFlightSlot - update_flight_slot"))
+}

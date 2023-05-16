@@ -16,3 +16,4 @@ input SearchBooking{
     booking_code: String!
     cid: String!
 }
+

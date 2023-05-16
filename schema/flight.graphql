@@ -21,3 +21,4 @@ input SearchFlight{
     to_airport: String!
     depart_at: Time!
 }
+

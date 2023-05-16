@@ -23,7 +23,7 @@ func (r *queryResolver) Nodes(ctx context.Context, ids []string) ([]ent.Noder, e
 
 // Airports is the resolver for the airports field.
 func (r *queryResolver) Airports(ctx context.Context) ([]*ent.Airport, error) {
-	panic(fmt.Errorf("not implemented: Airports - airports"))
+	return r.client.Airport.Query().All(ctx)
 }
 
 // Bookings is the resolver for the bookings field.
@@ -33,12 +33,12 @@ func (r *queryResolver) Bookings(ctx context.Context) ([]*ent.Booking, error) {
 
 // Customers is the resolver for the customers field.
 func (r *queryResolver) Customers(ctx context.Context) ([]*ent.Customer, error) {
-	panic(fmt.Errorf("not implemented: Customers - customers"))
+	return r.client.Customer.Query().All(ctx)
 }
 
 // Flights is the resolver for the flights field.
 func (r *queryResolver) Flights(ctx context.Context) ([]*ent.Flight, error) {
-	panic(fmt.Errorf("not implemented: Flights - flights"))
+	return r.client.Flight.Query().All(ctx)
 }
 
 // Members is the resolver for the members field.
@@ -48,7 +48,7 @@ func (r *queryResolver) Members(ctx context.Context) ([]*ent.Member, error) {
 
 // Planes is the resolver for the planes field.
 func (r *queryResolver) Planes(ctx context.Context) ([]*ent.Plane, error) {
-	panic(fmt.Errorf("not implemented: Planes - planes"))
+	return r.client.Plane.Query().All(ctx)
 }
 
 // Query returns graphql1.QueryResolver implementation.

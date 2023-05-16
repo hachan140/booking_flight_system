@@ -30,7 +30,7 @@ type Mutation{
     #FLIGHT
     create_flight(input:CreateFlight!): Flight!
     cancel_flight(id: Int!): String
-    update_flight_slot: Flight!
+    decrease_flight_slot(flight_id: Int!, seat_type: BookingSeatType!): String
     update_flight_status(id: Int!,input: UpdateFlightStatus):Flight!
     search_flight(input: SearchFlight!): [Flight!]
     find_flight_by_id(id: Int!): Flight!
@@ -44,5 +44,6 @@ type Mutation{
     create_member_booking(input: MemberBooking!): Booking!
     view_booking_history: [Booking!]
     search_booking(input: SearchBooking!): Booking!
+    cancel_booking(input: SearchBooking!): String
 }
 

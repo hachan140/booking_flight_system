@@ -16,6 +16,8 @@ services:
       POSTGRES_DB: booking_flight_system
       POSTGRES_USER: hachan
       POSTGRES_PASSWORD: hachan
+      TZ: "GMT+7"
+      PGTZ: "GMT+7"
     ports:
       - 5432:5432
     volumes:
