@@ -256,7 +256,9 @@ func (r *mutationResolver) CancelFlight(ctx context.Context, id int) (*string, e
 	}
 	message := "cancel flight successfully"
 	f, _ := r.FindFlightByID(ctx, id)
-	f.Update().SetStatus(flight.StatusCanceled).Save(ctx)
+	if _, err := f.Update().SetStatus(flight.StatusCanceled).Save(ctx); err != nil {
+		return nil, err
+	}
 	r.client.Booking.Update().Where(booking.FlightID(id)).SetStatus(booking.StatusCancel)
 	return &message, nil
 }
@@ -274,12 +276,15 @@ func (r *mutationResolver) UpdateFlightStatus(ctx context.Context, id int, input
 	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
-	flight, err := r.FindFlightByID(ctx, id)
+	f, err := r.FindFlightByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
-	flight.Update().SetStatus(input.Status).Save(ctx)
-	return flight, err
+	if _, err := f.Update().SetStatus(input.Status).Save(ctx); err != nil {
+		return nil, err
+	}
+
+	return f, err
 }
 
 // SearchFlight is the resolver for the search_flight field.
@@ -304,11 +309,11 @@ func (r *mutationResolver) FindFlightByID(ctx context.Context, id int) (*ent.Fli
 	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
-	flight, err := r.client.Flight.Get(ctx, id)
+	f, err := r.client.Flight.Get(ctx, id)
 	if err != nil {
 		return nil, errors.New("can't find flight")
 	}
-	return flight, nil
+	return f, nil
 }
 
 // CreateCustomer is the resolver for the create_customer field.
