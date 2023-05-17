@@ -13,7 +13,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "name", Type: field.TypeString, Unique: true, Size: 255},
 		{Name: "lat", Type: field.TypeFloat64},
 		{Name: "long", Type: field.TypeFloat64},
 	}
@@ -31,6 +31,7 @@ var (
 		{Name: "code", Type: field.TypeString, Unique: true},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"SUCCESS", "CANCEL"}},
 		{Name: "seat_type", Type: field.TypeEnum, Enums: []string{"EC", "BC"}},
+		{Name: "is_round", Type: field.TypeBool, Default: false},
 		{Name: "customer_id", Type: field.TypeInt, Nullable: true},
 		{Name: "flight_id", Type: field.TypeInt, Nullable: true},
 	}
@@ -42,13 +43,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "bookings_customers_has_booking",
-				Columns:    []*schema.Column{BookingsColumns[6]},
+				Columns:    []*schema.Column{BookingsColumns[7]},
 				RefColumns: []*schema.Column{CustomersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "bookings_flights_has_booking",
-				Columns:    []*schema.Column{BookingsColumns[7]},
+				Columns:    []*schema.Column{BookingsColumns[8]},
 				RefColumns: []*schema.Column{FlightsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -90,7 +91,7 @@ var (
 		{Name: "land_at", Type: field.TypeTime},
 		{Name: "available_ec_slot", Type: field.TypeInt},
 		{Name: "available_bc_slot", Type: field.TypeInt},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"FLYING", "SCHEDULED", "CANCELED", "LANDED"}, Default: "LANDED"},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"SCHEDULED", "CANCELED", "DELAY"}, Default: "SCHEDULED"},
 		{Name: "from_airport_id", Type: field.TypeInt, Nullable: true},
 		{Name: "to_airport_id", Type: field.TypeInt, Nullable: true},
 		{Name: "plane_id", Type: field.TypeInt, Nullable: true},

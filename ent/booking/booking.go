@@ -27,6 +27,8 @@ const (
 	FieldStatus = "status"
 	// FieldSeatType holds the string denoting the seat_type field in the database.
 	FieldSeatType = "seat_type"
+	// FieldIsRound holds the string denoting the is_round field in the database.
+	FieldIsRound = "is_round"
 	// FieldCustomerID holds the string denoting the customer_id field in the database.
 	FieldCustomerID = "customer_id"
 	// FieldFlightID holds the string denoting the flight_id field in the database.
@@ -61,6 +63,7 @@ var Columns = []string{
 	FieldCode,
 	FieldStatus,
 	FieldSeatType,
+	FieldIsRound,
 	FieldCustomerID,
 	FieldFlightID,
 }
@@ -84,6 +87,8 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// CodeValidator is a validator for the "code" field. It is called by the builders before save.
 	CodeValidator func(string) error
+	// DefaultIsRound holds the default value on creation for the "is_round" field.
+	DefaultIsRound bool
 )
 
 // Status defines the type for the "status" enum field.
@@ -163,6 +168,11 @@ func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 // BySeatType orders the results by the seat_type field.
 func BySeatType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSeatType, opts...).ToFunc()
+}
+
+// ByIsRound orders the results by the is_round field.
+func ByIsRound(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsRound, opts...).ToFunc()
 }
 
 // ByCustomerID orders the results by the customer_id field.

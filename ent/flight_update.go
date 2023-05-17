@@ -300,6 +300,16 @@ func (fu *FlightUpdate) check() error {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Flight.name": %w`, err)}
 		}
 	}
+	if v, ok := fu.mutation.AvailableEcSlot(); ok {
+		if err := flight.AvailableEcSlotValidator(v); err != nil {
+			return &ValidationError{Name: "available_ec_slot", err: fmt.Errorf(`ent: validator failed for field "Flight.available_ec_slot": %w`, err)}
+		}
+	}
+	if v, ok := fu.mutation.AvailableBcSlot(); ok {
+		if err := flight.AvailableBcSlotValidator(v); err != nil {
+			return &ValidationError{Name: "available_bc_slot", err: fmt.Errorf(`ent: validator failed for field "Flight.available_bc_slot": %w`, err)}
+		}
+	}
 	if v, ok := fu.mutation.Status(); ok {
 		if err := flight.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Flight.status": %w`, err)}
@@ -782,6 +792,16 @@ func (fuo *FlightUpdateOne) check() error {
 	if v, ok := fuo.mutation.Name(); ok {
 		if err := flight.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Flight.name": %w`, err)}
+		}
+	}
+	if v, ok := fuo.mutation.AvailableEcSlot(); ok {
+		if err := flight.AvailableEcSlotValidator(v); err != nil {
+			return &ValidationError{Name: "available_ec_slot", err: fmt.Errorf(`ent: validator failed for field "Flight.available_ec_slot": %w`, err)}
+		}
+	}
+	if v, ok := fuo.mutation.AvailableBcSlot(); ok {
+		if err := flight.AvailableBcSlotValidator(v); err != nil {
+			return &ValidationError{Name: "available_bc_slot", err: fmt.Errorf(`ent: validator failed for field "Flight.available_bc_slot": %w`, err)}
 		}
 	}
 	if v, ok := fuo.mutation.Status(); ok {

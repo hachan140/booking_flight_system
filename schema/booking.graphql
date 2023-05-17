@@ -5,10 +5,25 @@ input CustomerBooking{
     status: BookingStatus
 }
 
+input CustomerBookingRoundTrip{
+    seat_type_arrive: BookingSeatType!
+    flight_id_arrive: Int!
+    customer_id: Int!
+    seat_type_comeback: BookingSeatType!
+    flight_id_comeback: Int!
+}
+
 input MemberBooking{
     seatType: BookingSeatType!
     flight_id: Int!
     status: BookingStatus
+}
+
+input MemberBookingRoundTrip{
+    seat_type_arrive: BookingSeatType!
+    flight_id_arrive: Int!
+    seat_type_comeback: BookingSeatType!
+    flight_id_comeback: Int!
 }
 
 input SearchBooking{

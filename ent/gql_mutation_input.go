@@ -117,6 +117,7 @@ type CreateBookingInput struct {
 	Code          string
 	Status        booking.Status
 	SeatType      booking.SeatType
+	IsRound       *bool
 	HasFlightID   *int
 	HasCustomerID *int
 }
@@ -132,6 +133,9 @@ func (i *CreateBookingInput) Mutate(m *BookingMutation) {
 	m.SetCode(i.Code)
 	m.SetStatus(i.Status)
 	m.SetSeatType(i.SeatType)
+	if v := i.IsRound; v != nil {
+		m.SetIsRound(*v)
+	}
 	if v := i.HasFlightID; v != nil {
 		m.SetHasFlightID(*v)
 	}
@@ -153,6 +157,7 @@ type UpdateBookingInput struct {
 	Code             *string
 	Status           *booking.Status
 	SeatType         *booking.SeatType
+	IsRound          *bool
 	ClearHasFlight   bool
 	HasFlightID      *int
 	ClearHasCustomer bool
@@ -175,6 +180,9 @@ func (i *UpdateBookingInput) Mutate(m *BookingMutation) {
 	}
 	if v := i.SeatType; v != nil {
 		m.SetSeatType(*v)
+	}
+	if v := i.IsRound; v != nil {
+		m.SetIsRound(*v)
 	}
 	if i.ClearHasFlight {
 		m.ClearHasFlight()

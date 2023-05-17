@@ -24,6 +24,14 @@ type CustomerBooking struct {
 	Status     *booking.Status  `json:"status,omitempty"`
 }
 
+type CustomerBookingRoundTrip struct {
+	SeatTypeArrive   booking.SeatType `json:"seat_type_arrive"`
+	FlightIDArrive   int              `json:"flight_id_arrive"`
+	CustomerID       int              `json:"customer_id"`
+	SeatTypeComeback booking.SeatType `json:"seat_type_comeback"`
+	FlightIDComeback int              `json:"flight_id_comeback"`
+}
+
 type CustomerInput struct {
 	Email       string     `json:"email"`
 	PhoneNumber string     `json:"phoneNumber"`
@@ -36,6 +44,13 @@ type MemberBooking struct {
 	SeatType booking.SeatType `json:"seatType"`
 	FlightID int              `json:"flight_id"`
 	Status   *booking.Status  `json:"status,omitempty"`
+}
+
+type MemberBookingRoundTrip struct {
+	SeatTypeArrive   booking.SeatType `json:"seat_type_arrive"`
+	FlightIDArrive   int              `json:"flight_id_arrive"`
+	SeatTypeComeback booking.SeatType `json:"seat_type_comeback"`
+	FlightIDComeback int              `json:"flight_id_comeback"`
 }
 
 type SearchBooking struct {

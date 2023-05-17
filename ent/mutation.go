@@ -835,6 +835,7 @@ type BookingMutation struct {
 	code                *string
 	status              *booking.Status
 	seat_type           *booking.SeatType
+	is_round            *bool
 	clearedFields       map[string]struct{}
 	has_flight          *int
 	clearedhas_flight   bool
@@ -1123,6 +1124,42 @@ func (m *BookingMutation) ResetSeatType() {
 	m.seat_type = nil
 }
 
+// SetIsRound sets the "is_round" field.
+func (m *BookingMutation) SetIsRound(b bool) {
+	m.is_round = &b
+}
+
+// IsRound returns the value of the "is_round" field in the mutation.
+func (m *BookingMutation) IsRound() (r bool, exists bool) {
+	v := m.is_round
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIsRound returns the old "is_round" field's value of the Booking entity.
+// If the Booking object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *BookingMutation) OldIsRound(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIsRound is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIsRound requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIsRound: %w", err)
+	}
+	return oldValue.IsRound, nil
+}
+
+// ResetIsRound resets all changes to the "is_round" field.
+func (m *BookingMutation) ResetIsRound() {
+	m.is_round = nil
+}
+
 // SetCustomerID sets the "customer_id" field.
 func (m *BookingMutation) SetCustomerID(i int) {
 	m.has_customer = &i
@@ -1333,7 +1370,7 @@ func (m *BookingMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *BookingMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 8)
 	if m.created_at != nil {
 		fields = append(fields, booking.FieldCreatedAt)
 	}
@@ -1348,6 +1385,9 @@ func (m *BookingMutation) Fields() []string {
 	}
 	if m.seat_type != nil {
 		fields = append(fields, booking.FieldSeatType)
+	}
+	if m.is_round != nil {
+		fields = append(fields, booking.FieldIsRound)
 	}
 	if m.has_customer != nil {
 		fields = append(fields, booking.FieldCustomerID)
@@ -1373,6 +1413,8 @@ func (m *BookingMutation) Field(name string) (ent.Value, bool) {
 		return m.Status()
 	case booking.FieldSeatType:
 		return m.SeatType()
+	case booking.FieldIsRound:
+		return m.IsRound()
 	case booking.FieldCustomerID:
 		return m.CustomerID()
 	case booking.FieldFlightID:
@@ -1396,6 +1438,8 @@ func (m *BookingMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldStatus(ctx)
 	case booking.FieldSeatType:
 		return m.OldSeatType(ctx)
+	case booking.FieldIsRound:
+		return m.OldIsRound(ctx)
 	case booking.FieldCustomerID:
 		return m.OldCustomerID(ctx)
 	case booking.FieldFlightID:
@@ -1443,6 +1487,13 @@ func (m *BookingMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetSeatType(v)
+		return nil
+	case booking.FieldIsRound:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIsRound(v)
 		return nil
 	case booking.FieldCustomerID:
 		v, ok := value.(int)
@@ -1539,6 +1590,9 @@ func (m *BookingMutation) ResetField(name string) error {
 		return nil
 	case booking.FieldSeatType:
 		m.ResetSeatType()
+		return nil
+	case booking.FieldIsRound:
+		m.ResetIsRound()
 		return nil
 	case booking.FieldCustomerID:
 		m.ResetCustomerID()

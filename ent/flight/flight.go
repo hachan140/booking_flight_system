@@ -114,20 +114,23 @@ var (
 	UpdateDefaultUpdatedAt func() time.Time
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// AvailableEcSlotValidator is a validator for the "available_ec_slot" field. It is called by the builders before save.
+	AvailableEcSlotValidator func(int) error
+	// AvailableBcSlotValidator is a validator for the "available_bc_slot" field. It is called by the builders before save.
+	AvailableBcSlotValidator func(int) error
 )
 
 // Status defines the type for the "status" enum field.
 type Status string
 
-// StatusLanded is the default value of the Status enum.
-const DefaultStatus = StatusLanded
+// StatusScheduled is the default value of the Status enum.
+const DefaultStatus = StatusScheduled
 
 // Status values.
 const (
-	StatusFlying    Status = "FLYING"
 	StatusScheduled Status = "SCHEDULED"
 	StatusCanceled  Status = "CANCELED"
-	StatusLanded    Status = "LANDED"
+	StatusDelay     Status = "DELAY"
 )
 
 func (s Status) String() string {
@@ -137,7 +140,7 @@ func (s Status) String() string {
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
 func StatusValidator(s Status) error {
 	switch s {
-	case StatusFlying, StatusScheduled, StatusCanceled, StatusLanded:
+	case StatusScheduled, StatusCanceled, StatusDelay:
 		return nil
 	default:
 		return fmt.Errorf("flight: invalid enum value for status field: %q", s)

@@ -70,6 +70,11 @@ func Code(v string) predicate.Booking {
 	return predicate.Booking(sql.FieldEQ(FieldCode, v))
 }
 
+// IsRound applies equality check predicate on the "is_round" field. It's identical to IsRoundEQ.
+func IsRound(v bool) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldIsRound, v))
+}
+
 // CustomerID applies equality check predicate on the "customer_id" field. It's identical to CustomerIDEQ.
 func CustomerID(v int) predicate.Booking {
 	return predicate.Booking(sql.FieldEQ(FieldCustomerID, v))
@@ -263,6 +268,16 @@ func SeatTypeIn(vs ...SeatType) predicate.Booking {
 // SeatTypeNotIn applies the NotIn predicate on the "seat_type" field.
 func SeatTypeNotIn(vs ...SeatType) predicate.Booking {
 	return predicate.Booking(sql.FieldNotIn(FieldSeatType, vs...))
+}
+
+// IsRoundEQ applies the EQ predicate on the "is_round" field.
+func IsRoundEQ(v bool) predicate.Booking {
+	return predicate.Booking(sql.FieldEQ(FieldIsRound, v))
+}
+
+// IsRoundNEQ applies the NEQ predicate on the "is_round" field.
+func IsRoundNEQ(v bool) predicate.Booking {
+	return predicate.Booking(sql.FieldNEQ(FieldIsRound, v))
 }
 
 // CustomerIDEQ applies the EQ predicate on the "customer_id" field.

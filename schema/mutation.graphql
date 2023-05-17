@@ -41,7 +41,9 @@ type Mutation{
 
     #BOOKING
     create_customer_booking(input: CustomerBooking!): Booking!
-    create_member_booking(input: MemberBooking!): Booking!
+    create_customer_booking_round_trip(input: CustomerBookingRoundTrip): [Booking!]
+    create_member_booking(input: MemberBooking!): Booking
+    create_member_booking_round_trip(input: MemberBookingRoundTrip!): [Booking!]
     view_booking_history: [Booking!]
     search_booking(input: SearchBooking!): Booking!
     cancel_booking(input: SearchBooking!): String

@@ -255,8 +255,18 @@ func (fc *FlightCreate) check() error {
 	if _, ok := fc.mutation.AvailableEcSlot(); !ok {
 		return &ValidationError{Name: "available_ec_slot", err: errors.New(`ent: missing required field "Flight.available_ec_slot"`)}
 	}
+	if v, ok := fc.mutation.AvailableEcSlot(); ok {
+		if err := flight.AvailableEcSlotValidator(v); err != nil {
+			return &ValidationError{Name: "available_ec_slot", err: fmt.Errorf(`ent: validator failed for field "Flight.available_ec_slot": %w`, err)}
+		}
+	}
 	if _, ok := fc.mutation.AvailableBcSlot(); !ok {
 		return &ValidationError{Name: "available_bc_slot", err: errors.New(`ent: missing required field "Flight.available_bc_slot"`)}
+	}
+	if v, ok := fc.mutation.AvailableBcSlot(); ok {
+		if err := flight.AvailableBcSlotValidator(v); err != nil {
+			return &ValidationError{Name: "available_bc_slot", err: fmt.Errorf(`ent: validator failed for field "Flight.available_bc_slot": %w`, err)}
+		}
 	}
 	if _, ok := fc.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Flight.status"`)}

@@ -200,6 +200,11 @@ func (b *BookingQuery) collectField(ctx context.Context, opCtx *graphql.Operatio
 				selectedFields = append(selectedFields, booking.FieldSeatType)
 				fieldSeen[booking.FieldSeatType] = struct{}{}
 			}
+		case "isRound":
+			if _, ok := fieldSeen[booking.FieldIsRound]; !ok {
+				selectedFields = append(selectedFields, booking.FieldIsRound)
+				fieldSeen[booking.FieldIsRound] = struct{}{}
+			}
 		case "customerID":
 			if _, ok := fieldSeen[booking.FieldCustomerID]; !ok {
 				selectedFields = append(selectedFields, booking.FieldCustomerID)

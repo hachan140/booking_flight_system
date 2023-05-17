@@ -69,6 +69,7 @@ type ComplexityRoot struct {
 		HasCustomer func(childComplexity int) int
 		HasFlight   func(childComplexity int) int
 		ID          func(childComplexity int) int
+		IsRound     func(childComplexity int) int
 		SeatType    func(childComplexity int) int
 		Status      func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
@@ -121,36 +122,38 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CancelBooking         func(childComplexity int, input ent.SearchBooking) int
-		CancelFlight          func(childComplexity int, id int) int
-		ChangePassword        func(childComplexity int, oldPassword string, newPassword string) int
-		CreateAirport         func(childComplexity int, input ent.CreateAirportInput) int
-		CreateCustomer        func(childComplexity int, input ent.CustomerInput) int
-		CreateCustomerBooking func(childComplexity int, input ent.CustomerBooking) int
-		CreateFlight          func(childComplexity int, input ent.CreateFlight) int
-		CreateMemberBooking   func(childComplexity int, input ent.MemberBooking) int
-		CreatePlane           func(childComplexity int, input ent.CreatePlaneInput) int
-		DecreaseFlightSlot    func(childComplexity int, flightID int, seatType booking.SeatType) int
-		DeleteAirport         func(childComplexity int, id int) int
-		DeleteByID            func(childComplexity int, id int) int
-		DeletePlane           func(childComplexity int, id int) int
-		FindAirportByID       func(childComplexity int, id int) int
-		FindAirportByName     func(childComplexity int, name string) int
-		FindCustomerByCid     func(childComplexity int, cid string) int
-		FindFlightByID        func(childComplexity int, id int) int
-		FindMemberByEmail     func(childComplexity int, email string) int
-		FindMemberByName      func(childComplexity int, name string) int
-		FindPlaneByID         func(childComplexity int, id int) int
-		Login                 func(childComplexity int, email string, password string) int
-		SearchBooking         func(childComplexity int, input ent.SearchBooking) int
-		SearchFlight          func(childComplexity int, input ent.SearchFlight) int
-		Self                  func(childComplexity int) int
-		SignUp                func(childComplexity int, input ent.CreateMemberInput) int
-		UpdateAirport         func(childComplexity int, id int, input ent.UpdateAirportInput) int
-		UpdateFlightStatus    func(childComplexity int, id int, input *ent.UpdateFlightStatus) int
-		UpdateMemberProfile   func(childComplexity int, input *ent.UpdateMemberInput) int
-		UpdatePlane           func(childComplexity int, id int, input ent.UpdatePlaneInput) int
-		ViewBookingHistory    func(childComplexity int) int
+		CancelBooking                  func(childComplexity int, input ent.SearchBooking) int
+		CancelFlight                   func(childComplexity int, id int) int
+		ChangePassword                 func(childComplexity int, oldPassword string, newPassword string) int
+		CreateAirport                  func(childComplexity int, input ent.CreateAirportInput) int
+		CreateCustomer                 func(childComplexity int, input ent.CustomerInput) int
+		CreateCustomerBooking          func(childComplexity int, input ent.CustomerBooking) int
+		CreateCustomerBookingRoundTrip func(childComplexity int, input *ent.CustomerBookingRoundTrip) int
+		CreateFlight                   func(childComplexity int, input ent.CreateFlight) int
+		CreateMemberBooking            func(childComplexity int, input ent.MemberBooking) int
+		CreateMemberBookingRoundTrip   func(childComplexity int, input ent.MemberBookingRoundTrip) int
+		CreatePlane                    func(childComplexity int, input ent.CreatePlaneInput) int
+		DecreaseFlightSlot             func(childComplexity int, flightID int, seatType booking.SeatType) int
+		DeleteAirport                  func(childComplexity int, id int) int
+		DeleteByID                     func(childComplexity int, id int) int
+		DeletePlane                    func(childComplexity int, id int) int
+		FindAirportByID                func(childComplexity int, id int) int
+		FindAirportByName              func(childComplexity int, name string) int
+		FindCustomerByCid              func(childComplexity int, cid string) int
+		FindFlightByID                 func(childComplexity int, id int) int
+		FindMemberByEmail              func(childComplexity int, email string) int
+		FindMemberByName               func(childComplexity int, name string) int
+		FindPlaneByID                  func(childComplexity int, id int) int
+		Login                          func(childComplexity int, email string, password string) int
+		SearchBooking                  func(childComplexity int, input ent.SearchBooking) int
+		SearchFlight                   func(childComplexity int, input ent.SearchFlight) int
+		Self                           func(childComplexity int) int
+		SignUp                         func(childComplexity int, input ent.CreateMemberInput) int
+		UpdateAirport                  func(childComplexity int, id int, input ent.UpdateAirportInput) int
+		UpdateFlightStatus             func(childComplexity int, id int, input *ent.UpdateFlightStatus) int
+		UpdateMemberProfile            func(childComplexity int, input *ent.UpdateMemberInput) int
+		UpdatePlane                    func(childComplexity int, id int, input ent.UpdatePlaneInput) int
+		ViewBookingHistory             func(childComplexity int) int
 	}
 
 	PageInfo struct {
@@ -215,7 +218,9 @@ type MutationResolver interface {
 	CreateCustomer(ctx context.Context, input ent.CustomerInput) (*ent.Customer, error)
 	FindCustomerByCid(ctx context.Context, cid string) (*ent.Customer, error)
 	CreateCustomerBooking(ctx context.Context, input ent.CustomerBooking) (*ent.Booking, error)
+	CreateCustomerBookingRoundTrip(ctx context.Context, input *ent.CustomerBookingRoundTrip) ([]*ent.Booking, error)
 	CreateMemberBooking(ctx context.Context, input ent.MemberBooking) (*ent.Booking, error)
+	CreateMemberBookingRoundTrip(ctx context.Context, input ent.MemberBookingRoundTrip) ([]*ent.Booking, error)
 	ViewBookingHistory(ctx context.Context) ([]*ent.Booking, error)
 	SearchBooking(ctx context.Context, input ent.SearchBooking) (*ent.Booking, error)
 	CancelBooking(ctx context.Context, input ent.SearchBooking) (*string, error)
@@ -350,6 +355,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Booking.ID(childComplexity), true
+
+	case "Booking.isRound":
+		if e.complexity.Booking.IsRound == nil {
+			break
+		}
+
+		return e.complexity.Booking.IsRound(childComplexity), true
 
 	case "Booking.seatType":
 		if e.complexity.Booking.SeatType == nil {
@@ -703,6 +715,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateCustomerBooking(childComplexity, args["input"].(ent.CustomerBooking)), true
 
+	case "Mutation.create_customer_booking_round_trip":
+		if e.complexity.Mutation.CreateCustomerBookingRoundTrip == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_create_customer_booking_round_trip_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateCustomerBookingRoundTrip(childComplexity, args["input"].(*ent.CustomerBookingRoundTrip)), true
+
 	case "Mutation.create_flight":
 		if e.complexity.Mutation.CreateFlight == nil {
 			break
@@ -726,6 +750,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateMemberBooking(childComplexity, args["input"].(ent.MemberBooking)), true
+
+	case "Mutation.create_member_booking_round_trip":
+		if e.complexity.Mutation.CreateMemberBookingRoundTrip == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_create_member_booking_round_trip_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateMemberBookingRoundTrip(childComplexity, args["input"].(ent.MemberBookingRoundTrip)), true
 
 	case "Mutation.create_plane":
 		if e.complexity.Mutation.CreatePlane == nil {
@@ -1163,10 +1199,12 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateMemberInput,
 		ec.unmarshalInputCreatePlaneInput,
 		ec.unmarshalInputCustomerBooking,
+		ec.unmarshalInputCustomerBookingRoundTrip,
 		ec.unmarshalInputCustomerInput,
 		ec.unmarshalInputCustomerWhereInput,
 		ec.unmarshalInputFlightWhereInput,
 		ec.unmarshalInputMemberBooking,
+		ec.unmarshalInputMemberBookingRoundTrip,
 		ec.unmarshalInputMemberWhereInput,
 		ec.unmarshalInputPlaneWhereInput,
 		ec.unmarshalInputSearchBooking,
@@ -1246,10 +1284,25 @@ var sources = []*ast.Source{
     status: BookingStatus
 }
 
+input CustomerBookingRoundTrip{
+    seat_type_arrive: BookingSeatType!
+    flight_id_arrive: Int!
+    customer_id: Int!
+    seat_type_comeback: BookingSeatType!
+    flight_id_comeback: Int!
+}
+
 input MemberBooking{
     seatType: BookingSeatType!
     flight_id: Int!
     status: BookingStatus
+}
+
+input MemberBookingRoundTrip{
+    seat_type_arrive: BookingSeatType!
+    flight_id_arrive: Int!
+    seat_type_comeback: BookingSeatType!
+    flight_id_comeback: Int!
 }
 
 input SearchBooking{
@@ -1361,6 +1414,7 @@ type Booking implements Node {
   code: String!
   status: BookingStatus!
   seatType: BookingSeatType!
+  isRound: Boolean!
   customerID: ID
   flightID: ID
   hasFlight: Flight
@@ -1435,6 +1489,9 @@ input BookingWhereInput {
   seatTypeNEQ: BookingSeatType
   seatTypeIn: [BookingSeatType!]
   seatTypeNotIn: [BookingSeatType!]
+  """is_round field predicates"""
+  isRound: Boolean
+  isRoundNEQ: Boolean
   """customer_id field predicates"""
   customerID: ID
   customerIDNEQ: ID
@@ -1479,6 +1536,7 @@ input CreateBookingInput {
   code: String!
   status: BookingStatus!
   seatType: BookingSeatType!
+  isRound: Boolean
   hasFlightID: ID
   hasCustomerID: ID
 }
@@ -1698,10 +1756,9 @@ type Flight implements Node {
 }
 """FlightStatus is enum for the field status"""
 enum FlightStatus @goModel(model: "booking-flight-system/ent/flight.Status") {
-  FLYING
   SCHEDULED
   CANCELED
-  LANDED
+  DELAY
 }
 """
 FlightWhereInput is used for filtering Flight objects.
@@ -2124,6 +2181,7 @@ input UpdateBookingInput {
   code: String
   status: BookingStatus
   seatType: BookingSeatType
+  isRound: Boolean
   hasFlightID: ID
   clearHasFlight: Boolean
   hasCustomerID: ID
@@ -2275,7 +2333,9 @@ type Mutation{
 
     #BOOKING
     create_customer_booking(input: CustomerBooking!): Booking!
-    create_member_booking(input: MemberBooking!): Booking!
+    create_customer_booking_round_trip(input: CustomerBookingRoundTrip): [Booking!]
+    create_member_booking(input: MemberBooking!): Booking
+    create_member_booking_round_trip(input: MemberBookingRoundTrip!): [Booking!]
     view_booking_history: [Booking!]
     search_booking(input: SearchBooking!): Booking!
     cancel_booking(input: SearchBooking!): String
@@ -2422,6 +2482,21 @@ func (ec *executionContext) field_Mutation_create_customer_booking_args(ctx cont
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_create_customer_booking_round_trip_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *ent.CustomerBookingRoundTrip
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalOCustomerBookingRoundTrip2ᚖbookingᚑflightᚑsystemᚋentᚐCustomerBookingRoundTrip(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_create_flight_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2444,6 +2519,21 @@ func (ec *executionContext) field_Mutation_create_member_booking_args(ctx contex
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNMemberBooking2bookingᚑflightᚑsystemᚋentᚐMemberBooking(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_create_member_booking_round_trip_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 ent.MemberBookingRoundTrip
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNMemberBookingRoundTrip2bookingᚑflightᚑsystemᚋentᚐMemberBookingRoundTrip(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3558,6 +3648,50 @@ func (ec *executionContext) fieldContext_Booking_seatType(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Booking_isRound(ctx context.Context, field graphql.CollectedField, obj *ent.Booking) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Booking_isRound(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsRound, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Booking_isRound(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Booking",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Booking_customerID(ctx context.Context, field graphql.CollectedField, obj *ent.Booking) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Booking_customerID(ctx, field)
 	if err != nil {
@@ -4281,6 +4415,8 @@ func (ec *executionContext) fieldContext_Customer_hasBooking(ctx context.Context
 				return ec.fieldContext_Booking_status(ctx, field)
 			case "seatType":
 				return ec.fieldContext_Booking_seatType(ctx, field)
+			case "isRound":
+				return ec.fieldContext_Booking_isRound(ctx, field)
 			case "customerID":
 				return ec.fieldContext_Booking_customerID(ctx, field)
 			case "flightID":
@@ -4922,6 +5058,8 @@ func (ec *executionContext) fieldContext_Flight_hasBooking(ctx context.Context, 
 				return ec.fieldContext_Booking_status(ctx, field)
 			case "seatType":
 				return ec.fieldContext_Booking_seatType(ctx, field)
+			case "isRound":
+				return ec.fieldContext_Booking_isRound(ctx, field)
 			case "customerID":
 				return ec.fieldContext_Booking_customerID(ctx, field)
 			case "flightID":
@@ -7327,6 +7465,8 @@ func (ec *executionContext) fieldContext_Mutation_create_customer_booking(ctx co
 				return ec.fieldContext_Booking_status(ctx, field)
 			case "seatType":
 				return ec.fieldContext_Booking_seatType(ctx, field)
+			case "isRound":
+				return ec.fieldContext_Booking_isRound(ctx, field)
 			case "customerID":
 				return ec.fieldContext_Booking_customerID(ctx, field)
 			case "flightID":
@@ -7347,6 +7487,82 @@ func (ec *executionContext) fieldContext_Mutation_create_customer_booking(ctx co
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_create_customer_booking_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_create_customer_booking_round_trip(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_create_customer_booking_round_trip(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateCustomerBookingRoundTrip(rctx, fc.Args["input"].(*ent.CustomerBookingRoundTrip))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Booking)
+	fc.Result = res
+	return ec.marshalOBooking2ᚕᚖbookingᚑflightᚑsystemᚋentᚐBookingᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_create_customer_booking_round_trip(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Booking_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Booking_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Booking_updatedAt(ctx, field)
+			case "code":
+				return ec.fieldContext_Booking_code(ctx, field)
+			case "status":
+				return ec.fieldContext_Booking_status(ctx, field)
+			case "seatType":
+				return ec.fieldContext_Booking_seatType(ctx, field)
+			case "isRound":
+				return ec.fieldContext_Booking_isRound(ctx, field)
+			case "customerID":
+				return ec.fieldContext_Booking_customerID(ctx, field)
+			case "flightID":
+				return ec.fieldContext_Booking_flightID(ctx, field)
+			case "hasFlight":
+				return ec.fieldContext_Booking_hasFlight(ctx, field)
+			case "hasCustomer":
+				return ec.fieldContext_Booking_hasCustomer(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Booking", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_create_customer_booking_round_trip_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -7374,14 +7590,11 @@ func (ec *executionContext) _Mutation_create_member_booking(ctx context.Context,
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*ent.Booking)
 	fc.Result = res
-	return ec.marshalNBooking2ᚖbookingᚑflightᚑsystemᚋentᚐBooking(ctx, field.Selections, res)
+	return ec.marshalOBooking2ᚖbookingᚑflightᚑsystemᚋentᚐBooking(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_create_member_booking(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -7404,6 +7617,8 @@ func (ec *executionContext) fieldContext_Mutation_create_member_booking(ctx cont
 				return ec.fieldContext_Booking_status(ctx, field)
 			case "seatType":
 				return ec.fieldContext_Booking_seatType(ctx, field)
+			case "isRound":
+				return ec.fieldContext_Booking_isRound(ctx, field)
 			case "customerID":
 				return ec.fieldContext_Booking_customerID(ctx, field)
 			case "flightID":
@@ -7424,6 +7639,82 @@ func (ec *executionContext) fieldContext_Mutation_create_member_booking(ctx cont
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_create_member_booking_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_create_member_booking_round_trip(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_create_member_booking_round_trip(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateMemberBookingRoundTrip(rctx, fc.Args["input"].(ent.MemberBookingRoundTrip))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Booking)
+	fc.Result = res
+	return ec.marshalOBooking2ᚕᚖbookingᚑflightᚑsystemᚋentᚐBookingᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_create_member_booking_round_trip(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Booking_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Booking_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Booking_updatedAt(ctx, field)
+			case "code":
+				return ec.fieldContext_Booking_code(ctx, field)
+			case "status":
+				return ec.fieldContext_Booking_status(ctx, field)
+			case "seatType":
+				return ec.fieldContext_Booking_seatType(ctx, field)
+			case "isRound":
+				return ec.fieldContext_Booking_isRound(ctx, field)
+			case "customerID":
+				return ec.fieldContext_Booking_customerID(ctx, field)
+			case "flightID":
+				return ec.fieldContext_Booking_flightID(ctx, field)
+			case "hasFlight":
+				return ec.fieldContext_Booking_hasFlight(ctx, field)
+			case "hasCustomer":
+				return ec.fieldContext_Booking_hasCustomer(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Booking", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_create_member_booking_round_trip_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -7478,6 +7769,8 @@ func (ec *executionContext) fieldContext_Mutation_view_booking_history(ctx conte
 				return ec.fieldContext_Booking_status(ctx, field)
 			case "seatType":
 				return ec.fieldContext_Booking_seatType(ctx, field)
+			case "isRound":
+				return ec.fieldContext_Booking_isRound(ctx, field)
 			case "customerID":
 				return ec.fieldContext_Booking_customerID(ctx, field)
 			case "flightID":
@@ -7544,6 +7837,8 @@ func (ec *executionContext) fieldContext_Mutation_search_booking(ctx context.Con
 				return ec.fieldContext_Booking_status(ctx, field)
 			case "seatType":
 				return ec.fieldContext_Booking_seatType(ctx, field)
+			case "isRound":
+				return ec.fieldContext_Booking_isRound(ctx, field)
 			case "customerID":
 				return ec.fieldContext_Booking_customerID(ctx, field)
 			case "flightID":
@@ -8395,6 +8690,8 @@ func (ec *executionContext) fieldContext_Query_bookings(ctx context.Context, fie
 				return ec.fieldContext_Booking_status(ctx, field)
 			case "seatType":
 				return ec.fieldContext_Booking_seatType(ctx, field)
+			case "isRound":
+				return ec.fieldContext_Booking_isRound(ctx, field)
 			case "customerID":
 				return ec.fieldContext_Booking_customerID(ctx, field)
 			case "flightID":
@@ -11241,7 +11538,7 @@ func (ec *executionContext) unmarshalInputBookingWhereInput(ctx context.Context,
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "code", "codeNEQ", "codeIn", "codeNotIn", "codeGT", "codeGTE", "codeLT", "codeLTE", "codeContains", "codeHasPrefix", "codeHasSuffix", "codeEqualFold", "codeContainsFold", "status", "statusNEQ", "statusIn", "statusNotIn", "seatType", "seatTypeNEQ", "seatTypeIn", "seatTypeNotIn", "customerID", "customerIDNEQ", "customerIDIn", "customerIDNotIn", "customerIDIsNil", "customerIDNotNil", "flightID", "flightIDNEQ", "flightIDIn", "flightIDNotIn", "flightIDIsNil", "flightIDNotNil", "hasHasFlight", "hasHasFlightWith", "hasHasCustomer", "hasHasCustomerWith"}
+	fieldsInOrder := [...]string{"not", "and", "or", "id", "idNEQ", "idIn", "idNotIn", "idGT", "idGTE", "idLT", "idLTE", "createdAt", "createdAtNEQ", "createdAtIn", "createdAtNotIn", "createdAtGT", "createdAtGTE", "createdAtLT", "createdAtLTE", "updatedAt", "updatedAtNEQ", "updatedAtIn", "updatedAtNotIn", "updatedAtGT", "updatedAtGTE", "updatedAtLT", "updatedAtLTE", "code", "codeNEQ", "codeIn", "codeNotIn", "codeGT", "codeGTE", "codeLT", "codeLTE", "codeContains", "codeHasPrefix", "codeHasSuffix", "codeEqualFold", "codeContainsFold", "status", "statusNEQ", "statusIn", "statusNotIn", "seatType", "seatTypeNEQ", "seatTypeIn", "seatTypeNotIn", "isRound", "isRoundNEQ", "customerID", "customerIDNEQ", "customerIDIn", "customerIDNotIn", "customerIDIsNil", "customerIDNotNil", "flightID", "flightIDNEQ", "flightIDIn", "flightIDNotIn", "flightIDIsNil", "flightIDNotNil", "hasHasFlight", "hasHasFlightWith", "hasHasCustomer", "hasHasCustomerWith"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -11680,6 +11977,24 @@ func (ec *executionContext) unmarshalInputBookingWhereInput(ctx context.Context,
 				return it, err
 			}
 			it.SeatTypeNotIn = data
+		case "isRound":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isRound"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsRound = data
+		case "isRoundNEQ":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isRoundNEQ"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsRoundNEQ = data
 		case "customerID":
 			var err error
 
@@ -11920,7 +12235,7 @@ func (ec *executionContext) unmarshalInputCreateBookingInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "code", "status", "seatType", "hasFlightID", "hasCustomerID"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "code", "status", "seatType", "isRound", "hasFlightID", "hasCustomerID"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -11972,6 +12287,15 @@ func (ec *executionContext) unmarshalInputCreateBookingInput(ctx context.Context
 				return it, err
 			}
 			it.SeatType = data
+		case "isRound":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isRound"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsRound = data
 		case "hasFlightID":
 			var err error
 
@@ -12542,6 +12866,71 @@ func (ec *executionContext) unmarshalInputCustomerBooking(ctx context.Context, o
 				return it, err
 			}
 			it.Status = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCustomerBookingRoundTrip(ctx context.Context, obj interface{}) (ent.CustomerBookingRoundTrip, error) {
+	var it ent.CustomerBookingRoundTrip
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"seat_type_arrive", "flight_id_arrive", "customer_id", "seat_type_comeback", "flight_id_comeback"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "seat_type_arrive":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seat_type_arrive"))
+			data, err := ec.unmarshalNBookingSeatType2bookingᚑflightᚑsystemᚋentᚋbookingᚐSeatType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeatTypeArrive = data
+		case "flight_id_arrive":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flight_id_arrive"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FlightIDArrive = data
+		case "customer_id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("customer_id"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.CustomerID = data
+		case "seat_type_comeback":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seat_type_comeback"))
+			data, err := ec.unmarshalNBookingSeatType2bookingᚑflightᚑsystemᚋentᚋbookingᚐSeatType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeatTypeComeback = data
+		case "flight_id_comeback":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flight_id_comeback"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FlightIDComeback = data
 		}
 	}
 
@@ -14509,6 +14898,62 @@ func (ec *executionContext) unmarshalInputMemberBooking(ctx context.Context, obj
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputMemberBookingRoundTrip(ctx context.Context, obj interface{}) (ent.MemberBookingRoundTrip, error) {
+	var it ent.MemberBookingRoundTrip
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"seat_type_arrive", "flight_id_arrive", "seat_type_comeback", "flight_id_comeback"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "seat_type_arrive":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seat_type_arrive"))
+			data, err := ec.unmarshalNBookingSeatType2bookingᚑflightᚑsystemᚋentᚋbookingᚐSeatType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeatTypeArrive = data
+		case "flight_id_arrive":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flight_id_arrive"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FlightIDArrive = data
+		case "seat_type_comeback":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("seat_type_comeback"))
+			data, err := ec.unmarshalNBookingSeatType2bookingᚑflightᚑsystemᚋentᚋbookingᚐSeatType(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.SeatTypeComeback = data
+		case "flight_id_comeback":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flight_id_comeback"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.FlightIDComeback = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputMemberWhereInput(ctx context.Context, obj interface{}) (ent.MemberWhereInput, error) {
 	var it ent.MemberWhereInput
 	asMap := map[string]interface{}{}
@@ -16200,7 +16645,7 @@ func (ec *executionContext) unmarshalInputUpdateBookingInput(ctx context.Context
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"createdAt", "updatedAt", "code", "status", "seatType", "hasFlightID", "clearHasFlight", "hasCustomerID", "clearHasCustomer"}
+	fieldsInOrder := [...]string{"createdAt", "updatedAt", "code", "status", "seatType", "isRound", "hasFlightID", "clearHasFlight", "hasCustomerID", "clearHasCustomer"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -16252,6 +16697,15 @@ func (ec *executionContext) unmarshalInputUpdateBookingInput(ctx context.Context
 				return it, err
 			}
 			it.SeatType = data
+		case "isRound":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isRound"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.IsRound = data
 		case "hasFlightID":
 			var err error
 
@@ -17105,6 +17559,13 @@ func (ec *executionContext) _Booking(ctx context.Context, sel ast.SelectionSet, 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "isRound":
+
+			out.Values[i] = ec._Booking_isRound(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "customerID":
 
 			out.Values[i] = ec._Booking_customerID(ctx, field, obj)
@@ -17758,15 +18219,24 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "create_customer_booking_round_trip":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_create_customer_booking_round_trip(ctx, field)
+			})
+
 		case "create_member_booking":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_create_member_booking(ctx, field)
 			})
 
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+		case "create_member_booking_round_trip":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_create_member_booking_round_trip(ctx, field)
+			})
+
 		case "view_booking_history":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -19044,6 +19514,11 @@ func (ec *executionContext) unmarshalNMemberBooking2bookingᚑflightᚑsystemᚋ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNMemberBookingRoundTrip2bookingᚑflightᚑsystemᚋentᚐMemberBookingRoundTrip(ctx context.Context, v interface{}) (ent.MemberBookingRoundTrip, error) {
+	res, err := ec.unmarshalInputMemberBookingRoundTrip(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNMemberMemberType2bookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx context.Context, v interface{}) (member.MemberType, error) {
 	var res member.MemberType
 	err := res.UnmarshalGQL(v)
@@ -19569,6 +20044,13 @@ func (ec *executionContext) marshalOBooking2ᚕᚖbookingᚑflightᚑsystemᚋen
 	return ret
 }
 
+func (ec *executionContext) marshalOBooking2ᚖbookingᚑflightᚑsystemᚋentᚐBooking(ctx context.Context, sel ast.SelectionSet, v *ent.Booking) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Booking(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOBookingSeatType2ᚕbookingᚑflightᚑsystemᚋentᚋbookingᚐSeatTypeᚄ(ctx context.Context, v interface{}) ([]booking.SeatType, error) {
 	if v == nil {
 		return nil, nil
@@ -19810,6 +20292,14 @@ func (ec *executionContext) marshalOCustomer2ᚖbookingᚑflightᚑsystemᚋent�
 		return graphql.Null
 	}
 	return ec._Customer(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOCustomerBookingRoundTrip2ᚖbookingᚑflightᚑsystemᚋentᚐCustomerBookingRoundTrip(ctx context.Context, v interface{}) (*ent.CustomerBookingRoundTrip, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputCustomerBookingRoundTrip(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOCustomerWhereInput2ᚕᚖbookingᚑflightᚑsystemᚋentᚐCustomerWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.CustomerWhereInput, error) {

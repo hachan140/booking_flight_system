@@ -29,6 +29,8 @@ type Booking struct {
 	Status booking.Status `json:"status,omitempty"`
 	// SeatType holds the value of the "seat_type" field.
 	SeatType booking.SeatType `json:"seat_type,omitempty"`
+	// IsRound holds the value of the "is_round" field.
+	IsRound bool `json:"is_round,omitempty"`
 	// CustomerID holds the value of the "customer_id" field.
 	CustomerID int `json:"customer_id,omitempty"`
 	// FlightID holds the value of the "flight_id" field.
@@ -83,6 +85,8 @@ func (*Booking) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case booking.FieldIsRound:
+			values[i] = new(sql.NullBool)
 		case booking.FieldID, booking.FieldCustomerID, booking.FieldFlightID:
 			values[i] = new(sql.NullInt64)
 		case booking.FieldCode, booking.FieldStatus, booking.FieldSeatType:
@@ -139,6 +143,12 @@ func (b *Booking) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field seat_type", values[i])
 			} else if value.Valid {
 				b.SeatType = booking.SeatType(value.String)
+			}
+		case booking.FieldIsRound:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field is_round", values[i])
+			} else if value.Valid {
+				b.IsRound = value.Bool
 			}
 		case booking.FieldCustomerID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -212,6 +222,9 @@ func (b *Booking) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("seat_type=")
 	builder.WriteString(fmt.Sprintf("%v", b.SeatType))
+	builder.WriteString(", ")
+	builder.WriteString("is_round=")
+	builder.WriteString(fmt.Sprintf("%v", b.IsRound))
 	builder.WriteString(", ")
 	builder.WriteString("customer_id=")
 	builder.WriteString(fmt.Sprintf("%v", b.CustomerID))

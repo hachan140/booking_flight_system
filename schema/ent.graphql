@@ -91,6 +91,7 @@ type Booking implements Node {
   code: String!
   status: BookingStatus!
   seatType: BookingSeatType!
+  isRound: Boolean!
   customerID: ID
   flightID: ID
   hasFlight: Flight
@@ -165,6 +166,9 @@ input BookingWhereInput {
   seatTypeNEQ: BookingSeatType
   seatTypeIn: [BookingSeatType!]
   seatTypeNotIn: [BookingSeatType!]
+  """is_round field predicates"""
+  isRound: Boolean
+  isRoundNEQ: Boolean
   """customer_id field predicates"""
   customerID: ID
   customerIDNEQ: ID
@@ -209,6 +213,7 @@ input CreateBookingInput {
   code: String!
   status: BookingStatus!
   seatType: BookingSeatType!
+  isRound: Boolean
   hasFlightID: ID
   hasCustomerID: ID
 }
@@ -428,10 +433,9 @@ type Flight implements Node {
 }
 """FlightStatus is enum for the field status"""
 enum FlightStatus @goModel(model: "booking-flight-system/ent/flight.Status") {
-  FLYING
   SCHEDULED
   CANCELED
-  LANDED
+  DELAY
 }
 """
 FlightWhereInput is used for filtering Flight objects.
@@ -854,6 +858,7 @@ input UpdateBookingInput {
   code: String
   status: BookingStatus
   seatType: BookingSeatType
+  isRound: Boolean
   hasFlightID: ID
   clearHasFlight: Boolean
   hasCustomerID: ID

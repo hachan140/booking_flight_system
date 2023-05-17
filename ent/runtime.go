@@ -32,7 +32,21 @@ func init() {
 	// airportDescName is the schema descriptor for name field.
 	airportDescName := airportFields[2].Descriptor()
 	// airport.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	airport.NameValidator = airportDescName.Validators[0].(func(string) error)
+	airport.NameValidator = func() func(string) error {
+		validators := airportDescName.Validators
+		fns := [...]func(string) error{
+			validators[0].(func(string) error),
+			validators[1].(func(string) error),
+		}
+		return func(name string) error {
+			for _, fn := range fns {
+				if err := fn(name); err != nil {
+					return err
+				}
+			}
+			return nil
+		}
+	}()
 	// airportDescLat is the schema descriptor for lat field.
 	airportDescLat := airportFields[3].Descriptor()
 	// airport.LatValidator is a validator for the "lat" field. It is called by the builders before save.
@@ -57,6 +71,10 @@ func init() {
 	bookingDescCode := bookingFields[2].Descriptor()
 	// booking.CodeValidator is a validator for the "code" field. It is called by the builders before save.
 	booking.CodeValidator = bookingDescCode.Validators[0].(func(string) error)
+	// bookingDescIsRound is the schema descriptor for is_round field.
+	bookingDescIsRound := bookingFields[5].Descriptor()
+	// booking.DefaultIsRound holds the default value on creation for the is_round field.
+	booking.DefaultIsRound = bookingDescIsRound.Default.(bool)
 	customerFields := schema.Customer{}.Fields()
 	_ = customerFields
 	// customerDescCreatedAt is the schema descriptor for created_at field.
@@ -101,6 +119,14 @@ func init() {
 	flightDescName := flightFields[2].Descriptor()
 	// flight.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	flight.NameValidator = flightDescName.Validators[0].(func(string) error)
+	// flightDescAvailableEcSlot is the schema descriptor for available_ec_slot field.
+	flightDescAvailableEcSlot := flightFields[5].Descriptor()
+	// flight.AvailableEcSlotValidator is a validator for the "available_ec_slot" field. It is called by the builders before save.
+	flight.AvailableEcSlotValidator = flightDescAvailableEcSlot.Validators[0].(func(int) error)
+	// flightDescAvailableBcSlot is the schema descriptor for available_bc_slot field.
+	flightDescAvailableBcSlot := flightFields[6].Descriptor()
+	// flight.AvailableBcSlotValidator is a validator for the "available_bc_slot" field. It is called by the builders before save.
+	flight.AvailableBcSlotValidator = flightDescAvailableBcSlot.Validators[0].(func(int) error)
 	memberFields := schema.Member{}.Fields()
 	_ = memberFields
 	// memberDescCreatedAt is the schema descriptor for created_at field.

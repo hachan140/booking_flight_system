@@ -22,6 +22,7 @@ func (Booking) Fields() []ent.Field {
 		field.String("code").NotEmpty().Unique(),
 		field.Enum("status").NamedValues("success", "SUCCESS", "cancel", "CANCEL"),
 		field.Enum("seat_type").NamedValues("economic_class", "EC", "business_class", "BC"),
+		field.Bool("is_round").Default(false),
 		field.Int("customer_id").Optional(),
 		field.Int("flight_id").Optional(),
 	}

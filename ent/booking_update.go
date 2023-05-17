@@ -68,6 +68,20 @@ func (bu *BookingUpdate) SetSeatType(bt booking.SeatType) *BookingUpdate {
 	return bu
 }
 
+// SetIsRound sets the "is_round" field.
+func (bu *BookingUpdate) SetIsRound(b bool) *BookingUpdate {
+	bu.mutation.SetIsRound(b)
+	return bu
+}
+
+// SetNillableIsRound sets the "is_round" field if the given value is not nil.
+func (bu *BookingUpdate) SetNillableIsRound(b *bool) *BookingUpdate {
+	if b != nil {
+		bu.SetIsRound(*b)
+	}
+	return bu
+}
+
 // SetCustomerID sets the "customer_id" field.
 func (bu *BookingUpdate) SetCustomerID(i int) *BookingUpdate {
 	bu.mutation.SetCustomerID(i)
@@ -246,6 +260,9 @@ func (bu *BookingUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := bu.mutation.SeatType(); ok {
 		_spec.SetField(booking.FieldSeatType, field.TypeEnum, value)
 	}
+	if value, ok := bu.mutation.IsRound(); ok {
+		_spec.SetField(booking.FieldIsRound, field.TypeBool, value)
+	}
 	if bu.mutation.HasFlightCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -359,6 +376,20 @@ func (buo *BookingUpdateOne) SetStatus(b booking.Status) *BookingUpdateOne {
 // SetSeatType sets the "seat_type" field.
 func (buo *BookingUpdateOne) SetSeatType(bt booking.SeatType) *BookingUpdateOne {
 	buo.mutation.SetSeatType(bt)
+	return buo
+}
+
+// SetIsRound sets the "is_round" field.
+func (buo *BookingUpdateOne) SetIsRound(b bool) *BookingUpdateOne {
+	buo.mutation.SetIsRound(b)
+	return buo
+}
+
+// SetNillableIsRound sets the "is_round" field if the given value is not nil.
+func (buo *BookingUpdateOne) SetNillableIsRound(b *bool) *BookingUpdateOne {
+	if b != nil {
+		buo.SetIsRound(*b)
+	}
 	return buo
 }
 
@@ -569,6 +600,9 @@ func (buo *BookingUpdateOne) sqlSave(ctx context.Context) (_node *Booking, err e
 	}
 	if value, ok := buo.mutation.SeatType(); ok {
 		_spec.SetField(booking.FieldSeatType, field.TypeEnum, value)
+	}
+	if value, ok := buo.mutation.IsRound(); ok {
+		_spec.SetField(booking.FieldIsRound, field.TypeBool, value)
 	}
 	if buo.mutation.HasFlightCleared() {
 		edge := &sqlgraph.EdgeSpec{

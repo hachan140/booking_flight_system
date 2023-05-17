@@ -68,6 +68,20 @@ func (bc *BookingCreate) SetSeatType(bt booking.SeatType) *BookingCreate {
 	return bc
 }
 
+// SetIsRound sets the "is_round" field.
+func (bc *BookingCreate) SetIsRound(b bool) *BookingCreate {
+	bc.mutation.SetIsRound(b)
+	return bc
+}
+
+// SetNillableIsRound sets the "is_round" field if the given value is not nil.
+func (bc *BookingCreate) SetNillableIsRound(b *bool) *BookingCreate {
+	if b != nil {
+		bc.SetIsRound(*b)
+	}
+	return bc
+}
+
 // SetCustomerID sets the "customer_id" field.
 func (bc *BookingCreate) SetCustomerID(i int) *BookingCreate {
 	bc.mutation.SetCustomerID(i)
@@ -177,6 +191,10 @@ func (bc *BookingCreate) defaults() {
 		v := booking.DefaultUpdatedAt()
 		bc.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := bc.mutation.IsRound(); !ok {
+		v := booking.DefaultIsRound
+		bc.mutation.SetIsRound(v)
+	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -210,6 +228,9 @@ func (bc *BookingCreate) check() error {
 		if err := booking.SeatTypeValidator(v); err != nil {
 			return &ValidationError{Name: "seat_type", err: fmt.Errorf(`ent: validator failed for field "Booking.seat_type": %w`, err)}
 		}
+	}
+	if _, ok := bc.mutation.IsRound(); !ok {
+		return &ValidationError{Name: "is_round", err: errors.New(`ent: missing required field "Booking.is_round"`)}
 	}
 	return nil
 }
@@ -256,6 +277,10 @@ func (bc *BookingCreate) createSpec() (*Booking, *sqlgraph.CreateSpec) {
 	if value, ok := bc.mutation.SeatType(); ok {
 		_spec.SetField(booking.FieldSeatType, field.TypeEnum, value)
 		_node.SeatType = value
+	}
+	if value, ok := bc.mutation.IsRound(); ok {
+		_spec.SetField(booking.FieldIsRound, field.TypeBool, value)
+		_node.IsRound = value
 	}
 	if nodes := bc.mutation.HasFlightIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{

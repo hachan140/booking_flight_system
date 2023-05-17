@@ -437,6 +437,10 @@ type BookingWhereInput struct {
 	SeatTypeIn    []booking.SeatType `json:"seatTypeIn,omitempty"`
 	SeatTypeNotIn []booking.SeatType `json:"seatTypeNotIn,omitempty"`
 
+	// "is_round" field predicates.
+	IsRound    *bool `json:"isRound,omitempty"`
+	IsRoundNEQ *bool `json:"isRoundNEQ,omitempty"`
+
 	// "customer_id" field predicates.
 	CustomerID       *int  `json:"customerID,omitempty"`
 	CustomerIDNEQ    *int  `json:"customerIDNEQ,omitempty"`
@@ -667,6 +671,12 @@ func (i *BookingWhereInput) P() (predicate.Booking, error) {
 	}
 	if len(i.SeatTypeNotIn) > 0 {
 		predicates = append(predicates, booking.SeatTypeNotIn(i.SeatTypeNotIn...))
+	}
+	if i.IsRound != nil {
+		predicates = append(predicates, booking.IsRoundEQ(*i.IsRound))
+	}
+	if i.IsRoundNEQ != nil {
+		predicates = append(predicates, booking.IsRoundNEQ(*i.IsRoundNEQ))
 	}
 	if i.CustomerID != nil {
 		predicates = append(predicates, booking.CustomerIDEQ(*i.CustomerID))

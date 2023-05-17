@@ -63,7 +63,6 @@ func (r *Resolver) ValidationResolver() func(ctx context.Context, obj interface{
 			validationErrors := err.(validator.ValidationErrors)
 			return nil, fmt.Errorf("%s:%s", fieldName, validationErrors[0].Translate(r.validationTranslator))
 		}
-
 		return val, nil
 	}
 }
