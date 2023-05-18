@@ -11,7 +11,7 @@ type Mutation{
     delete_by_id(id: Int!): String
     find_member_by_name(name: String!): [Member]
     change_password(oldPassword: String!, newPassword: String!): String
-    update_member_profile(input: UpdateMemberInput): Member!
+    update_member_profile(input: UpdateMember!): Member!
     find_member_by_email(email: String!): Member!
 
     #AIRPORT
@@ -29,11 +29,12 @@ type Mutation{
 
     #FLIGHT
     create_flight(input:CreateFlight!): Flight!
-    cancel_flight(id: Int!): String
     decrease_flight_slot(flight_id: Int!, seat_type: BookingSeatType!): String
     update_flight_status(id: Int!,input: UpdateFlightStatus):Flight!
     search_flight(input: SearchFlight!): [Flight!]
     find_flight_by_id(id: Int!): Flight!
+    update_flight(input: UpdateFlight!): Flight!
+    cancel_flight(id: Int!): String
 
     #CUSTOMER
     create_customer(input: CustomerInput!): Customer!

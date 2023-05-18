@@ -436,6 +436,8 @@ enum FlightStatus @goModel(model: "booking-flight-system/ent/flight.Status") {
   SCHEDULED
   CANCELED
   DELAY
+  LANDED
+  FLYING
 }
 """
 FlightWhereInput is used for filtering Flight objects.

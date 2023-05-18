@@ -91,7 +91,7 @@ var (
 		{Name: "land_at", Type: field.TypeTime},
 		{Name: "available_ec_slot", Type: field.TypeInt},
 		{Name: "available_bc_slot", Type: field.TypeInt},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"SCHEDULED", "CANCELED", "DELAY"}, Default: "SCHEDULED"},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"SCHEDULED", "CANCELED", "DELAY", "LANDED", "FLYING"}, Default: "SCHEDULED"},
 		{Name: "from_airport_id", Type: field.TypeInt, Nullable: true},
 		{Name: "to_airport_id", Type: field.TypeInt, Nullable: true},
 		{Name: "plane_id", Type: field.TypeInt, Nullable: true},

@@ -1,0 +1,6 @@
+input UpdateMember{
+    phoneNumber: String
+    fullName: String
+    dob: Time
+    cid: String
+}

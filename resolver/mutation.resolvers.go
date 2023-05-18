@@ -15,13 +15,27 @@ import (
 	"booking-flight-system/helper"
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"time"
 )
 
 // SignUp is the resolver for the sign_up field.
 func (r *mutationResolver) SignUp(ctx context.Context, input ent.CreateMemberInput) (*ent.Member, error) {
+	if err := helper.StringValidation(input.Email, "[a-z0-9]+@[a-z]+\\.[a-z]{1,2}", "email"); err != nil {
+		return nil, err
+	}
+	if err := helper.StringValidation(input.Password, ".{8,}", "email"); err != nil {
+		return nil, err
+	}
+	if err := helper.StringValidation(input.PhoneNumber, "[0]\\d{9}", "phone number"); err != nil {
+		return nil, err
+	}
+	if err := helper.StringValidation(input.FullName, ".+", "full name"); err != nil {
+		return nil, err
+	}
+	if err := helper.StringValidation(input.Cid, "\\d{8,}", "card identify number"); err != nil {
+		return nil, err
+	}
 	input.Password = helper.SHA256Hashing(input.Password)
 	memberRes, err := r.client.Member.Create().SetInput(input).Save(ctx)
 	if err != nil {
@@ -100,6 +114,10 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 	if helper.SHA256Hashing(oldPassword) != user.Password {
 		return nil, errors.New("password doesn't match")
 	}
+	if err := helper.StringValidation(newPassword, ".{8,}", "new password"); err != nil {
+		return nil, err
+	}
+
 	user, err = user.Update().SetPassword(helper.SHA256Hashing(newPassword)).Save(ctx)
 	if err != nil {
 		return nil, err
@@ -108,9 +126,18 @@ func (r *mutationResolver) ChangePassword(ctx context.Context, oldPassword strin
 }
 
 // UpdateMemberProfile is the resolver for the update_member_profile field.
-func (r *mutationResolver) UpdateMemberProfile(ctx context.Context, input *ent.UpdateMemberInput) (*ent.Member, error) {
+func (r *mutationResolver) UpdateMemberProfile(ctx context.Context, input ent.UpdateMember) (*ent.Member, error) {
 	user, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin, member.MemberTypeMember)
 	if err != nil {
+		return nil, err
+	}
+	if err := helper.StringValidation(*input.PhoneNumber, "[0]\\d{9}", "phone number"); err != nil {
+		return nil, err
+	}
+	if err := helper.StringValidation(*input.FullName, ".+", "full name"); err != nil {
+		return nil, err
+	}
+	if err := helper.StringValidation(*input.Cid, "\\d{8,}", "card identify number"); err != nil {
 		return nil, err
 	}
 	user, err = user.Update().
@@ -141,6 +168,9 @@ func (r *mutationResolver) CreateAirport(ctx context.Context, input ent.CreateAi
 	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
+	if len(input.Name) == 0 || input.Lat < 0 || input.Long < 0 {
+		return nil, errors.New("invalid airport")
+	}
 	airportRes, err := r.client.Airport.Create().SetInput(input).Save(ctx)
 	if err != nil {
 		return nil, err
@@ -152,6 +182,9 @@ func (r *mutationResolver) CreateAirport(ctx context.Context, input ent.CreateAi
 func (r *mutationResolver) UpdateAirport(ctx context.Context, id int, input ent.UpdateAirportInput) (*ent.Airport, error) {
 	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
+	}
+	if len(*input.Name) == 0 || *input.Lat < 0 || *input.Long < 0 {
+		return nil, errors.New("invalid airport")
 	}
 	airportRes, err := r.FindAirportByID(ctx, id)
 	if err != nil {
@@ -211,6 +244,9 @@ func (r *mutationResolver) CreatePlane(ctx context.Context, input ent.CreatePlan
 	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
+	if len(input.Name) == 0 || *input.BusinessClassSlots <= 0 || *input.EconomyClassSlots <= 0 {
+		return nil, errors.New("invalid plane input")
+	}
 	return r.client.Plane.Create().SetInput(input).Save(ctx)
 }
 
@@ -218,6 +254,9 @@ func (r *mutationResolver) CreatePlane(ctx context.Context, input ent.CreatePlan
 func (r *mutationResolver) UpdatePlane(ctx context.Context, id int, input ent.UpdatePlaneInput) (*ent.Plane, error) {
 	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
+	}
+	if len(*input.Name) == 0 || *input.BusinessClassSlots <= 0 || *input.EconomyClassSlots <= 0 {
+		return nil, errors.New("invalid plane input")
 	}
 	plane, err := r.client.Plane.UpdateOneID(id).SetInput(input).Save(ctx)
 	if err != nil {
@@ -255,6 +294,9 @@ func (r *mutationResolver) CreateFlight(ctx context.Context, input ent.CreateFli
 	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
+	if len(input.Name) == 0 {
+		return nil, errors.New("name of flight can't be empty")
+	}
 	if input.LandAt.Compare(input.DepartAt) <= 0 {
 		return nil, errors.New("landing time must be greater than take-off time")
 	}
@@ -266,20 +308,6 @@ func (r *mutationResolver) CreateFlight(ctx context.Context, input ent.CreateFli
 		return nil, err
 	}
 	return r.client.Flight.Create().SetName(input.Name).SetDepartAt(input.DepartAt).SetLandAt(input.LandAt).SetToAirportID(input.ToID).SetFromAirportID(input.FromID).SetPlaneID(input.PlaneID).SetAvailableBcSlot(int(plane.BusinessClassSlots)).SetAvailableEcSlot(int(plane.EconomyClassSlots)).Save(ctx)
-}
-
-// CancelFlight is the resolver for the cancel_flight field.
-func (r *mutationResolver) CancelFlight(ctx context.Context, id int) (*string, error) {
-	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
-		return nil, err
-	}
-	message := "cancel flight successfully"
-	f, _ := r.FindFlightByID(ctx, id)
-	if _, err := f.Update().SetStatus(flight.StatusCanceled).Save(ctx); err != nil {
-		return nil, err
-	}
-	r.client.Booking.Update().Where(booking.FlightID(id)).SetStatus(booking.StatusCancel)
-	return &message, nil
 }
 
 // DecreaseFlightSlot is the resolver for the decrease_flight_slot field.
@@ -350,18 +378,91 @@ func (r *mutationResolver) FindFlightByID(ctx context.Context, id int) (*ent.Fli
 	return f, nil
 }
 
+// UpdateFlight is the resolver for the update_flight field.
+func (r *mutationResolver) UpdateFlight(ctx context.Context, input ent.UpdateFlight) (*ent.Flight, error) {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+		return nil, err
+	}
+	if len(*input.Name) == 0 {
+		return nil, errors.New("name of flight can't be empty")
+	}
+	if input.LandAt.Compare(*input.DepartAt) <= 0 {
+		return nil, errors.New("landing time must be greater than take-off time")
+	}
+	flightRes, err := r.FindFlightByID(ctx, input.ID)
+	if err != nil {
+		return nil, err
+	}
+	if _, err := r.FindPlaneByID(ctx, *input.PlaneID); err != nil {
+		return nil, errors.New("can't find plane")
+	}
+	if flightRes.Status == flight.StatusCanceled {
+		return nil, errors.New("can't update canceled flight")
+	}
+	flightRes, err = flightRes.Update().SetDepartAt(*input.DepartAt).SetLandAt(*input.LandAt).SetPlaneID(*input.PlaneID).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return flightRes, nil
+}
+
+// CancelFlight is the resolver for the cancel_flight field.
+func (r *mutationResolver) CancelFlight(ctx context.Context, id int) (*string, error) {
+	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
+		return nil, err
+	}
+	message := "cancel flight successfully"
+	f, _ := r.FindFlightByID(ctx, id)
+	if _, err := f.Update().SetStatus(flight.StatusCanceled).Save(ctx); err != nil {
+		return nil, err
+	}
+	r.client.Booking.Update().Where(booking.FlightID(id)).SetStatus(booking.StatusCancel)
+	return &message, nil
+}
+
 // CreateCustomer is the resolver for the create_customer field.
 func (r *mutationResolver) CreateCustomer(ctx context.Context, input ent.CustomerInput) (*ent.Customer, error) {
-	return r.client.Customer.Create().SetEmail(input.Email).SetPhoneNumber(input.PhoneNumber).SetCid(input.Cid).SetFullName(input.FullName).Save(ctx)
+	if err := helper.StringValidation(input.Email, "[a-z0-9]+@[a-z]+\\.[a-z]{1,2}", "email"); err != nil {
+		return nil, err
+	}
+	if err := helper.StringValidation(input.PhoneNumber, "[0]\\d{9}", "phone number"); err != nil {
+		return nil, err
+	}
+	if err := helper.StringValidation(input.FullName, ".+", "full name"); err != nil {
+		return nil, err
+	}
+	if err := helper.StringValidation(input.Cid, "\\d{8,}", "card identify number"); err != nil {
+		return nil, err
+	}
+	customerRes, err := r.client.Customer.Create().SetEmail(input.Email).SetPhoneNumber(input.PhoneNumber).SetCid(input.Cid).SetFullName(input.FullName).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return customerRes, nil
 }
 
 // FindCustomerByCid is the resolver for the find_customer_by_cid field.
 func (r *mutationResolver) FindCustomerByCid(ctx context.Context, cid string) (*ent.Customer, error) {
-	return r.client.Customer.Query().Where(customer.Cid(cid)).Only(ctx)
+	customerRes, err := r.client.Customer.Query().Where(customer.Cid(cid)).Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return customerRes, err
 }
 
 // CreateCustomerBooking is the resolver for the create_customer_booking field.
 func (r *mutationResolver) CreateCustomerBooking(ctx context.Context, input ent.CustomerBooking) (*ent.Booking, error) {
+	flightRes, err := r.FindFlightByID(ctx, input.FlightID)
+	if err != nil {
+		return nil, err
+	}
+	if input.SeatType.String() == "EC" && *flightRes.AvailableEcSlot == 0 {
+		return nil, errors.New("out of economy class")
+	}
+	if input.SeatType.String() == "BC" && *flightRes.AvailableBcSlot == 0 {
+		return nil, errors.New("out of business class")
+	}
+
 	bookingRes, err := r.client.Booking.Create().
 		SetFlightID(input.FlightID).
 		SetSeatType(input.SeatType).
@@ -379,6 +480,26 @@ func (r *mutationResolver) CreateCustomerBooking(ctx context.Context, input ent.
 
 // CreateCustomerBookingRoundTrip is the resolver for the create_customer_booking_round_trip field.
 func (r *mutationResolver) CreateCustomerBookingRoundTrip(ctx context.Context, input *ent.CustomerBookingRoundTrip) ([]*ent.Booking, error) {
+	flightArrive, err := r.FindFlightByID(ctx, input.FlightIDArrive)
+	if err != nil {
+		return nil, err
+	}
+	if input.SeatTypeArrive.String() == "EC" && *flightArrive.AvailableEcSlot == 0 {
+		return nil, errors.New("out of economy class")
+	}
+	if input.SeatTypeArrive.String() == "BC" && *flightArrive.AvailableBcSlot == 0 {
+		return nil, errors.New("out of business class")
+	}
+	flightCB, err := r.FindFlightByID(ctx, input.FlightIDComeback)
+	if err != nil {
+		return nil, err
+	}
+	if input.SeatTypeComeback.String() == "EC" && *flightCB.AvailableEcSlot == 0 {
+		return nil, errors.New("out of economy class")
+	}
+	if input.SeatTypeComeback.String() == "BC" && *flightCB.AvailableBcSlot == 0 {
+		return nil, errors.New("out of business class")
+	}
 	bookingArrival, err := r.client.Booking.Create().
 		SetFlightID(input.FlightIDArrive).
 		SetSeatType(input.SeatTypeArrive).
@@ -419,6 +540,16 @@ func (r *mutationResolver) CreateMemberBooking(ctx context.Context, input ent.Me
 	if err != nil {
 		return nil, err
 	}
+	flightRes, err := r.FindFlightByID(ctx, input.FlightID)
+	if err != nil {
+		return nil, err
+	}
+	if input.SeatType.String() == "EC" && *flightRes.AvailableEcSlot == 0 {
+		return nil, errors.New("out of economy class")
+	}
+	if input.SeatType.String() == "BC" && *flightRes.AvailableBcSlot == 0 {
+		return nil, errors.New("out of business class")
+	}
 	bookingRes, err := r.client.Booking.Create().
 		SetCode(helper.GetRandomString(cus.ID, input.FlightID)).
 		SetSeatType(input.SeatType).
@@ -443,6 +574,27 @@ func (r *mutationResolver) CreateMemberBookingRoundTrip(ctx context.Context, inp
 	cus, err := r.client.Customer.Query().Where(customer.MemberID(mem.ID)).Only(ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	flightArrive, err := r.FindFlightByID(ctx, input.FlightIDArrive)
+	if err != nil {
+		return nil, err
+	}
+	if input.SeatTypeArrive.String() == "EC" && *flightArrive.AvailableEcSlot == 0 {
+		return nil, errors.New("out of economy class")
+	}
+	if input.SeatTypeArrive.String() == "BC" && *flightArrive.AvailableBcSlot == 0 {
+		return nil, errors.New("out of business class")
+	}
+	flightCB, err := r.FindFlightByID(ctx, input.FlightIDComeback)
+	if err != nil {
+		return nil, err
+	}
+	if input.SeatTypeComeback.String() == "EC" && *flightCB.AvailableEcSlot == 0 {
+		return nil, errors.New("out of economy class")
+	}
+	if input.SeatTypeComeback.String() == "BC" && *flightCB.AvailableBcSlot == 0 {
+		return nil, errors.New("out of business class")
 	}
 	bookingArrival, err := r.client.Booking.Create().
 		SetCode(helper.GetRandomString(cus.ID, input.FlightIDArrive)).
@@ -520,7 +672,7 @@ func (r *mutationResolver) CancelBooking(ctx context.Context, input ent.SearchBo
 		return nil, err
 	}
 	departAt := fl.DepartAt
-	compareTime := time.Now().Add(time.Hour * 4)
+	compareTime := time.Now().Add(time.Hour * 48)
 	if departAt.Equal(compareTime) || departAt.Before(compareTime) {
 		return nil, errors.New("can't cancel booking because flight will be take off")
 	}
@@ -539,19 +691,3 @@ func (r *mutationResolver) CancelBooking(ctx context.Context, input ent.SearchBo
 func (r *Resolver) Mutation() graphql1.MutationResolver { return &mutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//   - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//     it when you're done.
-//   - You have helper methods in this file. Move them out to keep these resolver files clean.
-func (r *mutationResolver) CreateCustomerBookingRound(ctx context.Context, input *ent.CustomerBookingRoundTrip) ([]*ent.Booking, error) {
-	panic(fmt.Errorf("not implemented: CreateCustomerBookingRound - create_customer_booking_round"))
-}
-func (r *mutationResolver) UpdateFlightSlot(ctx context.Context) (*ent.Flight, error) {
-	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
-		return nil, err
-	}
-	panic(fmt.Errorf("not implemented: UpdateFlightSlot - update_flight_slot"))
-}

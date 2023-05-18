@@ -22,3 +22,11 @@ input SearchFlight{
     depart_at: Time!
 }
 
+input UpdateFlight{
+    id: Int!
+    name: String
+    departAt: Time
+    landAt: Time
+    planeID: Int
+}
+

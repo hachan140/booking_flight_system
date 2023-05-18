@@ -70,6 +70,14 @@ type Token struct {
 	ExpiredAt time.Time `json:"expired_at"`
 }
 
+type UpdateFlight struct {
+	ID       int        `json:"id"`
+	Name     *string    `json:"name,omitempty"`
+	DepartAt *time.Time `json:"departAt,omitempty"`
+	LandAt   *time.Time `json:"landAt,omitempty"`
+	PlaneID  *int       `json:"planeID,omitempty"`
+}
+
 type UpdateFlightSlot struct {
 	AvailableEcSlots int `json:"available_ec_slots"`
 	AvailableBcSlots int `json:"available_bc_slots"`
@@ -77,4 +85,11 @@ type UpdateFlightSlot struct {
 
 type UpdateFlightStatus struct {
 	Status flight.Status `json:"status"`
+}
+
+type UpdateMember struct {
+	PhoneNumber *string    `json:"phoneNumber,omitempty"`
+	FullName    *string    `json:"fullName,omitempty"`
+	Dob         *time.Time `json:"dob,omitempty"`
+	Cid         *string    `json:"cid,omitempty"`
 }
