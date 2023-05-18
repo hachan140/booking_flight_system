@@ -1,3 +1,15 @@
+
+type CustomerOps{
+    create_customer(input: CustomerInput!): Customer! @goField(forceResolver: true)
+
+    list_customers(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: CustomerOrder): CustomerConnection! @goField(forceResolver: true)
+}
+
+extend type Mutation {
+    customer: CustomerOps! @goField(forceResolver: true)
+}
+
+
 input CustomerInput{
     email: String!
     phoneNumber: String!

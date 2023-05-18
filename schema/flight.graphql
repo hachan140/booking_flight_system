@@ -1,3 +1,19 @@
+
+type FlightOps{
+    create_flight(input:CreateFlight!): Flight! @goField(forceResolver: true)
+
+    update_flight_status(id: Int!,input: UpdateFlightStatus):Flight! @goField(forceResolver: true)
+    search_flight(input: SearchFlight!): [Flight!] @goField(forceResolver: true)
+    update_flight(input: UpdateFlight!): Flight! @goField(forceResolver: true)
+    cancel_flight(id: Int!): String @goField(forceResolver: true)
+    find_airport_by_name(name: String!): Airport! @goField(forceResolver: true)
+    find_flight_by_id(id: Int!): Flight! @goField(forceResolver: true)
+    list_flights(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: FlightOrder): FlightConnection! @goField(forceResolver: true)
+}
+extend type Mutation {
+    flight: FlightOps! @goField(forceResolver: true)
+}
+
 input CreateFlight {
     name: String!
     departAt: Time!

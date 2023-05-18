@@ -1,3 +1,22 @@
+type BookingOps{
+    create_customer_booking(input: CustomerBooking!): Booking! @goField(forceResolver: true)
+    create_customer_booking_round_trip(input: CustomerBookingRoundTrip): [Booking!] @goField(forceResolver: true)
+    create_member_booking(input: MemberBooking!): Booking @goField(forceResolver: true)
+    create_member_booking_round_trip(input: MemberBookingRoundTrip!): [Booking!] @goField(forceResolver: true)
+    view_booking_history: [Booking!] @goField(forceResolver: true)
+    search_booking(input: SearchBooking!): Booking! @goField(forceResolver: true)
+    cancel_booking(input: SearchBooking!): String @goField(forceResolver: true)
+    update_bookings_status(flight_id: Int!): Int @goField(forceResolver: true)
+    find_flight_by_id(id: Int!): Flight! @goField(forceResolver: true)
+    find_customer_by_cid(cid: String!): Customer! @goField(forceResolver: true)
+    decrease_flight_slot(flight_id: Int!, seat_type: BookingSeatType!): String @goField(forceResolver: true)
+    list_bookings(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: BookingOrder): BookingConnection! @goField(forceResolver: true)
+}
+
+extend type Mutation {
+    booking: BookingOps! @goField(forceResolver: true)
+}
+
 input CustomerBooking{
     seatType: BookingSeatType!
     flight_id: Int!

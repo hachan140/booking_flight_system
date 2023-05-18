@@ -1,3 +1,25 @@
+type Token {
+    token: String!
+    expired_at: Time!
+}
+
+type MemberOps{
+    sign_up(input:CreateMemberInput!): Member! @goField(forceResolver: true)
+    login(email: String!, password: String!): Token! @goField(forceResolver: true)
+    self: Member! @goField(forceResolver: true)
+    delete_by_id(id: Int!): String @goField(forceResolver: true)
+    find_member_by_name(name: String!): [Member] @goField(forceResolver: true)
+    change_password(oldPassword: String!, newPassword: String!): String @goField(forceResolver: true)
+    update_member_profile(input: UpdateMember!): Member! @goField(forceResolver: true)
+    find_member_by_email(email: String!): Member! @goField(forceResolver: true)
+    list_members(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: MemberOrder): MemberConnection! @goField(forceResolver: true)
+}
+
+extend type Mutation {
+    member: MemberOps! @goField(forceResolver: true)
+}
+
+
 input UpdateMember{
     phoneNumber: String
     fullName: String

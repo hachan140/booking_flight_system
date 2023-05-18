@@ -8,6 +8,29 @@ import (
 	"time"
 )
 
+type AirportOps struct {
+	CreateAirport   *Airport           `json:"create_airport"`
+	UpdateAirport   *Airport           `json:"update_airport"`
+	DeleteAirport   *string            `json:"delete_airport,omitempty"`
+	FindAirportByID *Airport           `json:"find_airport_by_id"`
+	ListAirports    *AirportConnection `json:"list_airports"`
+}
+
+type BookingOps struct {
+	CreateCustomerBooking          *Booking           `json:"create_customer_booking"`
+	CreateCustomerBookingRoundTrip []*Booking         `json:"create_customer_booking_round_trip,omitempty"`
+	CreateMemberBooking            *Booking           `json:"create_member_booking,omitempty"`
+	CreateMemberBookingRoundTrip   []*Booking         `json:"create_member_booking_round_trip,omitempty"`
+	ViewBookingHistory             []*Booking         `json:"view_booking_history,omitempty"`
+	SearchBooking                  *Booking           `json:"search_booking"`
+	CancelBooking                  *string            `json:"cancel_booking,omitempty"`
+	UpdateBookingsStatus           *int               `json:"update_bookings_status,omitempty"`
+	FindFlightByID                 *Flight            `json:"find_flight_by_id"`
+	FindCustomerByCid              *Customer          `json:"find_customer_by_cid"`
+	DecreaseFlightSlot             *string            `json:"decrease_flight_slot,omitempty"`
+	ListBookings                   *BookingConnection `json:"list_bookings"`
+}
+
 type CreateFlight struct {
 	Name     string    `json:"name"`
 	DepartAt time.Time `json:"departAt"`
@@ -40,6 +63,22 @@ type CustomerInput struct {
 	Cid         string     `json:"cid"`
 }
 
+type CustomerOps struct {
+	CreateCustomer *Customer           `json:"create_customer"`
+	ListCustomers  *CustomerConnection `json:"list_customers"`
+}
+
+type FlightOps struct {
+	CreateFlight       *Flight           `json:"create_flight"`
+	UpdateFlightStatus *Flight           `json:"update_flight_status"`
+	SearchFlight       []*Flight         `json:"search_flight,omitempty"`
+	UpdateFlight       *Flight           `json:"update_flight"`
+	CancelFlight       *string           `json:"cancel_flight,omitempty"`
+	FindAirportByName  *Airport          `json:"find_airport_by_name"`
+	FindFlightByID     *Flight           `json:"find_flight_by_id"`
+	ListFlights        *FlightConnection `json:"list_flights"`
+}
+
 type MemberBooking struct {
 	SeatType booking.SeatType `json:"seatType"`
 	FlightID int              `json:"flight_id"`
@@ -51,6 +90,26 @@ type MemberBookingRoundTrip struct {
 	FlightIDArrive   int              `json:"flight_id_arrive"`
 	SeatTypeComeback booking.SeatType `json:"seat_type_comeback"`
 	FlightIDComeback int              `json:"flight_id_comeback"`
+}
+
+type MemberOps struct {
+	SignUp              *Member           `json:"sign_up"`
+	Login               *Token            `json:"login"`
+	Self                *Member           `json:"self"`
+	DeleteByID          *string           `json:"delete_by_id,omitempty"`
+	FindMemberByName    []*Member         `json:"find_member_by_name,omitempty"`
+	ChangePassword      *string           `json:"change_password,omitempty"`
+	UpdateMemberProfile *Member           `json:"update_member_profile"`
+	FindMemberByEmail   *Member           `json:"find_member_by_email"`
+	ListMembers         *MemberConnection `json:"list_members"`
+}
+
+type PlaneOps struct {
+	CreatePlane   *Plane           `json:"create_plane"`
+	UpdatePlane   *Plane           `json:"update_plane"`
+	DeletePlane   *string          `json:"delete_plane,omitempty"`
+	FindPlaneByID *Plane           `json:"find_plane_by_id"`
+	ListPlanes    *PlaneConnection `json:"list_planes"`
 }
 
 type SearchBooking struct {
