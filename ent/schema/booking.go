@@ -17,14 +17,14 @@ type Booking struct {
 // Fields of the Booking.
 func (Booking) Fields() []ent.Field {
 	return []ent.Field{
-		field.Time("created_at").Default(time.Now),
-		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
-		field.String("code").NotEmpty().Unique(),
-		field.Enum("status").NamedValues("success", "SUCCESS", "cancel", "CANCEL"),
-		field.Enum("seat_type").NamedValues("economic_class", "EC", "business_class", "BC"),
-		field.Bool("is_round").Default(false),
-		field.Int("customer_id").Optional(),
-		field.Int("flight_id").Optional(),
+		field.Time("created_at").Default(time.Now).Annotations(entgql.OrderField("CREATED_AT")),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now).Annotations(entgql.OrderField("UPDATED_AT")),
+		field.String("code").NotEmpty().Unique().Annotations(entgql.OrderField("CODE")),
+		field.Enum("status").NamedValues("success", "SUCCESS", "cancel", "CANCEL").Annotations(entgql.OrderField("STATUS")),
+		field.Enum("seat_type").NamedValues("economic_class", "EC", "business_class", "BC").Annotations(entgql.OrderField("SEAT_TYPE")),
+		field.Bool("is_round").Default(false).Annotations(entgql.OrderField("IS_ROUND")),
+		field.Int("customer_id").Optional().Annotations(entgql.OrderField("CUSTOMER_ID")),
+		field.Int("flight_id").Optional().Annotations(entgql.OrderField("FLIGHT_ID")),
 	}
 }
 

@@ -13,6 +13,7 @@ type Mutation{
     change_password(oldPassword: String!, newPassword: String!): String
     update_member_profile(input: UpdateMember!): Member!
     find_member_by_email(email: String!): Member!
+    list_members(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: MemberOrder): MemberConnection!
 
     #AIRPORT
     create_airport(input:CreateAirportInput!): Airport!
@@ -20,12 +21,14 @@ type Mutation{
     delete_airport(id: Int!): String
     find_airport_by_id(id: Int!): Airport!
     find_airport_by_name(name: String!): Airport!
+    list_airports(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: AirportOrder): AirportConnection!
 
     #PLANE
     create_plane(input:CreatePlaneInput!): Plane!
     update_plane(id:Int!, input: UpdatePlaneInput!): Plane!
     delete_plane(id:Int!): String
     find_plane_by_id(id: Int!): Plane!
+    list_planes(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: PlaneOrder): PlaneConnection!
 
     #FLIGHT
     create_flight(input:CreateFlight!): Flight!
@@ -35,10 +38,12 @@ type Mutation{
     find_flight_by_id(id: Int!): Flight!
     update_flight(input: UpdateFlight!): Flight!
     cancel_flight(id: Int!): String
+    list_flights(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: FlightOrder): FlightConnection!
 
     #CUSTOMER
     create_customer(input: CustomerInput!): Customer!
     find_customer_by_cid(cid: String!): Customer!
+    list_customers(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: CustomerOrder): CustomerConnection!
 
     #BOOKING
     create_customer_booking(input: CustomerBooking!): Booking!
@@ -48,5 +53,7 @@ type Mutation{
     view_booking_history: [Booking!]
     search_booking(input: SearchBooking!): Booking!
     cancel_booking(input: SearchBooking!): String
+    update_bookings_status(flight_id: Int!): Int
+    list_bookings(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: BookingOrder): BookingConnection!
 }
 

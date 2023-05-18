@@ -30,3 +30,13 @@ input UpdateFlight{
     planeID: Int
 }
 
+type FlightConnection{
+    edges: [FlightEdge]
+    pageInfo: PageInfo
+    totalCount: Int!
+}
+
+type FlightEdge{
+    node: Flight
+    cursor: Cursor!
+}

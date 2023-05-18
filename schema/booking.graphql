@@ -32,3 +32,14 @@ input SearchBooking{
     cid: String!
 }
 
+type BookingConnection{
+    edges: [BookingEdge]
+    pageInfo: PageInfo
+    totalCount: Int!
+}
+
+type BookingEdge{
+    node: Booking
+    cursor: Cursor!
+}
+

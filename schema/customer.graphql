@@ -6,3 +6,13 @@ input CustomerInput{
     cid: String!
 }
 
+type CustomerConnection{
+    edges: [CustomerEdge]
+    pageInfo: PageInfo
+    totalCount: Int!
+}
+
+type CustomerEdge{
+    node: Customer
+    cursor: Cursor!
+}

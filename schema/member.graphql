@@ -4,3 +4,15 @@ input UpdateMember{
     dob: Time
     cid: String
 }
+
+type MemberConnection{
+    edges: [MemberEdge]
+    pageInfo: PageInfo!
+    totalCount: Int!
+}
+
+type MemberEdge{
+    node: Member
+    cursor: Cursor!
+}
+

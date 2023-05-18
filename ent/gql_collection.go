@@ -11,6 +11,7 @@ import (
 	"booking-flight-system/ent/plane"
 	"context"
 
+	"entgo.io/contrib/entgql"
 	"entgo.io/ent/dialect/sql"
 	"github.com/99designs/gqlgen/graphql"
 )
@@ -119,6 +120,28 @@ func newAirportPaginateArgs(rv map[string]any) *airportPaginateArgs {
 	}
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &AirportOrder{Field: &AirportOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithAirportOrder(order))
+			}
+		case *AirportOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithAirportOrder(v))
+			}
+		}
 	}
 	if v, ok := rv[whereField].(*AirportWhereInput); ok {
 		args.opts = append(args.opts, WithAirportFilter(v.Filter))
@@ -250,6 +273,28 @@ func newBookingPaginateArgs(rv map[string]any) *bookingPaginateArgs {
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
 	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &BookingOrder{Field: &BookingOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithBookingOrder(order))
+			}
+		case *BookingOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithBookingOrder(v))
+			}
+		}
+	}
 	if v, ok := rv[whereField].(*BookingWhereInput); ok {
 		args.opts = append(args.opts, WithBookingFilter(v.Filter))
 	}
@@ -377,6 +422,28 @@ func newCustomerPaginateArgs(rv map[string]any) *customerPaginateArgs {
 	}
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &CustomerOrder{Field: &CustomerOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithCustomerOrder(order))
+			}
+		case *CustomerOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithCustomerOrder(v))
+			}
+		}
 	}
 	if v, ok := rv[whereField].(*CustomerWhereInput); ok {
 		args.opts = append(args.opts, WithCustomerFilter(v.Filter))
@@ -549,6 +616,28 @@ func newFlightPaginateArgs(rv map[string]any) *flightPaginateArgs {
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
 	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &FlightOrder{Field: &FlightOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithFlightOrder(order))
+			}
+		case *FlightOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithFlightOrder(v))
+			}
+		}
+	}
 	if v, ok := rv[whereField].(*FlightWhereInput); ok {
 		args.opts = append(args.opts, WithFlightFilter(v.Filter))
 	}
@@ -661,6 +750,28 @@ func newMemberPaginateArgs(rv map[string]any) *memberPaginateArgs {
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
 	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &MemberOrder{Field: &MemberOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithMemberOrder(order))
+			}
+		case *MemberOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithMemberOrder(v))
+			}
+		}
+	}
 	if v, ok := rv[whereField].(*MemberWhereInput); ok {
 		args.opts = append(args.opts, WithMemberFilter(v.Filter))
 	}
@@ -764,6 +875,28 @@ func newPlanePaginateArgs(rv map[string]any) *planePaginateArgs {
 	}
 	if v := rv[beforeField]; v != nil {
 		args.before = v.(*Cursor)
+	}
+	if v, ok := rv[orderByField]; ok {
+		switch v := v.(type) {
+		case map[string]any:
+			var (
+				err1, err2 error
+				order      = &PlaneOrder{Field: &PlaneOrderField{}, Direction: entgql.OrderDirectionAsc}
+			)
+			if d, ok := v[directionField]; ok {
+				err1 = order.Direction.UnmarshalGQL(d)
+			}
+			if f, ok := v[fieldField]; ok {
+				err2 = order.Field.UnmarshalGQL(f)
+			}
+			if err1 == nil && err2 == nil {
+				args.opts = append(args.opts, WithPlaneOrder(order))
+			}
+		case *PlaneOrder:
+			if v != nil {
+				args.opts = append(args.opts, WithPlaneOrder(v))
+			}
+		}
 	}
 	if v, ok := rv[whereField].(*PlaneWhereInput); ok {
 		args.opts = append(args.opts, WithPlaneFilter(v.Filter))

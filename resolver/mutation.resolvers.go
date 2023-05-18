@@ -15,8 +15,11 @@ import (
 	"booking-flight-system/helper"
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
+
+	"entgo.io/contrib/entgql"
 )
 
 // SignUp is the resolver for the sign_up field.
@@ -163,6 +166,11 @@ func (r *mutationResolver) FindMemberByEmail(ctx context.Context, email string) 
 	return memberRes, nil
 }
 
+// ListMembers is the resolver for the list_members field.
+func (r *mutationResolver) ListMembers(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.MemberOrder) (*ent.MemberConnection, error) {
+	panic(fmt.Errorf("not implemented: ListMembers - list_members"))
+}
+
 // CreateAirport is the resolver for the create_airport field.
 func (r *mutationResolver) CreateAirport(ctx context.Context, input ent.CreateAirportInput) (*ent.Airport, error) {
 	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
@@ -239,6 +247,11 @@ func (r *mutationResolver) FindAirportByName(ctx context.Context, name string) (
 	return a, nil
 }
 
+// ListAirports is the resolver for the list_airports field.
+func (r *mutationResolver) ListAirports(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.AirportOrder) (*ent.AirportConnection, error) {
+	panic(fmt.Errorf("not implemented: ListAirports - list_airports"))
+}
+
 // CreatePlane is the resolver for the create_plane field.
 func (r *mutationResolver) CreatePlane(ctx context.Context, input ent.CreatePlaneInput) (*ent.Plane, error) {
 	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
@@ -287,6 +300,11 @@ func (r *mutationResolver) FindPlaneByID(ctx context.Context, id int) (*ent.Plan
 		return nil, err
 	}
 	return plane, nil
+}
+
+// ListPlanes is the resolver for the list_planes field.
+func (r *mutationResolver) ListPlanes(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.PlaneOrder) (*ent.PlaneConnection, error) {
+	panic(fmt.Errorf("not implemented: ListPlanes - list_planes"))
 }
 
 // CreateFlight is the resolver for the create_flight field.
@@ -420,6 +438,11 @@ func (r *mutationResolver) CancelFlight(ctx context.Context, id int) (*string, e
 	return &message, nil
 }
 
+// ListFlights is the resolver for the list_flights field.
+func (r *mutationResolver) ListFlights(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.FlightOrder) (*ent.FlightConnection, error) {
+	panic(fmt.Errorf("not implemented: ListFlights - list_flights"))
+}
+
 // CreateCustomer is the resolver for the create_customer field.
 func (r *mutationResolver) CreateCustomer(ctx context.Context, input ent.CustomerInput) (*ent.Customer, error) {
 	if err := helper.StringValidation(input.Email, "[a-z0-9]+@[a-z]+\\.[a-z]{1,2}", "email"); err != nil {
@@ -448,6 +471,11 @@ func (r *mutationResolver) FindCustomerByCid(ctx context.Context, cid string) (*
 		return nil, err
 	}
 	return customerRes, err
+}
+
+// ListCustomers is the resolver for the list_customers field.
+func (r *mutationResolver) ListCustomers(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.CustomerOrder) (*ent.CustomerConnection, error) {
+	panic(fmt.Errorf("not implemented: ListCustomers - list_customers"))
 }
 
 // CreateCustomerBooking is the resolver for the create_customer_booking field.
@@ -685,6 +713,20 @@ func (r *mutationResolver) CancelBooking(ctx context.Context, input ent.SearchBo
 		return nil, err
 	}
 	return &message, nil
+}
+
+// UpdateBookingsStatus is the resolver for the update_bookings_status field.
+func (r *mutationResolver) UpdateBookingsStatus(ctx context.Context, flightID int) (*int, error) {
+	bookings, err := r.client.Booking.Update().Where(booking.FlightID(flightID)).SetStatus(booking.StatusCancel).Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &bookings, nil
+}
+
+// ListBookings is the resolver for the list_bookings field.
+func (r *mutationResolver) ListBookings(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.BookingOrder) (*ent.BookingConnection, error) {
+	panic(fmt.Errorf("not implemented: ListBookings - list_bookings"))
 }
 
 // Mutation returns graphql1.MutationResolver implementation.

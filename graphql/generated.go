@@ -43,6 +43,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Mutation() MutationResolver
+	PlaneEdge() PlaneEdgeResolver
 	Query() QueryResolver
 }
 
@@ -61,6 +62,17 @@ type ComplexityRoot struct {
 		UpdatedAt  func(childComplexity int) int
 	}
 
+	AirportConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	AirportEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	Booking struct {
 		Code        func(childComplexity int) int
 		CreatedAt   func(childComplexity int) int
@@ -75,6 +87,17 @@ type ComplexityRoot struct {
 		UpdatedAt   func(childComplexity int) int
 	}
 
+	BookingConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	BookingEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	Customer struct {
 		Cid         func(childComplexity int) int
 		CreatedAt   func(childComplexity int) int
@@ -87,6 +110,17 @@ type ComplexityRoot struct {
 		MemberID    func(childComplexity int) int
 		PhoneNumber func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
+	}
+
+	CustomerConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	CustomerEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	Flight struct {
@@ -108,6 +142,17 @@ type ComplexityRoot struct {
 		UpdatedAt       func(childComplexity int) int
 	}
 
+	FlightConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	FlightEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
+	}
+
 	Member struct {
 		Cid         func(childComplexity int) int
 		CreatedAt   func(childComplexity int) int
@@ -119,6 +164,17 @@ type ComplexityRoot struct {
 		MemberType  func(childComplexity int) int
 		PhoneNumber func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
+	}
+
+	MemberConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	MemberEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -144,12 +200,19 @@ type ComplexityRoot struct {
 		FindMemberByEmail              func(childComplexity int, email string) int
 		FindMemberByName               func(childComplexity int, name string) int
 		FindPlaneByID                  func(childComplexity int, id int) int
+		ListAirports                   func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.AirportOrder) int
+		ListBookings                   func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.BookingOrder) int
+		ListCustomers                  func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.CustomerOrder) int
+		ListFlights                    func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.FlightOrder) int
+		ListMembers                    func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.MemberOrder) int
+		ListPlanes                     func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.PlaneOrder) int
 		Login                          func(childComplexity int, email string, password string) int
 		SearchBooking                  func(childComplexity int, input ent.SearchBooking) int
 		SearchFlight                   func(childComplexity int, input ent.SearchFlight) int
 		Self                           func(childComplexity int) int
 		SignUp                         func(childComplexity int, input ent.CreateMemberInput) int
 		UpdateAirport                  func(childComplexity int, id int, input ent.UpdateAirportInput) int
+		UpdateBookingsStatus           func(childComplexity int, flightID int) int
 		UpdateFlight                   func(childComplexity int, input ent.UpdateFlight) int
 		UpdateFlightStatus             func(childComplexity int, id int, input *ent.UpdateFlightStatus) int
 		UpdateMemberProfile            func(childComplexity int, input ent.UpdateMember) int
@@ -173,6 +236,17 @@ type ComplexityRoot struct {
 		Name               func(childComplexity int) int
 		Status             func(childComplexity int) int
 		UpdatedAt          func(childComplexity int) int
+	}
+
+	PlaneConnection struct {
+		Edges      func(childComplexity int) int
+		PageInfo   func(childComplexity int) int
+		TotalCount func(childComplexity int) int
+	}
+
+	PlaneEdge struct {
+		Cursor func(childComplexity int) int
+		Node   func(childComplexity int) int
 	}
 
 	Query struct {
@@ -201,15 +275,18 @@ type MutationResolver interface {
 	ChangePassword(ctx context.Context, oldPassword string, newPassword string) (*string, error)
 	UpdateMemberProfile(ctx context.Context, input ent.UpdateMember) (*ent.Member, error)
 	FindMemberByEmail(ctx context.Context, email string) (*ent.Member, error)
+	ListMembers(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.MemberOrder) (*ent.MemberConnection, error)
 	CreateAirport(ctx context.Context, input ent.CreateAirportInput) (*ent.Airport, error)
 	UpdateAirport(ctx context.Context, id int, input ent.UpdateAirportInput) (*ent.Airport, error)
 	DeleteAirport(ctx context.Context, id int) (*string, error)
 	FindAirportByID(ctx context.Context, id int) (*ent.Airport, error)
 	FindAirportByName(ctx context.Context, name string) (*ent.Airport, error)
+	ListAirports(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.AirportOrder) (*ent.AirportConnection, error)
 	CreatePlane(ctx context.Context, input ent.CreatePlaneInput) (*ent.Plane, error)
 	UpdatePlane(ctx context.Context, id int, input ent.UpdatePlaneInput) (*ent.Plane, error)
 	DeletePlane(ctx context.Context, id int) (*string, error)
 	FindPlaneByID(ctx context.Context, id int) (*ent.Plane, error)
+	ListPlanes(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.PlaneOrder) (*ent.PlaneConnection, error)
 	CreateFlight(ctx context.Context, input ent.CreateFlight) (*ent.Flight, error)
 	DecreaseFlightSlot(ctx context.Context, flightID int, seatType booking.SeatType) (*string, error)
 	UpdateFlightStatus(ctx context.Context, id int, input *ent.UpdateFlightStatus) (*ent.Flight, error)
@@ -217,8 +294,10 @@ type MutationResolver interface {
 	FindFlightByID(ctx context.Context, id int) (*ent.Flight, error)
 	UpdateFlight(ctx context.Context, input ent.UpdateFlight) (*ent.Flight, error)
 	CancelFlight(ctx context.Context, id int) (*string, error)
+	ListFlights(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.FlightOrder) (*ent.FlightConnection, error)
 	CreateCustomer(ctx context.Context, input ent.CustomerInput) (*ent.Customer, error)
 	FindCustomerByCid(ctx context.Context, cid string) (*ent.Customer, error)
+	ListCustomers(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.CustomerOrder) (*ent.CustomerConnection, error)
 	CreateCustomerBooking(ctx context.Context, input ent.CustomerBooking) (*ent.Booking, error)
 	CreateCustomerBookingRoundTrip(ctx context.Context, input *ent.CustomerBookingRoundTrip) ([]*ent.Booking, error)
 	CreateMemberBooking(ctx context.Context, input ent.MemberBooking) (*ent.Booking, error)
@@ -226,6 +305,11 @@ type MutationResolver interface {
 	ViewBookingHistory(ctx context.Context) ([]*ent.Booking, error)
 	SearchBooking(ctx context.Context, input ent.SearchBooking) (*ent.Booking, error)
 	CancelBooking(ctx context.Context, input ent.SearchBooking) (*string, error)
+	UpdateBookingsStatus(ctx context.Context, flightID int) (*int, error)
+	ListBookings(ctx context.Context, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.BookingOrder) (*ent.BookingConnection, error)
+}
+type PlaneEdgeResolver interface {
+	Node(ctx context.Context, obj *ent.PlaneEdge) (*ent.Member, error)
 }
 type QueryResolver interface {
 	Node(ctx context.Context, id string) (ent.Noder, error)
@@ -309,6 +393,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Airport.UpdatedAt(childComplexity), true
 
+	case "AirportConnection.edges":
+		if e.complexity.AirportConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.AirportConnection.Edges(childComplexity), true
+
+	case "AirportConnection.pageInfo":
+		if e.complexity.AirportConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.AirportConnection.PageInfo(childComplexity), true
+
+	case "AirportConnection.totalCount":
+		if e.complexity.AirportConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.AirportConnection.TotalCount(childComplexity), true
+
+	case "AirportEdge.cursor":
+		if e.complexity.AirportEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.AirportEdge.Cursor(childComplexity), true
+
+	case "AirportEdge.node":
+		if e.complexity.AirportEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.AirportEdge.Node(childComplexity), true
+
 	case "Booking.code":
 		if e.complexity.Booking.Code == nil {
 			break
@@ -386,6 +505,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Booking.UpdatedAt(childComplexity), true
 
+	case "BookingConnection.edges":
+		if e.complexity.BookingConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.BookingConnection.Edges(childComplexity), true
+
+	case "BookingConnection.pageInfo":
+		if e.complexity.BookingConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.BookingConnection.PageInfo(childComplexity), true
+
+	case "BookingConnection.totalCount":
+		if e.complexity.BookingConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.BookingConnection.TotalCount(childComplexity), true
+
+	case "BookingEdge.cursor":
+		if e.complexity.BookingEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.BookingEdge.Cursor(childComplexity), true
+
+	case "BookingEdge.node":
+		if e.complexity.BookingEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.BookingEdge.Node(childComplexity), true
+
 	case "Customer.cid":
 		if e.complexity.Customer.Cid == nil {
 			break
@@ -462,6 +616,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Customer.UpdatedAt(childComplexity), true
+
+	case "CustomerConnection.edges":
+		if e.complexity.CustomerConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.CustomerConnection.Edges(childComplexity), true
+
+	case "CustomerConnection.pageInfo":
+		if e.complexity.CustomerConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.CustomerConnection.PageInfo(childComplexity), true
+
+	case "CustomerConnection.totalCount":
+		if e.complexity.CustomerConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.CustomerConnection.TotalCount(childComplexity), true
+
+	case "CustomerEdge.cursor":
+		if e.complexity.CustomerEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.CustomerEdge.Cursor(childComplexity), true
+
+	case "CustomerEdge.node":
+		if e.complexity.CustomerEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.CustomerEdge.Node(childComplexity), true
 
 	case "Flight.availableBcSlot":
 		if e.complexity.Flight.AvailableBcSlot == nil {
@@ -575,6 +764,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Flight.UpdatedAt(childComplexity), true
 
+	case "FlightConnection.edges":
+		if e.complexity.FlightConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.FlightConnection.Edges(childComplexity), true
+
+	case "FlightConnection.pageInfo":
+		if e.complexity.FlightConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.FlightConnection.PageInfo(childComplexity), true
+
+	case "FlightConnection.totalCount":
+		if e.complexity.FlightConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.FlightConnection.TotalCount(childComplexity), true
+
+	case "FlightEdge.cursor":
+		if e.complexity.FlightEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.FlightEdge.Cursor(childComplexity), true
+
+	case "FlightEdge.node":
+		if e.complexity.FlightEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.FlightEdge.Node(childComplexity), true
+
 	case "Member.cid":
 		if e.complexity.Member.Cid == nil {
 			break
@@ -644,6 +868,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Member.UpdatedAt(childComplexity), true
+
+	case "MemberConnection.edges":
+		if e.complexity.MemberConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.MemberConnection.Edges(childComplexity), true
+
+	case "MemberConnection.pageInfo":
+		if e.complexity.MemberConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.MemberConnection.PageInfo(childComplexity), true
+
+	case "MemberConnection.totalCount":
+		if e.complexity.MemberConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.MemberConnection.TotalCount(childComplexity), true
+
+	case "MemberEdge.cursor":
+		if e.complexity.MemberEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.MemberEdge.Cursor(childComplexity), true
+
+	case "MemberEdge.node":
+		if e.complexity.MemberEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.MemberEdge.Node(childComplexity), true
 
 	case "Mutation.cancel_booking":
 		if e.complexity.Mutation.CancelBooking == nil {
@@ -909,6 +1168,78 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.FindPlaneByID(childComplexity, args["id"].(int)), true
 
+	case "Mutation.list_airports":
+		if e.complexity.Mutation.ListAirports == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_list_airports_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ListAirports(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["orderBy"].(*ent.AirportOrder)), true
+
+	case "Mutation.list_bookings":
+		if e.complexity.Mutation.ListBookings == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_list_bookings_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ListBookings(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["orderBy"].(*ent.BookingOrder)), true
+
+	case "Mutation.list_customers":
+		if e.complexity.Mutation.ListCustomers == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_list_customers_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ListCustomers(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["orderBy"].(*ent.CustomerOrder)), true
+
+	case "Mutation.list_flights":
+		if e.complexity.Mutation.ListFlights == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_list_flights_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ListFlights(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["orderBy"].(*ent.FlightOrder)), true
+
+	case "Mutation.list_members":
+		if e.complexity.Mutation.ListMembers == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_list_members_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ListMembers(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["orderBy"].(*ent.MemberOrder)), true
+
+	case "Mutation.list_planes":
+		if e.complexity.Mutation.ListPlanes == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_list_planes_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.ListPlanes(childComplexity, args["after"].(*entgql.Cursor[int]), args["first"].(*int), args["before"].(*entgql.Cursor[int]), args["last"].(*int), args["orderBy"].(*ent.PlaneOrder)), true
+
 	case "Mutation.login":
 		if e.complexity.Mutation.Login == nil {
 			break
@@ -975,6 +1306,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateAirport(childComplexity, args["id"].(int), args["input"].(ent.UpdateAirportInput)), true
+
+	case "Mutation.update_bookings_status":
+		if e.complexity.Mutation.UpdateBookingsStatus == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_update_bookings_status_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateBookingsStatus(childComplexity, args["flight_id"].(int)), true
 
 	case "Mutation.update_flight":
 		if e.complexity.Mutation.UpdateFlight == nil {
@@ -1115,6 +1458,41 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Plane.UpdatedAt(childComplexity), true
 
+	case "PlaneConnection.edges":
+		if e.complexity.PlaneConnection.Edges == nil {
+			break
+		}
+
+		return e.complexity.PlaneConnection.Edges(childComplexity), true
+
+	case "PlaneConnection.pageInfo":
+		if e.complexity.PlaneConnection.PageInfo == nil {
+			break
+		}
+
+		return e.complexity.PlaneConnection.PageInfo(childComplexity), true
+
+	case "PlaneConnection.totalCount":
+		if e.complexity.PlaneConnection.TotalCount == nil {
+			break
+		}
+
+		return e.complexity.PlaneConnection.TotalCount(childComplexity), true
+
+	case "PlaneEdge.cursor":
+		if e.complexity.PlaneEdge.Cursor == nil {
+			break
+		}
+
+		return e.complexity.PlaneEdge.Cursor(childComplexity), true
+
+	case "PlaneEdge.node":
+		if e.complexity.PlaneEdge.Node == nil {
+			break
+		}
+
+		return e.complexity.PlaneEdge.Node(childComplexity), true
+
 	case "Query.airports":
 		if e.complexity.Query.Airports == nil {
 			break
@@ -1203,7 +1581,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputAirportOrder,
 		ec.unmarshalInputAirportWhereInput,
+		ec.unmarshalInputBookingOrder,
 		ec.unmarshalInputBookingWhereInput,
 		ec.unmarshalInputCreateAirportInput,
 		ec.unmarshalInputCreateBookingInput,
@@ -1215,11 +1595,15 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCustomerBooking,
 		ec.unmarshalInputCustomerBookingRoundTrip,
 		ec.unmarshalInputCustomerInput,
+		ec.unmarshalInputCustomerOrder,
 		ec.unmarshalInputCustomerWhereInput,
+		ec.unmarshalInputFlightOrder,
 		ec.unmarshalInputFlightWhereInput,
 		ec.unmarshalInputMemberBooking,
 		ec.unmarshalInputMemberBookingRoundTrip,
+		ec.unmarshalInputMemberOrder,
 		ec.unmarshalInputMemberWhereInput,
+		ec.unmarshalInputPlaneOrder,
 		ec.unmarshalInputPlaneWhereInput,
 		ec.unmarshalInputSearchBooking,
 		ec.unmarshalInputSearchFlight,
@@ -1293,6 +1677,15 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
+	{Name: "../schema/airport.graphql", Input: `type AirportConnection{
+    edges: [AirportEdge]
+    pageInfo: PageInfo!
+    totalCount: Int!
+}
+type AirportEdge{
+    node: Airport
+    cursor: Cursor!
+}`, BuiltIn: false},
 	{Name: "../schema/booking.graphql", Input: `input CustomerBooking{
     seatType: BookingSeatType!
     flight_id: Int!
@@ -1327,6 +1720,17 @@ input SearchBooking{
     cid: String!
 }
 
+type BookingConnection{
+    edges: [BookingEdge]
+    pageInfo: PageInfo
+    totalCount: Int!
+}
+
+type BookingEdge{
+    node: Booking
+    cursor: Cursor!
+}
+
 `, BuiltIn: false},
 	{Name: "../schema/customer.graphql", Input: `input CustomerInput{
     email: String!
@@ -1336,7 +1740,16 @@ input SearchBooking{
     cid: String!
 }
 
-`, BuiltIn: false},
+type CustomerConnection{
+    edges: [CustomerEdge]
+    pageInfo: PageInfo
+    totalCount: Int!
+}
+
+type CustomerEdge{
+    node: Customer
+    cursor: Cursor!
+}`, BuiltIn: false},
 	{Name: "../schema/ent.graphql", Input: `directive @goField(forceResolver: Boolean, name: String) on FIELD_DEFINITION | INPUT_FIELD_DEFINITION
 directive @goModel(model: String, models: [String!]) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
 type Airport implements Node {
@@ -1348,6 +1761,21 @@ type Airport implements Node {
   long: Float!
   fromFlight: [Flight!]
   toFlight: [Flight!]
+}
+"""Ordering options for Airport connections"""
+input AirportOrder {
+  """The ordering direction."""
+  direction: OrderDirection! = ASC
+  """The field by which to order Airports."""
+  field: AirportOrderField!
+}
+"""Properties by which Airport connections can be ordered."""
+enum AirportOrderField {
+  CREATED_AT
+  UPDATED_AT
+  NAME
+  LAT
+  LONG
 }
 """
 AirportWhereInput is used for filtering Airport objects.
@@ -1435,6 +1863,24 @@ type Booking implements Node {
   flightID: ID
   hasFlight: Flight
   hasCustomer: Customer
+}
+"""Ordering options for Booking connections"""
+input BookingOrder {
+  """The ordering direction."""
+  direction: OrderDirection! = ASC
+  """The field by which to order Bookings."""
+  field: BookingOrderField!
+}
+"""Properties by which Booking connections can be ordered."""
+enum BookingOrderField {
+  CREATED_AT
+  UPDATED_AT
+  CODE
+  STATUS
+  SEAT_TYPE
+  IS_ROUND
+  CUSTOMER_ID
+  FLIGHT_ID
 }
 """BookingSeatType is enum for the field seat_type"""
 enum BookingSeatType @goModel(model: "booking-flight-system/ent/booking.SeatType") {
@@ -1636,6 +2082,24 @@ type Customer implements Node {
   hasMember: Member
   hasBooking: [Booking!]
 }
+"""Ordering options for Customer connections"""
+input CustomerOrder {
+  """The ordering direction."""
+  direction: OrderDirection! = ASC
+  """The field by which to order Customers."""
+  field: CustomerOrderField!
+}
+"""Properties by which Customer connections can be ordered."""
+enum CustomerOrderField {
+  CREATED_AT
+  UPDATED_AT
+  EMAIL
+  PHONE_NUMBER
+  FULL_NAME
+  DOB
+  CID
+  MEMBER_ID
+}
 """
 CustomerWhereInput is used for filtering Customer objects.
 Input was generated by ent.
@@ -1769,6 +2233,27 @@ type Flight implements Node {
   hasBooking: [Booking!]
   fromAirport: Airport
   toAirport: Airport
+}
+"""Ordering options for Flight connections"""
+input FlightOrder {
+  """The ordering direction."""
+  direction: OrderDirection! = ASC
+  """The field by which to order Flights."""
+  field: FlightOrderField!
+}
+"""Properties by which Flight connections can be ordered."""
+enum FlightOrderField {
+  CREATED_AT
+  UPDATED_AT
+  NAME
+  DEPART_AT
+  LAND_AT
+  AVAILABLE_EC_SLOT
+  AVAILABLE_BC_SLOT
+  STATUS
+  PLANE_ID
+  FROM_AIRPORT_ID
+  TO_AIRPORT_ID
 }
 """FlightStatus is enum for the field status"""
 enum FlightStatus @goModel(model: "booking-flight-system/ent/flight.Status") {
@@ -1918,6 +2403,25 @@ type Member implements Node {
 enum MemberMemberType @goModel(model: "booking-flight-system/ent/member.MemberType") {
   ADMIN
   MEMBER
+}
+"""Ordering options for Member connections"""
+input MemberOrder {
+  """The ordering direction."""
+  direction: OrderDirection! = ASC
+  """The field by which to order Members."""
+  field: MemberOrderField!
+}
+"""Properties by which Member connections can be ordered."""
+enum MemberOrderField {
+  CREATED_AT
+  UPDATED_AT
+  EMAIL
+  PASSWORD
+  PHONE_NUMBER
+  FULL_NAME
+  DOB
+  CID
+  MEMBER_TYPE
 }
 """
 MemberWhereInput is used for filtering Member objects.
@@ -2070,6 +2574,22 @@ type Plane implements Node {
   businessClassSlots: Int!
   status: PlaneStatus!
   flights: [Flight!]
+}
+"""Ordering options for Plane connections"""
+input PlaneOrder {
+  """The ordering direction."""
+  direction: OrderDirection! = ASC
+  """The field by which to order Planes."""
+  field: PlaneOrderField!
+}
+"""Properties by which Plane connections can be ordered."""
+enum PlaneOrderField {
+  CREATED_AT
+  UPDATED_AT
+  NAME
+  ECONOMY_CLASS_SLOTS
+  BUSINESS_CLASS_SLOTS
+  STATUS
 }
 """PlaneStatus is enum for the field status"""
 enum PlaneStatus @goModel(model: "booking-flight-system/ent/plane.Status") {
@@ -2314,13 +2834,35 @@ input UpdateFlight{
     planeID: Int
 }
 
-`, BuiltIn: false},
+type FlightConnection{
+    edges: [FlightEdge]
+    pageInfo: PageInfo
+    totalCount: Int!
+}
+
+type FlightEdge{
+    node: Flight
+    cursor: Cursor!
+}`, BuiltIn: false},
 	{Name: "../schema/member.graphql", Input: `input UpdateMember{
     phoneNumber: String
     fullName: String
     dob: Time
     cid: String
-}`, BuiltIn: false},
+}
+
+type MemberConnection{
+    edges: [MemberEdge]
+    pageInfo: PageInfo!
+    totalCount: Int!
+}
+
+type MemberEdge{
+    node: Member
+    cursor: Cursor!
+}
+
+`, BuiltIn: false},
 	{Name: "../schema/mutation.graphql", Input: `type Token {
     token: String!
     expired_at: Time!
@@ -2336,6 +2878,7 @@ type Mutation{
     change_password(oldPassword: String!, newPassword: String!): String
     update_member_profile(input: UpdateMember!): Member!
     find_member_by_email(email: String!): Member!
+    list_members(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: MemberOrder): MemberConnection!
 
     #AIRPORT
     create_airport(input:CreateAirportInput!): Airport!
@@ -2343,12 +2886,14 @@ type Mutation{
     delete_airport(id: Int!): String
     find_airport_by_id(id: Int!): Airport!
     find_airport_by_name(name: String!): Airport!
+    list_airports(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: AirportOrder): AirportConnection!
 
     #PLANE
     create_plane(input:CreatePlaneInput!): Plane!
     update_plane(id:Int!, input: UpdatePlaneInput!): Plane!
     delete_plane(id:Int!): String
     find_plane_by_id(id: Int!): Plane!
+    list_planes(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: PlaneOrder): PlaneConnection!
 
     #FLIGHT
     create_flight(input:CreateFlight!): Flight!
@@ -2358,10 +2903,12 @@ type Mutation{
     find_flight_by_id(id: Int!): Flight!
     update_flight(input: UpdateFlight!): Flight!
     cancel_flight(id: Int!): String
+    list_flights(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: FlightOrder): FlightConnection!
 
     #CUSTOMER
     create_customer(input: CustomerInput!): Customer!
     find_customer_by_cid(cid: String!): Customer!
+    list_customers(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: CustomerOrder): CustomerConnection!
 
     #BOOKING
     create_customer_booking(input: CustomerBooking!): Booking!
@@ -2371,8 +2918,21 @@ type Mutation{
     view_booking_history: [Booking!]
     search_booking(input: SearchBooking!): Booking!
     cancel_booking(input: SearchBooking!): String
+    update_bookings_status(flight_id: Int!): Int
+    list_bookings(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: BookingOrder): BookingConnection!
 }
 
+`, BuiltIn: false},
+	{Name: "../schema/plane.graphql", Input: `type PlaneConnection{
+    edges: [PlaneEdge]
+    pageInfo: PageInfo!
+    totalCount: Int!
+}
+
+type PlaneEdge{
+    node: Member
+    cursor: Cursor!
+}
 `, BuiltIn: false},
 	{Name: "../schema/user.graphql", Input: `#> type UserOps {
 #>
@@ -2763,6 +3323,312 @@ func (ec *executionContext) field_Mutation_find_plane_by_id_args(ctx context.Con
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_list_airports_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.AirportOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOAirportOrder2ᚖbookingᚑflightᚑsystemᚋentᚐAirportOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_list_bookings_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.BookingOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOBookingOrder2ᚖbookingᚑflightᚑsystemᚋentᚐBookingOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_list_customers_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.CustomerOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOCustomerOrder2ᚖbookingᚑflightᚑsystemᚋentᚐCustomerOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_list_flights_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.FlightOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOFlightOrder2ᚖbookingᚑflightᚑsystemᚋentᚐFlightOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_list_members_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.MemberOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOMemberOrder2ᚖbookingᚑflightᚑsystemᚋentᚐMemberOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_list_planes_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["after"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("after"))
+		arg0, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["after"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["first"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("first"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["first"] = arg1
+	var arg2 *entgql.Cursor[int]
+	if tmp, ok := rawArgs["before"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("before"))
+		arg2, err = ec.unmarshalOCursor2ᚖentgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["before"] = arg2
+	var arg3 *int
+	if tmp, ok := rawArgs["last"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("last"))
+		arg3, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["last"] = arg3
+	var arg4 *ent.PlaneOrder
+	if tmp, ok := rawArgs["orderBy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("orderBy"))
+		arg4, err = ec.unmarshalOPlaneOrder2ᚖbookingᚑflightᚑsystemᚋentᚐPlaneOrder(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["orderBy"] = arg4
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2853,6 +3719,21 @@ func (ec *executionContext) field_Mutation_update_airport_args(ctx context.Conte
 		}
 	}
 	args["input"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_update_bookings_status_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 int
+	if tmp, ok := rawArgs["flight_id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("flight_id"))
+		arg0, err = ec.unmarshalNInt2int(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["flight_id"] = arg0
 	return args, nil
 }
 
@@ -3431,6 +4312,254 @@ func (ec *executionContext) fieldContext_Airport_toFlight(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _AirportConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.AirportConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AirportConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.AirportEdge)
+	fc.Result = res
+	return ec.marshalOAirportEdge2ᚕᚖbookingᚑflightᚑsystemᚋentᚐAirportEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AirportConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AirportConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "node":
+				return ec.fieldContext_AirportEdge_node(ctx, field)
+			case "cursor":
+				return ec.fieldContext_AirportEdge_cursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AirportEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AirportConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.AirportConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AirportConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.PageInfo[int])
+	fc.Result = res
+	return ec.marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AirportConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AirportConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			case "hasPreviousPage":
+				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AirportConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.AirportConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AirportConnection_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AirportConnection_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AirportConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AirportEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.AirportEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AirportEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Airport)
+	fc.Result = res
+	return ec.marshalOAirport2ᚖbookingᚑflightᚑsystemᚋentᚐAirport(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AirportEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AirportEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Airport_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Airport_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Airport_updatedAt(ctx, field)
+			case "name":
+				return ec.fieldContext_Airport_name(ctx, field)
+			case "lat":
+				return ec.fieldContext_Airport_lat(ctx, field)
+			case "long":
+				return ec.fieldContext_Airport_long(ctx, field)
+			case "fromFlight":
+				return ec.fieldContext_Airport_fromFlight(ctx, field)
+			case "toFlight":
+				return ec.fieldContext_Airport_toFlight(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Airport", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _AirportEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.AirportEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_AirportEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.Cursor[int])
+	fc.Result = res
+	return ec.marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_AirportEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "AirportEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Cursor does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Booking_id(ctx context.Context, field graphql.CollectedField, obj *ent.Booking) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Booking_id(ctx, field)
 	if err != nil {
@@ -3961,6 +5090,257 @@ func (ec *executionContext) fieldContext_Booking_hasCustomer(ctx context.Context
 	return fc, nil
 }
 
+func (ec *executionContext) _BookingConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.BookingConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookingConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.BookingEdge)
+	fc.Result = res
+	return ec.marshalOBookingEdge2ᚕᚖbookingᚑflightᚑsystemᚋentᚐBookingEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookingConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookingConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "node":
+				return ec.fieldContext_BookingEdge_node(ctx, field)
+			case "cursor":
+				return ec.fieldContext_BookingEdge_cursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BookingEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookingConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.BookingConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookingConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(entgql.PageInfo[int])
+	fc.Result = res
+	return ec.marshalOPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookingConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookingConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			case "hasPreviousPage":
+				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookingConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.BookingConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookingConnection_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookingConnection_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookingConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookingEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.BookingEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookingEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Booking)
+	fc.Result = res
+	return ec.marshalOBooking2ᚖbookingᚑflightᚑsystemᚋentᚐBooking(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookingEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookingEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Booking_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Booking_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Booking_updatedAt(ctx, field)
+			case "code":
+				return ec.fieldContext_Booking_code(ctx, field)
+			case "status":
+				return ec.fieldContext_Booking_status(ctx, field)
+			case "seatType":
+				return ec.fieldContext_Booking_seatType(ctx, field)
+			case "isRound":
+				return ec.fieldContext_Booking_isRound(ctx, field)
+			case "customerID":
+				return ec.fieldContext_Booking_customerID(ctx, field)
+			case "flightID":
+				return ec.fieldContext_Booking_flightID(ctx, field)
+			case "hasFlight":
+				return ec.fieldContext_Booking_hasFlight(ctx, field)
+			case "hasCustomer":
+				return ec.fieldContext_Booking_hasCustomer(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Booking", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _BookingEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.BookingEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_BookingEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.Cursor[int])
+	fc.Result = res
+	return ec.marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_BookingEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "BookingEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Cursor does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Customer_id(ctx context.Context, field graphql.CollectedField, obj *ent.Customer) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Customer_id(ctx, field)
 	if err != nil {
@@ -4474,6 +5854,257 @@ func (ec *executionContext) fieldContext_Customer_hasBooking(ctx context.Context
 				return ec.fieldContext_Booking_hasCustomer(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Booking", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CustomerConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.CustomerConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CustomerConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.CustomerEdge)
+	fc.Result = res
+	return ec.marshalOCustomerEdge2ᚕᚖbookingᚑflightᚑsystemᚋentᚐCustomerEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CustomerConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CustomerConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "node":
+				return ec.fieldContext_CustomerEdge_node(ctx, field)
+			case "cursor":
+				return ec.fieldContext_CustomerEdge_cursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CustomerEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CustomerConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.CustomerConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CustomerConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(entgql.PageInfo[int])
+	fc.Result = res
+	return ec.marshalOPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CustomerConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CustomerConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			case "hasPreviousPage":
+				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CustomerConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.CustomerConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CustomerConnection_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CustomerConnection_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CustomerConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CustomerEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.CustomerEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CustomerEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Customer)
+	fc.Result = res
+	return ec.marshalOCustomer2ᚖbookingᚑflightᚑsystemᚋentᚐCustomer(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CustomerEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CustomerEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Customer_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Customer_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Customer_updatedAt(ctx, field)
+			case "email":
+				return ec.fieldContext_Customer_email(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_Customer_phoneNumber(ctx, field)
+			case "fullName":
+				return ec.fieldContext_Customer_fullName(ctx, field)
+			case "dob":
+				return ec.fieldContext_Customer_dob(ctx, field)
+			case "cid":
+				return ec.fieldContext_Customer_cid(ctx, field)
+			case "memberID":
+				return ec.fieldContext_Customer_memberID(ctx, field)
+			case "hasMember":
+				return ec.fieldContext_Customer_hasMember(ctx, field)
+			case "hasBooking":
+				return ec.fieldContext_Customer_hasBooking(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Customer", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _CustomerEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.CustomerEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CustomerEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.Cursor[int])
+	fc.Result = res
+	return ec.marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CustomerEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CustomerEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Cursor does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5240,6 +6871,267 @@ func (ec *executionContext) fieldContext_Flight_toAirport(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _FlightConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.FlightConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FlightConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.FlightEdge)
+	fc.Result = res
+	return ec.marshalOFlightEdge2ᚕᚖbookingᚑflightᚑsystemᚋentᚐFlightEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FlightConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FlightConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "node":
+				return ec.fieldContext_FlightEdge_node(ctx, field)
+			case "cursor":
+				return ec.fieldContext_FlightEdge_cursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type FlightEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FlightConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.FlightConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FlightConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(entgql.PageInfo[int])
+	fc.Result = res
+	return ec.marshalOPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FlightConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FlightConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			case "hasPreviousPage":
+				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FlightConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.FlightConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FlightConnection_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FlightConnection_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FlightConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FlightEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.FlightEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FlightEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Flight)
+	fc.Result = res
+	return ec.marshalOFlight2ᚖbookingᚑflightᚑsystemᚋentᚐFlight(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FlightEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FlightEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Flight_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Flight_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Flight_updatedAt(ctx, field)
+			case "name":
+				return ec.fieldContext_Flight_name(ctx, field)
+			case "departAt":
+				return ec.fieldContext_Flight_departAt(ctx, field)
+			case "landAt":
+				return ec.fieldContext_Flight_landAt(ctx, field)
+			case "availableEcSlot":
+				return ec.fieldContext_Flight_availableEcSlot(ctx, field)
+			case "availableBcSlot":
+				return ec.fieldContext_Flight_availableBcSlot(ctx, field)
+			case "status":
+				return ec.fieldContext_Flight_status(ctx, field)
+			case "planeID":
+				return ec.fieldContext_Flight_planeID(ctx, field)
+			case "fromAirportID":
+				return ec.fieldContext_Flight_fromAirportID(ctx, field)
+			case "toAirportID":
+				return ec.fieldContext_Flight_toAirportID(ctx, field)
+			case "hasPlane":
+				return ec.fieldContext_Flight_hasPlane(ctx, field)
+			case "hasBooking":
+				return ec.fieldContext_Flight_hasBooking(ctx, field)
+			case "fromAirport":
+				return ec.fieldContext_Flight_fromAirport(ctx, field)
+			case "toAirport":
+				return ec.fieldContext_Flight_toAirport(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Flight", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _FlightEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.FlightEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_FlightEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.Cursor[int])
+	fc.Result = res
+	return ec.marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_FlightEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "FlightEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Cursor does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Member_id(ctx context.Context, field graphql.CollectedField, obj *ent.Member) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Member_id(ctx, field)
 	if err != nil {
@@ -5690,6 +7582,258 @@ func (ec *executionContext) fieldContext_Member_hasCustomer(ctx context.Context,
 				return ec.fieldContext_Customer_hasBooking(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Customer", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MemberConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.MemberConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MemberConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.MemberEdge)
+	fc.Result = res
+	return ec.marshalOMemberEdge2ᚕᚖbookingᚑflightᚑsystemᚋentᚐMemberEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MemberConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MemberConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "node":
+				return ec.fieldContext_MemberEdge_node(ctx, field)
+			case "cursor":
+				return ec.fieldContext_MemberEdge_cursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MemberEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MemberConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.MemberConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MemberConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.PageInfo[int])
+	fc.Result = res
+	return ec.marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MemberConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MemberConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			case "hasPreviousPage":
+				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MemberConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.MemberConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MemberConnection_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MemberConnection_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MemberConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MemberEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.MemberEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MemberEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Node, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Member)
+	fc.Result = res
+	return ec.marshalOMember2ᚖbookingᚑflightᚑsystemᚋentᚐMember(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MemberEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MemberEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Member_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Member_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Member_updatedAt(ctx, field)
+			case "email":
+				return ec.fieldContext_Member_email(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_Member_phoneNumber(ctx, field)
+			case "fullName":
+				return ec.fieldContext_Member_fullName(ctx, field)
+			case "dob":
+				return ec.fieldContext_Member_dob(ctx, field)
+			case "cid":
+				return ec.fieldContext_Member_cid(ctx, field)
+			case "memberType":
+				return ec.fieldContext_Member_memberType(ctx, field)
+			case "hasCustomer":
+				return ec.fieldContext_Member_hasCustomer(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Member", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _MemberEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.MemberEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_MemberEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.Cursor[int])
+	fc.Result = res
+	return ec.marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_MemberEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "MemberEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Cursor does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6231,6 +8375,69 @@ func (ec *executionContext) fieldContext_Mutation_find_member_by_email(ctx conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_list_members(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_list_members(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ListMembers(rctx, fc.Args["after"].(*entgql.Cursor[int]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int]), fc.Args["last"].(*int), fc.Args["orderBy"].(*ent.MemberOrder))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.MemberConnection)
+	fc.Result = res
+	return ec.marshalNMemberConnection2ᚖbookingᚑflightᚑsystemᚋentᚐMemberConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_list_members(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edges":
+				return ec.fieldContext_MemberConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_MemberConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_MemberConnection_totalCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type MemberConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_list_members_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_create_airport(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_create_airport(ctx, field)
 	if err != nil {
@@ -6575,6 +8782,69 @@ func (ec *executionContext) fieldContext_Mutation_find_airport_by_name(ctx conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_list_airports(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_list_airports(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ListAirports(rctx, fc.Args["after"].(*entgql.Cursor[int]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int]), fc.Args["last"].(*int), fc.Args["orderBy"].(*ent.AirportOrder))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.AirportConnection)
+	fc.Result = res
+	return ec.marshalNAirportConnection2ᚖbookingᚑflightᚑsystemᚋentᚐAirportConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_list_airports(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edges":
+				return ec.fieldContext_AirportConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_AirportConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_AirportConnection_totalCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type AirportConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_list_airports_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_create_plane(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_create_plane(ctx, field)
 	if err != nil {
@@ -6840,6 +9110,69 @@ func (ec *executionContext) fieldContext_Mutation_find_plane_by_id(ctx context.C
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_find_plane_by_id_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_list_planes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_list_planes(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ListPlanes(rctx, fc.Args["after"].(*entgql.Cursor[int]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int]), fc.Args["last"].(*int), fc.Args["orderBy"].(*ent.PlaneOrder))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.PlaneConnection)
+	fc.Result = res
+	return ec.marshalNPlaneConnection2ᚖbookingᚑflightᚑsystemᚋentᚐPlaneConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_list_planes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edges":
+				return ec.fieldContext_PlaneConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_PlaneConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_PlaneConnection_totalCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PlaneConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_list_planes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -7392,6 +9725,69 @@ func (ec *executionContext) fieldContext_Mutation_cancel_flight(ctx context.Cont
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_list_flights(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_list_flights(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ListFlights(rctx, fc.Args["after"].(*entgql.Cursor[int]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int]), fc.Args["last"].(*int), fc.Args["orderBy"].(*ent.FlightOrder))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.FlightConnection)
+	fc.Result = res
+	return ec.marshalNFlightConnection2ᚖbookingᚑflightᚑsystemᚋentᚐFlightConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_list_flights(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edges":
+				return ec.fieldContext_FlightConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_FlightConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_FlightConnection_totalCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type FlightConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_list_flights_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_create_customer(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_create_customer(ctx, field)
 	if err != nil {
@@ -7544,6 +9940,69 @@ func (ec *executionContext) fieldContext_Mutation_find_customer_by_cid(ctx conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_find_customer_by_cid_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_list_customers(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_list_customers(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ListCustomers(rctx, fc.Args["after"].(*entgql.Cursor[int]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int]), fc.Args["last"].(*int), fc.Args["orderBy"].(*ent.CustomerOrder))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.CustomerConnection)
+	fc.Result = res
+	return ec.marshalNCustomerConnection2ᚖbookingᚑflightᚑsystemᚋentᚐCustomerConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_list_customers(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edges":
+				return ec.fieldContext_CustomerConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_CustomerConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_CustomerConnection_totalCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CustomerConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_list_customers_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -8047,6 +10506,121 @@ func (ec *executionContext) fieldContext_Mutation_cancel_booking(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_cancel_booking_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_update_bookings_status(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_update_bookings_status(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateBookingsStatus(rctx, fc.Args["flight_id"].(int))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_update_bookings_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_update_bookings_status_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_list_bookings(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_list_bookings(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().ListBookings(rctx, fc.Args["after"].(*entgql.Cursor[int]), fc.Args["first"].(*int), fc.Args["before"].(*entgql.Cursor[int]), fc.Args["last"].(*int), fc.Args["orderBy"].(*ent.BookingOrder))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.BookingConnection)
+	fc.Result = res
+	return ec.marshalNBookingConnection2ᚖbookingᚑflightᚑsystemᚋentᚐBookingConnection(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_list_bookings(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "edges":
+				return ec.fieldContext_BookingConnection_edges(ctx, field)
+			case "pageInfo":
+				return ec.fieldContext_BookingConnection_pageInfo(ctx, field)
+			case "totalCount":
+				return ec.fieldContext_BookingConnection_totalCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type BookingConnection", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_list_bookings_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -8601,6 +11175,258 @@ func (ec *executionContext) fieldContext_Plane_flights(ctx context.Context, fiel
 				return ec.fieldContext_Flight_toAirport(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Flight", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PlaneConnection_edges(ctx context.Context, field graphql.CollectedField, obj *ent.PlaneConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PlaneConnection_edges(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Edges, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.PlaneEdge)
+	fc.Result = res
+	return ec.marshalOPlaneEdge2ᚕᚖbookingᚑflightᚑsystemᚋentᚐPlaneEdge(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PlaneConnection_edges(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PlaneConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "node":
+				return ec.fieldContext_PlaneEdge_node(ctx, field)
+			case "cursor":
+				return ec.fieldContext_PlaneEdge_cursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PlaneEdge", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PlaneConnection_pageInfo(ctx context.Context, field graphql.CollectedField, obj *ent.PlaneConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PlaneConnection_pageInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.PageInfo, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.PageInfo[int])
+	fc.Result = res
+	return ec.marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PlaneConnection_pageInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PlaneConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "hasNextPage":
+				return ec.fieldContext_PageInfo_hasNextPage(ctx, field)
+			case "hasPreviousPage":
+				return ec.fieldContext_PageInfo_hasPreviousPage(ctx, field)
+			case "startCursor":
+				return ec.fieldContext_PageInfo_startCursor(ctx, field)
+			case "endCursor":
+				return ec.fieldContext_PageInfo_endCursor(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type PageInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PlaneConnection_totalCount(ctx context.Context, field graphql.CollectedField, obj *ent.PlaneConnection) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PlaneConnection_totalCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.TotalCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PlaneConnection_totalCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PlaneConnection",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PlaneEdge_node(ctx context.Context, field graphql.CollectedField, obj *ent.PlaneEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PlaneEdge_node(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.PlaneEdge().Node(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Member)
+	fc.Result = res
+	return ec.marshalOMember2ᚖbookingᚑflightᚑsystemᚋentᚐMember(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PlaneEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PlaneEdge",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Member_id(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Member_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Member_updatedAt(ctx, field)
+			case "email":
+				return ec.fieldContext_Member_email(ctx, field)
+			case "phoneNumber":
+				return ec.fieldContext_Member_phoneNumber(ctx, field)
+			case "fullName":
+				return ec.fieldContext_Member_fullName(ctx, field)
+			case "dob":
+				return ec.fieldContext_Member_dob(ctx, field)
+			case "cid":
+				return ec.fieldContext_Member_cid(ctx, field)
+			case "memberType":
+				return ec.fieldContext_Member_memberType(ctx, field)
+			case "hasCustomer":
+				return ec.fieldContext_Member_hasCustomer(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Member", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _PlaneEdge_cursor(ctx context.Context, field graphql.CollectedField, obj *ent.PlaneEdge) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_PlaneEdge_cursor(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Cursor, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(entgql.Cursor[int])
+	fc.Result = res
+	return ec.marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_PlaneEdge_cursor(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "PlaneEdge",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Cursor does not have child fields")
 		},
 	}
 	return fc, nil
@@ -11107,6 +13933,48 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputAirportOrder(ctx context.Context, obj interface{}) (ent.AirportOrder, error) {
+	var it ent.AirportOrder
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "ASC"
+	}
+
+	fieldsInOrder := [...]string{"direction", "field"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		case "field":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNAirportOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐAirportOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputAirportWhereInput(ctx context.Context, obj interface{}) (ent.AirportWhereInput, error) {
 	var it ent.AirportWhereInput
 	asMap := map[string]interface{}{}
@@ -11661,6 +14529,48 @@ func (ec *executionContext) unmarshalInputAirportWhereInput(ctx context.Context,
 				return it, err
 			}
 			it.HasToFlightWith = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputBookingOrder(ctx context.Context, obj interface{}) (ent.BookingOrder, error) {
+	var it ent.BookingOrder
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "ASC"
+	}
+
+	fieldsInOrder := [...]string{"direction", "field"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		case "field":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNBookingOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐBookingOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
 		}
 	}
 
@@ -13138,6 +16048,48 @@ func (ec *executionContext) unmarshalInputCustomerInput(ctx context.Context, obj
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputCustomerOrder(ctx context.Context, obj interface{}) (ent.CustomerOrder, error) {
+	var it ent.CustomerOrder
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "ASC"
+	}
+
+	fieldsInOrder := [...]string{"direction", "field"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		case "field":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNCustomerOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐCustomerOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputCustomerWhereInput(ctx context.Context, obj interface{}) (ent.CustomerWhereInput, error) {
 	var it ent.CustomerWhereInput
 	asMap := map[string]interface{}{}
@@ -14043,6 +16995,48 @@ func (ec *executionContext) unmarshalInputCustomerWhereInput(ctx context.Context
 				return it, err
 			}
 			it.HasHasBookingWith = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputFlightOrder(ctx context.Context, obj interface{}) (ent.FlightOrder, error) {
+	var it ent.FlightOrder
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "ASC"
+	}
+
+	fieldsInOrder := [...]string{"direction", "field"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		case "field":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNFlightOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐFlightOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
 		}
 	}
 
@@ -15090,6 +18084,48 @@ func (ec *executionContext) unmarshalInputMemberBookingRoundTrip(ctx context.Con
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputMemberOrder(ctx context.Context, obj interface{}) (ent.MemberOrder, error) {
+	var it ent.MemberOrder
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "ASC"
+	}
+
+	fieldsInOrder := [...]string{"direction", "field"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		case "field":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNMemberOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐMemberOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputMemberWhereInput(ctx context.Context, obj interface{}) (ent.MemberWhereInput, error) {
 	var it ent.MemberWhereInput
 	asMap := map[string]interface{}{}
@@ -15977,6 +19013,48 @@ func (ec *executionContext) unmarshalInputMemberWhereInput(ctx context.Context, 
 				return it, err
 			}
 			it.HasHasCustomerWith = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputPlaneOrder(ctx context.Context, obj interface{}) (ent.PlaneOrder, error) {
+	var it ent.PlaneOrder
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	if _, present := asMap["direction"]; !present {
+		asMap["direction"] = "ASC"
+	}
+
+	fieldsInOrder := [...]string{"direction", "field"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "direction":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("direction"))
+			data, err := ec.unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Direction = data
+		case "field":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("field"))
+			data, err := ec.unmarshalNPlaneOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐPlaneOrderField(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Field = data
 		}
 	}
 
@@ -17764,6 +20842,77 @@ func (ec *executionContext) _Airport(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
+var airportConnectionImplementors = []string{"AirportConnection"}
+
+func (ec *executionContext) _AirportConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.AirportConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, airportConnectionImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AirportConnection")
+		case "edges":
+
+			out.Values[i] = ec._AirportConnection_edges(ctx, field, obj)
+
+		case "pageInfo":
+
+			out.Values[i] = ec._AirportConnection_pageInfo(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "totalCount":
+
+			out.Values[i] = ec._AirportConnection_totalCount(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var airportEdgeImplementors = []string{"AirportEdge"}
+
+func (ec *executionContext) _AirportEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.AirportEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, airportEdgeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("AirportEdge")
+		case "node":
+
+			out.Values[i] = ec._AirportEdge_node(ctx, field, obj)
+
+		case "cursor":
+
+			out.Values[i] = ec._AirportEdge_cursor(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var bookingImplementors = []string{"Booking", "Node"}
 
 func (ec *executionContext) _Booking(ctx context.Context, sel ast.SelectionSet, obj *ent.Booking) graphql.Marshaler {
@@ -17876,6 +21025,74 @@ func (ec *executionContext) _Booking(ctx context.Context, sel ast.SelectionSet, 
 	return out
 }
 
+var bookingConnectionImplementors = []string{"BookingConnection"}
+
+func (ec *executionContext) _BookingConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.BookingConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, bookingConnectionImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BookingConnection")
+		case "edges":
+
+			out.Values[i] = ec._BookingConnection_edges(ctx, field, obj)
+
+		case "pageInfo":
+
+			out.Values[i] = ec._BookingConnection_pageInfo(ctx, field, obj)
+
+		case "totalCount":
+
+			out.Values[i] = ec._BookingConnection_totalCount(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var bookingEdgeImplementors = []string{"BookingEdge"}
+
+func (ec *executionContext) _BookingEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.BookingEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, bookingEdgeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("BookingEdge")
+		case "node":
+
+			out.Values[i] = ec._BookingEdge_node(ctx, field, obj)
+
+		case "cursor":
+
+			out.Values[i] = ec._BookingEdge_cursor(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var customerImplementors = []string{"Customer", "Node"}
 
 func (ec *executionContext) _Customer(ctx context.Context, sel ast.SelectionSet, obj *ent.Customer) graphql.Marshaler {
@@ -17977,6 +21194,74 @@ func (ec *executionContext) _Customer(ctx context.Context, sel ast.SelectionSet,
 				return innerFunc(ctx)
 
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var customerConnectionImplementors = []string{"CustomerConnection"}
+
+func (ec *executionContext) _CustomerConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.CustomerConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, customerConnectionImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CustomerConnection")
+		case "edges":
+
+			out.Values[i] = ec._CustomerConnection_edges(ctx, field, obj)
+
+		case "pageInfo":
+
+			out.Values[i] = ec._CustomerConnection_pageInfo(ctx, field, obj)
+
+		case "totalCount":
+
+			out.Values[i] = ec._CustomerConnection_totalCount(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var customerEdgeImplementors = []string{"CustomerEdge"}
+
+func (ec *executionContext) _CustomerEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.CustomerEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, customerEdgeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CustomerEdge")
+		case "node":
+
+			out.Values[i] = ec._CustomerEdge_node(ctx, field, obj)
+
+		case "cursor":
+
+			out.Values[i] = ec._CustomerEdge_cursor(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -18152,6 +21437,74 @@ func (ec *executionContext) _Flight(ctx context.Context, sel ast.SelectionSet, o
 	return out
 }
 
+var flightConnectionImplementors = []string{"FlightConnection"}
+
+func (ec *executionContext) _FlightConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.FlightConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, flightConnectionImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FlightConnection")
+		case "edges":
+
+			out.Values[i] = ec._FlightConnection_edges(ctx, field, obj)
+
+		case "pageInfo":
+
+			out.Values[i] = ec._FlightConnection_pageInfo(ctx, field, obj)
+
+		case "totalCount":
+
+			out.Values[i] = ec._FlightConnection_totalCount(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var flightEdgeImplementors = []string{"FlightEdge"}
+
+func (ec *executionContext) _FlightEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.FlightEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, flightEdgeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("FlightEdge")
+		case "node":
+
+			out.Values[i] = ec._FlightEdge_node(ctx, field, obj)
+
+		case "cursor":
+
+			out.Values[i] = ec._FlightEdge_cursor(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var memberImplementors = []string{"Member", "Node"}
 
 func (ec *executionContext) _Member(ctx context.Context, sel ast.SelectionSet, obj *ent.Member) graphql.Marshaler {
@@ -18247,6 +21600,77 @@ func (ec *executionContext) _Member(ctx context.Context, sel ast.SelectionSet, o
 	return out
 }
 
+var memberConnectionImplementors = []string{"MemberConnection"}
+
+func (ec *executionContext) _MemberConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.MemberConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, memberConnectionImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MemberConnection")
+		case "edges":
+
+			out.Values[i] = ec._MemberConnection_edges(ctx, field, obj)
+
+		case "pageInfo":
+
+			out.Values[i] = ec._MemberConnection_pageInfo(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "totalCount":
+
+			out.Values[i] = ec._MemberConnection_totalCount(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var memberEdgeImplementors = []string{"MemberEdge"}
+
+func (ec *executionContext) _MemberEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.MemberEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, memberEdgeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("MemberEdge")
+		case "node":
+
+			out.Values[i] = ec._MemberEdge_node(ctx, field, obj)
+
+		case "cursor":
+
+			out.Values[i] = ec._MemberEdge_cursor(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -18329,6 +21753,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "list_members":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_list_members(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "create_airport":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -18371,6 +21804,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "list_airports":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_list_airports(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "create_plane":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -18399,6 +21841,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_find_plane_by_id(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "list_planes":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_list_planes(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -18458,6 +21909,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 				return ec._Mutation_cancel_flight(ctx, field)
 			})
 
+		case "list_flights":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_list_flights(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "create_customer":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -18471,6 +21931,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_find_customer_by_cid(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "list_customers":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_list_customers(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -18524,6 +21993,21 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 				return ec._Mutation_cancel_booking(ctx, field)
 			})
 
+		case "update_bookings_status":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_update_bookings_status(ctx, field)
+			})
+
+		case "list_bookings":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_list_bookings(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -18654,6 +22138,90 @@ func (ec *executionContext) _Plane(ctx context.Context, sel ast.SelectionSet, ob
 				return innerFunc(ctx)
 
 			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var planeConnectionImplementors = []string{"PlaneConnection"}
+
+func (ec *executionContext) _PlaneConnection(ctx context.Context, sel ast.SelectionSet, obj *ent.PlaneConnection) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, planeConnectionImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PlaneConnection")
+		case "edges":
+
+			out.Values[i] = ec._PlaneConnection_edges(ctx, field, obj)
+
+		case "pageInfo":
+
+			out.Values[i] = ec._PlaneConnection_pageInfo(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "totalCount":
+
+			out.Values[i] = ec._PlaneConnection_totalCount(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var planeEdgeImplementors = []string{"PlaneEdge"}
+
+func (ec *executionContext) _PlaneEdge(ctx context.Context, sel ast.SelectionSet, obj *ent.PlaneEdge) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, planeEdgeImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("PlaneEdge")
+		case "node":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._PlaneEdge_node(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "cursor":
+
+			out.Values[i] = ec._PlaneEdge_cursor(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -19299,6 +22867,36 @@ func (ec *executionContext) marshalNAirport2ᚖbookingᚑflightᚑsystemᚋent�
 	return ec._Airport(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNAirportConnection2bookingᚑflightᚑsystemᚋentᚐAirportConnection(ctx context.Context, sel ast.SelectionSet, v ent.AirportConnection) graphql.Marshaler {
+	return ec._AirportConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAirportConnection2ᚖbookingᚑflightᚑsystemᚋentᚐAirportConnection(ctx context.Context, sel ast.SelectionSet, v *ent.AirportConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._AirportConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNAirportOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐAirportOrderField(ctx context.Context, v interface{}) (*ent.AirportOrderField, error) {
+	var res = new(ent.AirportOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNAirportOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐAirportOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.AirportOrderField) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) unmarshalNAirportWhereInput2ᚖbookingᚑflightᚑsystemᚋentᚐAirportWhereInput(ctx context.Context, v interface{}) (*ent.AirportWhereInput, error) {
 	res, err := ec.unmarshalInputAirportWhereInput(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
@@ -19362,6 +22960,36 @@ func (ec *executionContext) marshalNBooking2ᚖbookingᚑflightᚑsystemᚋent�
 	return ec._Booking(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNBookingConnection2bookingᚑflightᚑsystemᚋentᚐBookingConnection(ctx context.Context, sel ast.SelectionSet, v ent.BookingConnection) graphql.Marshaler {
+	return ec._BookingConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNBookingConnection2ᚖbookingᚑflightᚑsystemᚋentᚐBookingConnection(ctx context.Context, sel ast.SelectionSet, v *ent.BookingConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._BookingConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNBookingOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐBookingOrderField(ctx context.Context, v interface{}) (*ent.BookingOrderField, error) {
+	var res = new(ent.BookingOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNBookingOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐBookingOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.BookingOrderField) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return v
+}
+
 func (ec *executionContext) unmarshalNBookingSeatType2bookingᚑflightᚑsystemᚋentᚋbookingᚐSeatType(ctx context.Context, v interface{}) (booking.SeatType, error) {
 	var res booking.SeatType
 	err := res.UnmarshalGQL(v)
@@ -19420,6 +23048,16 @@ func (ec *executionContext) unmarshalNCreateMemberInput2bookingᚑflightᚑsyste
 func (ec *executionContext) unmarshalNCreatePlaneInput2bookingᚑflightᚑsystemᚋentᚐCreatePlaneInput(ctx context.Context, v interface{}) (ent.CreatePlaneInput, error) {
 	res, err := ec.unmarshalInputCreatePlaneInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx context.Context, v interface{}) (entgql.Cursor[int], error) {
+	var res entgql.Cursor[int]
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNCursor2entgoᚗioᚋcontribᚋentgqlᚐCursor(ctx context.Context, sel ast.SelectionSet, v entgql.Cursor[int]) graphql.Marshaler {
+	return v
 }
 
 func (ec *executionContext) marshalNCustomer2bookingᚑflightᚑsystemᚋentᚐCustomer(ctx context.Context, sel ast.SelectionSet, v ent.Customer) graphql.Marshaler {
@@ -19485,9 +23123,39 @@ func (ec *executionContext) unmarshalNCustomerBooking2bookingᚑflightᚑsystem�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNCustomerConnection2bookingᚑflightᚑsystemᚋentᚐCustomerConnection(ctx context.Context, sel ast.SelectionSet, v ent.CustomerConnection) graphql.Marshaler {
+	return ec._CustomerConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNCustomerConnection2ᚖbookingᚑflightᚑsystemᚋentᚐCustomerConnection(ctx context.Context, sel ast.SelectionSet, v *ent.CustomerConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._CustomerConnection(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNCustomerInput2bookingᚑflightᚑsystemᚋentᚐCustomerInput(ctx context.Context, v interface{}) (ent.CustomerInput, error) {
 	res, err := ec.unmarshalInputCustomerInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCustomerOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐCustomerOrderField(ctx context.Context, v interface{}) (*ent.CustomerOrderField, error) {
+	var res = new(ent.CustomerOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNCustomerOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐCustomerOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.CustomerOrderField) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalNCustomerWhereInput2ᚖbookingᚑflightᚑsystemᚋentᚐCustomerWhereInput(ctx context.Context, v interface{}) (*ent.CustomerWhereInput, error) {
@@ -19551,6 +23219,36 @@ func (ec *executionContext) marshalNFlight2ᚖbookingᚑflightᚑsystemᚋentᚐ
 		return graphql.Null
 	}
 	return ec._Flight(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNFlightConnection2bookingᚑflightᚑsystemᚋentᚐFlightConnection(ctx context.Context, sel ast.SelectionSet, v ent.FlightConnection) graphql.Marshaler {
+	return ec._FlightConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNFlightConnection2ᚖbookingᚑflightᚑsystemᚋentᚐFlightConnection(ctx context.Context, sel ast.SelectionSet, v *ent.FlightConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._FlightConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNFlightOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐFlightOrderField(ctx context.Context, v interface{}) (*ent.FlightOrderField, error) {
+	var res = new(ent.FlightOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFlightOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐFlightOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.FlightOrderField) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalNFlightStatus2bookingᚑflightᚑsystemᚋentᚋflightᚐStatus(ctx context.Context, v interface{}) (flight.Status, error) {
@@ -19785,6 +23483,20 @@ func (ec *executionContext) unmarshalNMemberBookingRoundTrip2bookingᚑflightᚑ
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalNMemberConnection2bookingᚑflightᚑsystemᚋentᚐMemberConnection(ctx context.Context, sel ast.SelectionSet, v ent.MemberConnection) graphql.Marshaler {
+	return ec._MemberConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNMemberConnection2ᚖbookingᚑflightᚑsystemᚋentᚐMemberConnection(ctx context.Context, sel ast.SelectionSet, v *ent.MemberConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._MemberConnection(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNMemberMemberType2bookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx context.Context, v interface{}) (member.MemberType, error) {
 	var res member.MemberType
 	err := res.UnmarshalGQL(v)
@@ -19792,6 +23504,22 @@ func (ec *executionContext) unmarshalNMemberMemberType2bookingᚑflightᚑsystem
 }
 
 func (ec *executionContext) marshalNMemberMemberType2bookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx context.Context, sel ast.SelectionSet, v member.MemberType) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) unmarshalNMemberOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐMemberOrderField(ctx context.Context, v interface{}) (*ent.MemberOrderField, error) {
+	var res = new(ent.MemberOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNMemberOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐMemberOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.MemberOrderField) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
 	return v
 }
 
@@ -19836,6 +23564,20 @@ func (ec *executionContext) marshalNNode2ᚕbookingᚑflightᚑsystemᚋentᚐNo
 	wg.Wait()
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx context.Context, v interface{}) (entgql.OrderDirection, error) {
+	var res entgql.OrderDirection
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNOrderDirection2entgoᚗioᚋcontribᚋentgqlᚐOrderDirection(ctx context.Context, sel ast.SelectionSet, v entgql.OrderDirection) graphql.Marshaler {
+	return v
+}
+
+func (ec *executionContext) marshalNPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v entgql.PageInfo[int]) graphql.Marshaler {
+	return ec._PageInfo(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNPlane2bookingᚑflightᚑsystemᚋentᚐPlane(ctx context.Context, sel ast.SelectionSet, v ent.Plane) graphql.Marshaler {
@@ -19894,6 +23636,36 @@ func (ec *executionContext) marshalNPlane2ᚖbookingᚑflightᚑsystemᚋentᚐP
 		return graphql.Null
 	}
 	return ec._Plane(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNPlaneConnection2bookingᚑflightᚑsystemᚋentᚐPlaneConnection(ctx context.Context, sel ast.SelectionSet, v ent.PlaneConnection) graphql.Marshaler {
+	return ec._PlaneConnection(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNPlaneConnection2ᚖbookingᚑflightᚑsystemᚋentᚐPlaneConnection(ctx context.Context, sel ast.SelectionSet, v *ent.PlaneConnection) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._PlaneConnection(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNPlaneOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐPlaneOrderField(ctx context.Context, v interface{}) (*ent.PlaneOrderField, error) {
+	var res = new(ent.PlaneOrderField)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNPlaneOrderField2ᚖbookingᚑflightᚑsystemᚋentᚐPlaneOrderField(ctx context.Context, sel ast.SelectionSet, v *ent.PlaneOrderField) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalNPlaneStatus2bookingᚑflightᚑsystemᚋentᚋplaneᚐStatus(ctx context.Context, v interface{}) (plane.Status, error) {
@@ -20245,6 +24017,62 @@ func (ec *executionContext) marshalOAirport2ᚖbookingᚑflightᚑsystemᚋent�
 	return ec._Airport(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOAirportEdge2ᚕᚖbookingᚑflightᚑsystemᚋentᚐAirportEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.AirportEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOAirportEdge2ᚖbookingᚑflightᚑsystemᚋentᚐAirportEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOAirportEdge2ᚖbookingᚑflightᚑsystemᚋentᚐAirportEdge(ctx context.Context, sel ast.SelectionSet, v *ent.AirportEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._AirportEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOAirportOrder2ᚖbookingᚑflightᚑsystemᚋentᚐAirportOrder(ctx context.Context, v interface{}) (*ent.AirportOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputAirportOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOAirportWhereInput2ᚕᚖbookingᚑflightᚑsystemᚋentᚐAirportWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.AirportWhereInput, error) {
 	if v == nil {
 		return nil, nil
@@ -20325,6 +24153,62 @@ func (ec *executionContext) marshalOBooking2ᚖbookingᚑflightᚑsystemᚋent�
 		return graphql.Null
 	}
 	return ec._Booking(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOBookingEdge2ᚕᚖbookingᚑflightᚑsystemᚋentᚐBookingEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.BookingEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOBookingEdge2ᚖbookingᚑflightᚑsystemᚋentᚐBookingEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOBookingEdge2ᚖbookingᚑflightᚑsystemᚋentᚐBookingEdge(ctx context.Context, sel ast.SelectionSet, v *ent.BookingEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._BookingEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOBookingOrder2ᚖbookingᚑflightᚑsystemᚋentᚐBookingOrder(ctx context.Context, v interface{}) (*ent.BookingOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputBookingOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOBookingSeatType2ᚕbookingᚑflightᚑsystemᚋentᚋbookingᚐSeatTypeᚄ(ctx context.Context, v interface{}) ([]booking.SeatType, error) {
@@ -20578,6 +24462,62 @@ func (ec *executionContext) unmarshalOCustomerBookingRoundTrip2ᚖbookingᚑflig
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) marshalOCustomerEdge2ᚕᚖbookingᚑflightᚑsystemᚋentᚐCustomerEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.CustomerEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOCustomerEdge2ᚖbookingᚑflightᚑsystemᚋentᚐCustomerEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOCustomerEdge2ᚖbookingᚑflightᚑsystemᚋentᚐCustomerEdge(ctx context.Context, sel ast.SelectionSet, v *ent.CustomerEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._CustomerEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOCustomerOrder2ᚖbookingᚑflightᚑsystemᚋentᚐCustomerOrder(ctx context.Context, v interface{}) (*ent.CustomerOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputCustomerOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOCustomerWhereInput2ᚕᚖbookingᚑflightᚑsystemᚋentᚐCustomerWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.CustomerWhereInput, error) {
 	if v == nil {
 		return nil, nil
@@ -20658,6 +24598,62 @@ func (ec *executionContext) marshalOFlight2ᚖbookingᚑflightᚑsystemᚋentᚐ
 		return graphql.Null
 	}
 	return ec._Flight(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOFlightEdge2ᚕᚖbookingᚑflightᚑsystemᚋentᚐFlightEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.FlightEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOFlightEdge2ᚖbookingᚑflightᚑsystemᚋentᚐFlightEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOFlightEdge2ᚖbookingᚑflightᚑsystemᚋentᚐFlightEdge(ctx context.Context, sel ast.SelectionSet, v *ent.FlightEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._FlightEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOFlightOrder2ᚖbookingᚑflightᚑsystemᚋentᚐFlightOrder(ctx context.Context, v interface{}) (*ent.FlightOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputFlightOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOFlightStatus2ᚕbookingᚑflightᚑsystemᚋentᚋflightᚐStatusᚄ(ctx context.Context, v interface{}) ([]flight.Status, error) {
@@ -21045,6 +25041,54 @@ func (ec *executionContext) marshalOMember2ᚖbookingᚑflightᚑsystemᚋentᚐ
 	return ec._Member(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOMemberEdge2ᚕᚖbookingᚑflightᚑsystemᚋentᚐMemberEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.MemberEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOMemberEdge2ᚖbookingᚑflightᚑsystemᚋentᚐMemberEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOMemberEdge2ᚖbookingᚑflightᚑsystemᚋentᚐMemberEdge(ctx context.Context, sel ast.SelectionSet, v *ent.MemberEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._MemberEdge(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalOMemberMemberType2bookingᚑflightᚑsystemᚋentᚋmemberᚐMemberType(ctx context.Context, v interface{}) (member.MemberType, error) {
 	var res member.MemberType
 	err := res.UnmarshalGQL(v)
@@ -21138,6 +25182,14 @@ func (ec *executionContext) marshalOMemberMemberType2ᚖbookingᚑflightᚑsyste
 	return v
 }
 
+func (ec *executionContext) unmarshalOMemberOrder2ᚖbookingᚑflightᚑsystemᚋentᚐMemberOrder(ctx context.Context, v interface{}) (*ent.MemberOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputMemberOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalOMemberWhereInput2ᚕᚖbookingᚑflightᚑsystemᚋentᚐMemberWhereInputᚄ(ctx context.Context, v interface{}) ([]*ent.MemberWhereInput, error) {
 	if v == nil {
 		return nil, nil
@@ -21173,11 +25225,71 @@ func (ec *executionContext) marshalONode2bookingᚑflightᚑsystemᚋentᚐNoder
 	return ec._Node(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalOPageInfo2entgoᚗioᚋcontribᚋentgqlᚐPageInfo(ctx context.Context, sel ast.SelectionSet, v entgql.PageInfo[int]) graphql.Marshaler {
+	return ec._PageInfo(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalOPlane2ᚖbookingᚑflightᚑsystemᚋentᚐPlane(ctx context.Context, sel ast.SelectionSet, v *ent.Plane) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._Plane(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOPlaneEdge2ᚕᚖbookingᚑflightᚑsystemᚋentᚐPlaneEdge(ctx context.Context, sel ast.SelectionSet, v []*ent.PlaneEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOPlaneEdge2ᚖbookingᚑflightᚑsystemᚋentᚐPlaneEdge(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	return ret
+}
+
+func (ec *executionContext) marshalOPlaneEdge2ᚖbookingᚑflightᚑsystemᚋentᚐPlaneEdge(ctx context.Context, sel ast.SelectionSet, v *ent.PlaneEdge) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._PlaneEdge(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOPlaneOrder2ᚖbookingᚑflightᚑsystemᚋentᚐPlaneOrder(ctx context.Context, v interface{}) (*ent.PlaneOrder, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputPlaneOrder(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOPlaneStatus2ᚕbookingᚑflightᚑsystemᚋentᚋplaneᚐStatusᚄ(ctx context.Context, v interface{}) ([]plane.Status, error) {

@@ -17,11 +17,11 @@ type Airport struct {
 // Fields of the Airport.
 func (Airport) Fields() []ent.Field {
 	return []ent.Field{
-		field.Time("created_at").Default(time.Now),
-		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
-		field.String("name").MaxLen(255).NotEmpty().Unique(),
-		field.Float("lat").Positive().Nillable(),
-		field.Float("long").Positive().Nillable(),
+		field.Time("created_at").Default(time.Now).Annotations(entgql.OrderField("CREATED_AT")),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now).Annotations(entgql.OrderField("UPDATED_AT")),
+		field.String("name").MaxLen(255).NotEmpty().Unique().Annotations(entgql.OrderField("NAME")),
+		field.Float("lat").Positive().Nillable().Annotations(entgql.OrderField("LAT")),
+		field.Float("long").Positive().Nillable().Annotations(entgql.OrderField("LONG")),
 	}
 }
 

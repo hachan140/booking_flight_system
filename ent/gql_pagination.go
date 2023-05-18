@@ -11,6 +11,9 @@ import (
 	"booking-flight-system/ent/plane"
 	"context"
 	"errors"
+	"fmt"
+	"io"
+	"strconv"
 
 	"entgo.io/contrib/entgql"
 	"entgo.io/ent"
@@ -305,6 +308,125 @@ func (a *AirportQuery) Paginate(
 	return conn, nil
 }
 
+var (
+	// AirportOrderFieldCreatedAt orders Airport by created_at.
+	AirportOrderFieldCreatedAt = &AirportOrderField{
+		Value: func(a *Airport) (ent.Value, error) {
+			return a.CreatedAt, nil
+		},
+		column: airport.FieldCreatedAt,
+		toTerm: airport.ByCreatedAt,
+		toCursor: func(a *Airport) Cursor {
+			return Cursor{
+				ID:    a.ID,
+				Value: a.CreatedAt,
+			}
+		},
+	}
+	// AirportOrderFieldUpdatedAt orders Airport by updated_at.
+	AirportOrderFieldUpdatedAt = &AirportOrderField{
+		Value: func(a *Airport) (ent.Value, error) {
+			return a.UpdatedAt, nil
+		},
+		column: airport.FieldUpdatedAt,
+		toTerm: airport.ByUpdatedAt,
+		toCursor: func(a *Airport) Cursor {
+			return Cursor{
+				ID:    a.ID,
+				Value: a.UpdatedAt,
+			}
+		},
+	}
+	// AirportOrderFieldName orders Airport by name.
+	AirportOrderFieldName = &AirportOrderField{
+		Value: func(a *Airport) (ent.Value, error) {
+			return a.Name, nil
+		},
+		column: airport.FieldName,
+		toTerm: airport.ByName,
+		toCursor: func(a *Airport) Cursor {
+			return Cursor{
+				ID:    a.ID,
+				Value: a.Name,
+			}
+		},
+	}
+	// AirportOrderFieldLat orders Airport by lat.
+	AirportOrderFieldLat = &AirportOrderField{
+		Value: func(a *Airport) (ent.Value, error) {
+			return a.Lat, nil
+		},
+		column: airport.FieldLat,
+		toTerm: airport.ByLat,
+		toCursor: func(a *Airport) Cursor {
+			return Cursor{
+				ID:    a.ID,
+				Value: a.Lat,
+			}
+		},
+	}
+	// AirportOrderFieldLong orders Airport by long.
+	AirportOrderFieldLong = &AirportOrderField{
+		Value: func(a *Airport) (ent.Value, error) {
+			return a.Long, nil
+		},
+		column: airport.FieldLong,
+		toTerm: airport.ByLong,
+		toCursor: func(a *Airport) Cursor {
+			return Cursor{
+				ID:    a.ID,
+				Value: a.Long,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f AirportOrderField) String() string {
+	var str string
+	switch f.column {
+	case AirportOrderFieldCreatedAt.column:
+		str = "CREATED_AT"
+	case AirportOrderFieldUpdatedAt.column:
+		str = "UPDATED_AT"
+	case AirportOrderFieldName.column:
+		str = "NAME"
+	case AirportOrderFieldLat.column:
+		str = "LAT"
+	case AirportOrderFieldLong.column:
+		str = "LONG"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f AirportOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *AirportOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("AirportOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATED_AT":
+		*f = *AirportOrderFieldCreatedAt
+	case "UPDATED_AT":
+		*f = *AirportOrderFieldUpdatedAt
+	case "NAME":
+		*f = *AirportOrderFieldName
+	case "LAT":
+		*f = *AirportOrderFieldLat
+	case "LONG":
+		*f = *AirportOrderFieldLong
+	default:
+		return fmt.Errorf("%s is not a valid AirportOrderField", str)
+	}
+	return nil
+}
+
 // AirportOrderField defines the ordering field of Airport.
 type AirportOrderField struct {
 	// Value extracts the ordering value from the given Airport.
@@ -549,6 +671,179 @@ func (b *BookingQuery) Paginate(
 	}
 	conn.build(nodes, pager, after, first, before, last)
 	return conn, nil
+}
+
+var (
+	// BookingOrderFieldCreatedAt orders Booking by created_at.
+	BookingOrderFieldCreatedAt = &BookingOrderField{
+		Value: func(b *Booking) (ent.Value, error) {
+			return b.CreatedAt, nil
+		},
+		column: booking.FieldCreatedAt,
+		toTerm: booking.ByCreatedAt,
+		toCursor: func(b *Booking) Cursor {
+			return Cursor{
+				ID:    b.ID,
+				Value: b.CreatedAt,
+			}
+		},
+	}
+	// BookingOrderFieldUpdatedAt orders Booking by updated_at.
+	BookingOrderFieldUpdatedAt = &BookingOrderField{
+		Value: func(b *Booking) (ent.Value, error) {
+			return b.UpdatedAt, nil
+		},
+		column: booking.FieldUpdatedAt,
+		toTerm: booking.ByUpdatedAt,
+		toCursor: func(b *Booking) Cursor {
+			return Cursor{
+				ID:    b.ID,
+				Value: b.UpdatedAt,
+			}
+		},
+	}
+	// BookingOrderFieldCode orders Booking by code.
+	BookingOrderFieldCode = &BookingOrderField{
+		Value: func(b *Booking) (ent.Value, error) {
+			return b.Code, nil
+		},
+		column: booking.FieldCode,
+		toTerm: booking.ByCode,
+		toCursor: func(b *Booking) Cursor {
+			return Cursor{
+				ID:    b.ID,
+				Value: b.Code,
+			}
+		},
+	}
+	// BookingOrderFieldStatus orders Booking by status.
+	BookingOrderFieldStatus = &BookingOrderField{
+		Value: func(b *Booking) (ent.Value, error) {
+			return b.Status, nil
+		},
+		column: booking.FieldStatus,
+		toTerm: booking.ByStatus,
+		toCursor: func(b *Booking) Cursor {
+			return Cursor{
+				ID:    b.ID,
+				Value: b.Status,
+			}
+		},
+	}
+	// BookingOrderFieldSeatType orders Booking by seat_type.
+	BookingOrderFieldSeatType = &BookingOrderField{
+		Value: func(b *Booking) (ent.Value, error) {
+			return b.SeatType, nil
+		},
+		column: booking.FieldSeatType,
+		toTerm: booking.BySeatType,
+		toCursor: func(b *Booking) Cursor {
+			return Cursor{
+				ID:    b.ID,
+				Value: b.SeatType,
+			}
+		},
+	}
+	// BookingOrderFieldIsRound orders Booking by is_round.
+	BookingOrderFieldIsRound = &BookingOrderField{
+		Value: func(b *Booking) (ent.Value, error) {
+			return b.IsRound, nil
+		},
+		column: booking.FieldIsRound,
+		toTerm: booking.ByIsRound,
+		toCursor: func(b *Booking) Cursor {
+			return Cursor{
+				ID:    b.ID,
+				Value: b.IsRound,
+			}
+		},
+	}
+	// BookingOrderFieldCustomerID orders Booking by customer_id.
+	BookingOrderFieldCustomerID = &BookingOrderField{
+		Value: func(b *Booking) (ent.Value, error) {
+			return b.CustomerID, nil
+		},
+		column: booking.FieldCustomerID,
+		toTerm: booking.ByCustomerID,
+		toCursor: func(b *Booking) Cursor {
+			return Cursor{
+				ID:    b.ID,
+				Value: b.CustomerID,
+			}
+		},
+	}
+	// BookingOrderFieldFlightID orders Booking by flight_id.
+	BookingOrderFieldFlightID = &BookingOrderField{
+		Value: func(b *Booking) (ent.Value, error) {
+			return b.FlightID, nil
+		},
+		column: booking.FieldFlightID,
+		toTerm: booking.ByFlightID,
+		toCursor: func(b *Booking) Cursor {
+			return Cursor{
+				ID:    b.ID,
+				Value: b.FlightID,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f BookingOrderField) String() string {
+	var str string
+	switch f.column {
+	case BookingOrderFieldCreatedAt.column:
+		str = "CREATED_AT"
+	case BookingOrderFieldUpdatedAt.column:
+		str = "UPDATED_AT"
+	case BookingOrderFieldCode.column:
+		str = "CODE"
+	case BookingOrderFieldStatus.column:
+		str = "STATUS"
+	case BookingOrderFieldSeatType.column:
+		str = "SEAT_TYPE"
+	case BookingOrderFieldIsRound.column:
+		str = "IS_ROUND"
+	case BookingOrderFieldCustomerID.column:
+		str = "CUSTOMER_ID"
+	case BookingOrderFieldFlightID.column:
+		str = "FLIGHT_ID"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f BookingOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *BookingOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("BookingOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATED_AT":
+		*f = *BookingOrderFieldCreatedAt
+	case "UPDATED_AT":
+		*f = *BookingOrderFieldUpdatedAt
+	case "CODE":
+		*f = *BookingOrderFieldCode
+	case "STATUS":
+		*f = *BookingOrderFieldStatus
+	case "SEAT_TYPE":
+		*f = *BookingOrderFieldSeatType
+	case "IS_ROUND":
+		*f = *BookingOrderFieldIsRound
+	case "CUSTOMER_ID":
+		*f = *BookingOrderFieldCustomerID
+	case "FLIGHT_ID":
+		*f = *BookingOrderFieldFlightID
+	default:
+		return fmt.Errorf("%s is not a valid BookingOrderField", str)
+	}
+	return nil
 }
 
 // BookingOrderField defines the ordering field of Booking.
@@ -797,6 +1092,179 @@ func (c *CustomerQuery) Paginate(
 	return conn, nil
 }
 
+var (
+	// CustomerOrderFieldCreatedAt orders Customer by created_at.
+	CustomerOrderFieldCreatedAt = &CustomerOrderField{
+		Value: func(c *Customer) (ent.Value, error) {
+			return c.CreatedAt, nil
+		},
+		column: customer.FieldCreatedAt,
+		toTerm: customer.ByCreatedAt,
+		toCursor: func(c *Customer) Cursor {
+			return Cursor{
+				ID:    c.ID,
+				Value: c.CreatedAt,
+			}
+		},
+	}
+	// CustomerOrderFieldUpdatedAt orders Customer by updated_at.
+	CustomerOrderFieldUpdatedAt = &CustomerOrderField{
+		Value: func(c *Customer) (ent.Value, error) {
+			return c.UpdatedAt, nil
+		},
+		column: customer.FieldUpdatedAt,
+		toTerm: customer.ByUpdatedAt,
+		toCursor: func(c *Customer) Cursor {
+			return Cursor{
+				ID:    c.ID,
+				Value: c.UpdatedAt,
+			}
+		},
+	}
+	// CustomerOrderFieldEmail orders Customer by email.
+	CustomerOrderFieldEmail = &CustomerOrderField{
+		Value: func(c *Customer) (ent.Value, error) {
+			return c.Email, nil
+		},
+		column: customer.FieldEmail,
+		toTerm: customer.ByEmail,
+		toCursor: func(c *Customer) Cursor {
+			return Cursor{
+				ID:    c.ID,
+				Value: c.Email,
+			}
+		},
+	}
+	// CustomerOrderFieldPhoneNumber orders Customer by phone_number.
+	CustomerOrderFieldPhoneNumber = &CustomerOrderField{
+		Value: func(c *Customer) (ent.Value, error) {
+			return c.PhoneNumber, nil
+		},
+		column: customer.FieldPhoneNumber,
+		toTerm: customer.ByPhoneNumber,
+		toCursor: func(c *Customer) Cursor {
+			return Cursor{
+				ID:    c.ID,
+				Value: c.PhoneNumber,
+			}
+		},
+	}
+	// CustomerOrderFieldFullName orders Customer by full_name.
+	CustomerOrderFieldFullName = &CustomerOrderField{
+		Value: func(c *Customer) (ent.Value, error) {
+			return c.FullName, nil
+		},
+		column: customer.FieldFullName,
+		toTerm: customer.ByFullName,
+		toCursor: func(c *Customer) Cursor {
+			return Cursor{
+				ID:    c.ID,
+				Value: c.FullName,
+			}
+		},
+	}
+	// CustomerOrderFieldDob orders Customer by dob.
+	CustomerOrderFieldDob = &CustomerOrderField{
+		Value: func(c *Customer) (ent.Value, error) {
+			return c.Dob, nil
+		},
+		column: customer.FieldDob,
+		toTerm: customer.ByDob,
+		toCursor: func(c *Customer) Cursor {
+			return Cursor{
+				ID:    c.ID,
+				Value: c.Dob,
+			}
+		},
+	}
+	// CustomerOrderFieldCid orders Customer by cid.
+	CustomerOrderFieldCid = &CustomerOrderField{
+		Value: func(c *Customer) (ent.Value, error) {
+			return c.Cid, nil
+		},
+		column: customer.FieldCid,
+		toTerm: customer.ByCid,
+		toCursor: func(c *Customer) Cursor {
+			return Cursor{
+				ID:    c.ID,
+				Value: c.Cid,
+			}
+		},
+	}
+	// CustomerOrderFieldMemberID orders Customer by member_id.
+	CustomerOrderFieldMemberID = &CustomerOrderField{
+		Value: func(c *Customer) (ent.Value, error) {
+			return c.MemberID, nil
+		},
+		column: customer.FieldMemberID,
+		toTerm: customer.ByMemberID,
+		toCursor: func(c *Customer) Cursor {
+			return Cursor{
+				ID:    c.ID,
+				Value: c.MemberID,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f CustomerOrderField) String() string {
+	var str string
+	switch f.column {
+	case CustomerOrderFieldCreatedAt.column:
+		str = "CREATED_AT"
+	case CustomerOrderFieldUpdatedAt.column:
+		str = "UPDATED_AT"
+	case CustomerOrderFieldEmail.column:
+		str = "EMAIL"
+	case CustomerOrderFieldPhoneNumber.column:
+		str = "PHONE_NUMBER"
+	case CustomerOrderFieldFullName.column:
+		str = "FULL_NAME"
+	case CustomerOrderFieldDob.column:
+		str = "DOB"
+	case CustomerOrderFieldCid.column:
+		str = "CID"
+	case CustomerOrderFieldMemberID.column:
+		str = "MEMBER_ID"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f CustomerOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *CustomerOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("CustomerOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATED_AT":
+		*f = *CustomerOrderFieldCreatedAt
+	case "UPDATED_AT":
+		*f = *CustomerOrderFieldUpdatedAt
+	case "EMAIL":
+		*f = *CustomerOrderFieldEmail
+	case "PHONE_NUMBER":
+		*f = *CustomerOrderFieldPhoneNumber
+	case "FULL_NAME":
+		*f = *CustomerOrderFieldFullName
+	case "DOB":
+		*f = *CustomerOrderFieldDob
+	case "CID":
+		*f = *CustomerOrderFieldCid
+	case "MEMBER_ID":
+		*f = *CustomerOrderFieldMemberID
+	default:
+		return fmt.Errorf("%s is not a valid CustomerOrderField", str)
+	}
+	return nil
+}
+
 // CustomerOrderField defines the ordering field of Customer.
 type CustomerOrderField struct {
 	// Value extracts the ordering value from the given Customer.
@@ -1041,6 +1509,233 @@ func (f *FlightQuery) Paginate(
 	}
 	conn.build(nodes, pager, after, first, before, last)
 	return conn, nil
+}
+
+var (
+	// FlightOrderFieldCreatedAt orders Flight by created_at.
+	FlightOrderFieldCreatedAt = &FlightOrderField{
+		Value: func(f *Flight) (ent.Value, error) {
+			return f.CreatedAt, nil
+		},
+		column: flight.FieldCreatedAt,
+		toTerm: flight.ByCreatedAt,
+		toCursor: func(f *Flight) Cursor {
+			return Cursor{
+				ID:    f.ID,
+				Value: f.CreatedAt,
+			}
+		},
+	}
+	// FlightOrderFieldUpdatedAt orders Flight by updated_at.
+	FlightOrderFieldUpdatedAt = &FlightOrderField{
+		Value: func(f *Flight) (ent.Value, error) {
+			return f.UpdatedAt, nil
+		},
+		column: flight.FieldUpdatedAt,
+		toTerm: flight.ByUpdatedAt,
+		toCursor: func(f *Flight) Cursor {
+			return Cursor{
+				ID:    f.ID,
+				Value: f.UpdatedAt,
+			}
+		},
+	}
+	// FlightOrderFieldName orders Flight by name.
+	FlightOrderFieldName = &FlightOrderField{
+		Value: func(f *Flight) (ent.Value, error) {
+			return f.Name, nil
+		},
+		column: flight.FieldName,
+		toTerm: flight.ByName,
+		toCursor: func(f *Flight) Cursor {
+			return Cursor{
+				ID:    f.ID,
+				Value: f.Name,
+			}
+		},
+	}
+	// FlightOrderFieldDepartAt orders Flight by depart_at.
+	FlightOrderFieldDepartAt = &FlightOrderField{
+		Value: func(f *Flight) (ent.Value, error) {
+			return f.DepartAt, nil
+		},
+		column: flight.FieldDepartAt,
+		toTerm: flight.ByDepartAt,
+		toCursor: func(f *Flight) Cursor {
+			return Cursor{
+				ID:    f.ID,
+				Value: f.DepartAt,
+			}
+		},
+	}
+	// FlightOrderFieldLandAt orders Flight by land_at.
+	FlightOrderFieldLandAt = &FlightOrderField{
+		Value: func(f *Flight) (ent.Value, error) {
+			return f.LandAt, nil
+		},
+		column: flight.FieldLandAt,
+		toTerm: flight.ByLandAt,
+		toCursor: func(f *Flight) Cursor {
+			return Cursor{
+				ID:    f.ID,
+				Value: f.LandAt,
+			}
+		},
+	}
+	// FlightOrderFieldAvailableEcSlot orders Flight by available_ec_slot.
+	FlightOrderFieldAvailableEcSlot = &FlightOrderField{
+		Value: func(f *Flight) (ent.Value, error) {
+			return f.AvailableEcSlot, nil
+		},
+		column: flight.FieldAvailableEcSlot,
+		toTerm: flight.ByAvailableEcSlot,
+		toCursor: func(f *Flight) Cursor {
+			return Cursor{
+				ID:    f.ID,
+				Value: f.AvailableEcSlot,
+			}
+		},
+	}
+	// FlightOrderFieldAvailableBcSlot orders Flight by available_bc_slot.
+	FlightOrderFieldAvailableBcSlot = &FlightOrderField{
+		Value: func(f *Flight) (ent.Value, error) {
+			return f.AvailableBcSlot, nil
+		},
+		column: flight.FieldAvailableBcSlot,
+		toTerm: flight.ByAvailableBcSlot,
+		toCursor: func(f *Flight) Cursor {
+			return Cursor{
+				ID:    f.ID,
+				Value: f.AvailableBcSlot,
+			}
+		},
+	}
+	// FlightOrderFieldStatus orders Flight by status.
+	FlightOrderFieldStatus = &FlightOrderField{
+		Value: func(f *Flight) (ent.Value, error) {
+			return f.Status, nil
+		},
+		column: flight.FieldStatus,
+		toTerm: flight.ByStatus,
+		toCursor: func(f *Flight) Cursor {
+			return Cursor{
+				ID:    f.ID,
+				Value: f.Status,
+			}
+		},
+	}
+	// FlightOrderFieldPlaneID orders Flight by plane_id.
+	FlightOrderFieldPlaneID = &FlightOrderField{
+		Value: func(f *Flight) (ent.Value, error) {
+			return f.PlaneID, nil
+		},
+		column: flight.FieldPlaneID,
+		toTerm: flight.ByPlaneID,
+		toCursor: func(f *Flight) Cursor {
+			return Cursor{
+				ID:    f.ID,
+				Value: f.PlaneID,
+			}
+		},
+	}
+	// FlightOrderFieldFromAirportID orders Flight by from_airport_id.
+	FlightOrderFieldFromAirportID = &FlightOrderField{
+		Value: func(f *Flight) (ent.Value, error) {
+			return f.FromAirportID, nil
+		},
+		column: flight.FieldFromAirportID,
+		toTerm: flight.ByFromAirportID,
+		toCursor: func(f *Flight) Cursor {
+			return Cursor{
+				ID:    f.ID,
+				Value: f.FromAirportID,
+			}
+		},
+	}
+	// FlightOrderFieldToAirportID orders Flight by to_airport_id.
+	FlightOrderFieldToAirportID = &FlightOrderField{
+		Value: func(f *Flight) (ent.Value, error) {
+			return f.ToAirportID, nil
+		},
+		column: flight.FieldToAirportID,
+		toTerm: flight.ByToAirportID,
+		toCursor: func(f *Flight) Cursor {
+			return Cursor{
+				ID:    f.ID,
+				Value: f.ToAirportID,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f FlightOrderField) String() string {
+	var str string
+	switch f.column {
+	case FlightOrderFieldCreatedAt.column:
+		str = "CREATED_AT"
+	case FlightOrderFieldUpdatedAt.column:
+		str = "UPDATED_AT"
+	case FlightOrderFieldName.column:
+		str = "NAME"
+	case FlightOrderFieldDepartAt.column:
+		str = "DEPART_AT"
+	case FlightOrderFieldLandAt.column:
+		str = "LAND_AT"
+	case FlightOrderFieldAvailableEcSlot.column:
+		str = "AVAILABLE_EC_SLOT"
+	case FlightOrderFieldAvailableBcSlot.column:
+		str = "AVAILABLE_BC_SLOT"
+	case FlightOrderFieldStatus.column:
+		str = "STATUS"
+	case FlightOrderFieldPlaneID.column:
+		str = "PLANE_ID"
+	case FlightOrderFieldFromAirportID.column:
+		str = "FROM_AIRPORT_ID"
+	case FlightOrderFieldToAirportID.column:
+		str = "TO_AIRPORT_ID"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f FlightOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *FlightOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("FlightOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATED_AT":
+		*f = *FlightOrderFieldCreatedAt
+	case "UPDATED_AT":
+		*f = *FlightOrderFieldUpdatedAt
+	case "NAME":
+		*f = *FlightOrderFieldName
+	case "DEPART_AT":
+		*f = *FlightOrderFieldDepartAt
+	case "LAND_AT":
+		*f = *FlightOrderFieldLandAt
+	case "AVAILABLE_EC_SLOT":
+		*f = *FlightOrderFieldAvailableEcSlot
+	case "AVAILABLE_BC_SLOT":
+		*f = *FlightOrderFieldAvailableBcSlot
+	case "STATUS":
+		*f = *FlightOrderFieldStatus
+	case "PLANE_ID":
+		*f = *FlightOrderFieldPlaneID
+	case "FROM_AIRPORT_ID":
+		*f = *FlightOrderFieldFromAirportID
+	case "TO_AIRPORT_ID":
+		*f = *FlightOrderFieldToAirportID
+	default:
+		return fmt.Errorf("%s is not a valid FlightOrderField", str)
+	}
+	return nil
 }
 
 // FlightOrderField defines the ordering field of Flight.
@@ -1289,6 +1984,197 @@ func (m *MemberQuery) Paginate(
 	return conn, nil
 }
 
+var (
+	// MemberOrderFieldCreatedAt orders Member by created_at.
+	MemberOrderFieldCreatedAt = &MemberOrderField{
+		Value: func(m *Member) (ent.Value, error) {
+			return m.CreatedAt, nil
+		},
+		column: member.FieldCreatedAt,
+		toTerm: member.ByCreatedAt,
+		toCursor: func(m *Member) Cursor {
+			return Cursor{
+				ID:    m.ID,
+				Value: m.CreatedAt,
+			}
+		},
+	}
+	// MemberOrderFieldUpdatedAt orders Member by updated_at.
+	MemberOrderFieldUpdatedAt = &MemberOrderField{
+		Value: func(m *Member) (ent.Value, error) {
+			return m.UpdatedAt, nil
+		},
+		column: member.FieldUpdatedAt,
+		toTerm: member.ByUpdatedAt,
+		toCursor: func(m *Member) Cursor {
+			return Cursor{
+				ID:    m.ID,
+				Value: m.UpdatedAt,
+			}
+		},
+	}
+	// MemberOrderFieldEmail orders Member by email.
+	MemberOrderFieldEmail = &MemberOrderField{
+		Value: func(m *Member) (ent.Value, error) {
+			return m.Email, nil
+		},
+		column: member.FieldEmail,
+		toTerm: member.ByEmail,
+		toCursor: func(m *Member) Cursor {
+			return Cursor{
+				ID:    m.ID,
+				Value: m.Email,
+			}
+		},
+	}
+	// MemberOrderFieldPassword orders Member by password.
+	MemberOrderFieldPassword = &MemberOrderField{
+		Value: func(m *Member) (ent.Value, error) {
+			return m.Password, nil
+		},
+		column: member.FieldPassword,
+		toTerm: member.ByPassword,
+		toCursor: func(m *Member) Cursor {
+			return Cursor{
+				ID:    m.ID,
+				Value: m.Password,
+			}
+		},
+	}
+	// MemberOrderFieldPhoneNumber orders Member by phone_number.
+	MemberOrderFieldPhoneNumber = &MemberOrderField{
+		Value: func(m *Member) (ent.Value, error) {
+			return m.PhoneNumber, nil
+		},
+		column: member.FieldPhoneNumber,
+		toTerm: member.ByPhoneNumber,
+		toCursor: func(m *Member) Cursor {
+			return Cursor{
+				ID:    m.ID,
+				Value: m.PhoneNumber,
+			}
+		},
+	}
+	// MemberOrderFieldFullName orders Member by full_name.
+	MemberOrderFieldFullName = &MemberOrderField{
+		Value: func(m *Member) (ent.Value, error) {
+			return m.FullName, nil
+		},
+		column: member.FieldFullName,
+		toTerm: member.ByFullName,
+		toCursor: func(m *Member) Cursor {
+			return Cursor{
+				ID:    m.ID,
+				Value: m.FullName,
+			}
+		},
+	}
+	// MemberOrderFieldDob orders Member by dob.
+	MemberOrderFieldDob = &MemberOrderField{
+		Value: func(m *Member) (ent.Value, error) {
+			return m.Dob, nil
+		},
+		column: member.FieldDob,
+		toTerm: member.ByDob,
+		toCursor: func(m *Member) Cursor {
+			return Cursor{
+				ID:    m.ID,
+				Value: m.Dob,
+			}
+		},
+	}
+	// MemberOrderFieldCid orders Member by cid.
+	MemberOrderFieldCid = &MemberOrderField{
+		Value: func(m *Member) (ent.Value, error) {
+			return m.Cid, nil
+		},
+		column: member.FieldCid,
+		toTerm: member.ByCid,
+		toCursor: func(m *Member) Cursor {
+			return Cursor{
+				ID:    m.ID,
+				Value: m.Cid,
+			}
+		},
+	}
+	// MemberOrderFieldMemberType orders Member by member_type.
+	MemberOrderFieldMemberType = &MemberOrderField{
+		Value: func(m *Member) (ent.Value, error) {
+			return m.MemberType, nil
+		},
+		column: member.FieldMemberType,
+		toTerm: member.ByMemberType,
+		toCursor: func(m *Member) Cursor {
+			return Cursor{
+				ID:    m.ID,
+				Value: m.MemberType,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f MemberOrderField) String() string {
+	var str string
+	switch f.column {
+	case MemberOrderFieldCreatedAt.column:
+		str = "CREATED_AT"
+	case MemberOrderFieldUpdatedAt.column:
+		str = "UPDATED_AT"
+	case MemberOrderFieldEmail.column:
+		str = "EMAIL"
+	case MemberOrderFieldPassword.column:
+		str = "PASSWORD"
+	case MemberOrderFieldPhoneNumber.column:
+		str = "PHONE_NUMBER"
+	case MemberOrderFieldFullName.column:
+		str = "FULL_NAME"
+	case MemberOrderFieldDob.column:
+		str = "DOB"
+	case MemberOrderFieldCid.column:
+		str = "CID"
+	case MemberOrderFieldMemberType.column:
+		str = "MEMBER_TYPE"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f MemberOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *MemberOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("MemberOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATED_AT":
+		*f = *MemberOrderFieldCreatedAt
+	case "UPDATED_AT":
+		*f = *MemberOrderFieldUpdatedAt
+	case "EMAIL":
+		*f = *MemberOrderFieldEmail
+	case "PASSWORD":
+		*f = *MemberOrderFieldPassword
+	case "PHONE_NUMBER":
+		*f = *MemberOrderFieldPhoneNumber
+	case "FULL_NAME":
+		*f = *MemberOrderFieldFullName
+	case "DOB":
+		*f = *MemberOrderFieldDob
+	case "CID":
+		*f = *MemberOrderFieldCid
+	case "MEMBER_TYPE":
+		*f = *MemberOrderFieldMemberType
+	default:
+		return fmt.Errorf("%s is not a valid MemberOrderField", str)
+	}
+	return nil
+}
+
 // MemberOrderField defines the ordering field of Member.
 type MemberOrderField struct {
 	// Value extracts the ordering value from the given Member.
@@ -1533,6 +2419,143 @@ func (pl *PlaneQuery) Paginate(
 	}
 	conn.build(nodes, pager, after, first, before, last)
 	return conn, nil
+}
+
+var (
+	// PlaneOrderFieldCreatedAt orders Plane by created_at.
+	PlaneOrderFieldCreatedAt = &PlaneOrderField{
+		Value: func(pl *Plane) (ent.Value, error) {
+			return pl.CreatedAt, nil
+		},
+		column: plane.FieldCreatedAt,
+		toTerm: plane.ByCreatedAt,
+		toCursor: func(pl *Plane) Cursor {
+			return Cursor{
+				ID:    pl.ID,
+				Value: pl.CreatedAt,
+			}
+		},
+	}
+	// PlaneOrderFieldUpdatedAt orders Plane by updated_at.
+	PlaneOrderFieldUpdatedAt = &PlaneOrderField{
+		Value: func(pl *Plane) (ent.Value, error) {
+			return pl.UpdatedAt, nil
+		},
+		column: plane.FieldUpdatedAt,
+		toTerm: plane.ByUpdatedAt,
+		toCursor: func(pl *Plane) Cursor {
+			return Cursor{
+				ID:    pl.ID,
+				Value: pl.UpdatedAt,
+			}
+		},
+	}
+	// PlaneOrderFieldName orders Plane by name.
+	PlaneOrderFieldName = &PlaneOrderField{
+		Value: func(pl *Plane) (ent.Value, error) {
+			return pl.Name, nil
+		},
+		column: plane.FieldName,
+		toTerm: plane.ByName,
+		toCursor: func(pl *Plane) Cursor {
+			return Cursor{
+				ID:    pl.ID,
+				Value: pl.Name,
+			}
+		},
+	}
+	// PlaneOrderFieldEconomyClassSlots orders Plane by economy_class_slots.
+	PlaneOrderFieldEconomyClassSlots = &PlaneOrderField{
+		Value: func(pl *Plane) (ent.Value, error) {
+			return pl.EconomyClassSlots, nil
+		},
+		column: plane.FieldEconomyClassSlots,
+		toTerm: plane.ByEconomyClassSlots,
+		toCursor: func(pl *Plane) Cursor {
+			return Cursor{
+				ID:    pl.ID,
+				Value: pl.EconomyClassSlots,
+			}
+		},
+	}
+	// PlaneOrderFieldBusinessClassSlots orders Plane by business_class_slots.
+	PlaneOrderFieldBusinessClassSlots = &PlaneOrderField{
+		Value: func(pl *Plane) (ent.Value, error) {
+			return pl.BusinessClassSlots, nil
+		},
+		column: plane.FieldBusinessClassSlots,
+		toTerm: plane.ByBusinessClassSlots,
+		toCursor: func(pl *Plane) Cursor {
+			return Cursor{
+				ID:    pl.ID,
+				Value: pl.BusinessClassSlots,
+			}
+		},
+	}
+	// PlaneOrderFieldStatus orders Plane by status.
+	PlaneOrderFieldStatus = &PlaneOrderField{
+		Value: func(pl *Plane) (ent.Value, error) {
+			return pl.Status, nil
+		},
+		column: plane.FieldStatus,
+		toTerm: plane.ByStatus,
+		toCursor: func(pl *Plane) Cursor {
+			return Cursor{
+				ID:    pl.ID,
+				Value: pl.Status,
+			}
+		},
+	}
+)
+
+// String implement fmt.Stringer interface.
+func (f PlaneOrderField) String() string {
+	var str string
+	switch f.column {
+	case PlaneOrderFieldCreatedAt.column:
+		str = "CREATED_AT"
+	case PlaneOrderFieldUpdatedAt.column:
+		str = "UPDATED_AT"
+	case PlaneOrderFieldName.column:
+		str = "NAME"
+	case PlaneOrderFieldEconomyClassSlots.column:
+		str = "ECONOMY_CLASS_SLOTS"
+	case PlaneOrderFieldBusinessClassSlots.column:
+		str = "BUSINESS_CLASS_SLOTS"
+	case PlaneOrderFieldStatus.column:
+		str = "STATUS"
+	}
+	return str
+}
+
+// MarshalGQL implements graphql.Marshaler interface.
+func (f PlaneOrderField) MarshalGQL(w io.Writer) {
+	io.WriteString(w, strconv.Quote(f.String()))
+}
+
+// UnmarshalGQL implements graphql.Unmarshaler interface.
+func (f *PlaneOrderField) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("PlaneOrderField %T must be a string", v)
+	}
+	switch str {
+	case "CREATED_AT":
+		*f = *PlaneOrderFieldCreatedAt
+	case "UPDATED_AT":
+		*f = *PlaneOrderFieldUpdatedAt
+	case "NAME":
+		*f = *PlaneOrderFieldName
+	case "ECONOMY_CLASS_SLOTS":
+		*f = *PlaneOrderFieldEconomyClassSlots
+	case "BUSINESS_CLASS_SLOTS":
+		*f = *PlaneOrderFieldBusinessClassSlots
+	case "STATUS":
+		*f = *PlaneOrderFieldStatus
+	default:
+		return fmt.Errorf("%s is not a valid PlaneOrderField", str)
+	}
+	return nil
 }
 
 // PlaneOrderField defines the ordering field of Plane.

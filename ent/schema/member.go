@@ -17,15 +17,15 @@ type Member struct {
 // Fields of the Member.
 func (Member) Fields() []ent.Field {
 	return []ent.Field{
-		field.Time("created_at").Default(time.Now),
-		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
-		field.String("email").Unique().NotEmpty(),
-		field.String("password").Sensitive(),
-		field.String("phone_number").NotEmpty().Unique(),
-		field.String("full_name").NotEmpty(),
-		field.Time("dob").Optional(),
-		field.String("cid").Unique(),
-		field.Enum("member_type").NamedValues("Admin", "ADMIN", "Member", "MEMBER").Default("MEMBER").Optional(),
+		field.Time("created_at").Default(time.Now).Annotations(entgql.OrderField("CREATED_AT")),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now).Annotations(entgql.OrderField("UPDATED_AT")),
+		field.String("email").Unique().NotEmpty().Annotations(entgql.OrderField("EMAIL")),
+		field.String("password").Sensitive().Annotations(entgql.OrderField("PASSWORD")),
+		field.String("phone_number").NotEmpty().Unique().Annotations(entgql.OrderField("PHONE_NUMBER")),
+		field.String("full_name").NotEmpty().Annotations(entgql.OrderField("FULL_NAME")),
+		field.Time("dob").Optional().Annotations(entgql.OrderField("DOB")),
+		field.String("cid").Unique().Annotations(entgql.OrderField("CID")),
+		field.Enum("member_type").NamedValues("Admin", "ADMIN", "Member", "MEMBER").Default("MEMBER").Optional().Annotations(entgql.OrderField("MEMBER_TYPE")),
 	}
 }
 

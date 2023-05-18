@@ -17,14 +17,14 @@ type Customer struct {
 // Fields of the Customer.
 func (Customer) Fields() []ent.Field {
 	return []ent.Field{
-		field.Time("created_at").Default(time.Now),
-		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
-		field.String("email").NotEmpty().Unique(),
-		field.String("phone_number").NotEmpty().Unique(),
-		field.String("full_name").NotEmpty(),
-		field.Time("dob").Optional(),
-		field.String("cid").NotEmpty().Unique(),
-		field.Int("member_id").Optional(),
+		field.Time("created_at").Default(time.Now).Annotations(entgql.OrderField("CREATED_AT")),
+		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now).Annotations(entgql.OrderField("UPDATED_AT")),
+		field.String("email").NotEmpty().Unique().Annotations(entgql.OrderField("EMAIL")),
+		field.String("phone_number").NotEmpty().Unique().Annotations(entgql.OrderField("PHONE_NUMBER")),
+		field.String("full_name").NotEmpty().Annotations(entgql.OrderField("FULL_NAME")),
+		field.Time("dob").Optional().Annotations(entgql.OrderField("DOB")),
+		field.String("cid").NotEmpty().Unique().Annotations(entgql.OrderField("CID")),
+		field.Int("member_id").Optional().Annotations(entgql.OrderField("MEMBER_ID")),
 	}
 }
 

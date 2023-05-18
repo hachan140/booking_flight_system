@@ -1,0 +1,9 @@
+type AirportConnection{
+    edges: [AirportEdge]
+    pageInfo: PageInfo!
+    totalCount: Int!
+}
+type AirportEdge{
+    node: Airport
+    cursor: Cursor!
+}

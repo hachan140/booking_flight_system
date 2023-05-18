@@ -1,0 +1,10 @@
+type PlaneConnection{
+    edges: [PlaneEdge]
+    pageInfo: PageInfo!
+    totalCount: Int!
+}
+
+type PlaneEdge{
+    node: Member
+    cursor: Cursor!
+}
