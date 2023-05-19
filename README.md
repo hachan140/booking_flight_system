@@ -6,7 +6,7 @@
 API: It's serve HTTP server with GraphQL
 
 ### Local Development
-Using Makefile
+Run locally
 
 ### Build application
 `make build`
