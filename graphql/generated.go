@@ -237,7 +237,6 @@ type ComplexityRoot struct {
 	Mutation struct {
 		Airport  func(childComplexity int) int
 		Booking  func(childComplexity int) int
-		Create   func(childComplexity int) int
 		Customer func(childComplexity int) int
 		Flight   func(childComplexity int) int
 		Member   func(childComplexity int) int
@@ -345,7 +344,6 @@ type MemberOpsResolver interface {
 	ListMembers(ctx context.Context, obj *ent.MemberOps, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.MemberOrder) (*ent.MemberConnection, error)
 }
 type MutationResolver interface {
-	Create(ctx context.Context) (*string, error)
 	Airport(ctx context.Context) (*ent.AirportOps, error)
 	Booking(ctx context.Context) (*ent.BookingOps, error)
 	Customer(ctx context.Context) (*ent.CustomerOps, error)
@@ -1392,13 +1390,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.Booking(childComplexity), true
 
-	case "Mutation.create":
-		if e.complexity.Mutation.Create == nil {
-			break
-		}
-
-		return e.complexity.Mutation.Create(childComplexity), true
-
 	case "Mutation.customer":
 		if e.complexity.Mutation.Customer == nil {
 			break
@@ -1797,7 +1788,7 @@ var sources = []*ast.Source{
     find_airport_by_id(id: Int!): Airport! @goField(forceResolver: true)
     list_airports(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: AirportOrder): AirportConnection! @goField(forceResolver: true)
 }
-extend type Mutation {
+type Mutation {
     airport: AirportOps! @goField(forceResolver: true)
 }
 
@@ -1875,9 +1866,6 @@ type BookingEdge{
 }
 
 `, BuiltIn: false},
-	{Name: "../schema/common.graphql", Input: `type Mutation{
-    create: String
-}`, BuiltIn: false},
 	{Name: "../schema/customer.graphql", Input: `
 type CustomerOps{
     create_customer(input: CustomerInput!): Customer! @goField(forceResolver: true)
@@ -10507,47 +10495,6 @@ func (ec *executionContext) fieldContext_MemberOps_list_members(ctx context.Cont
 	if fc.Args, err = ec.field_MemberOps_list_members_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_create(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_create(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().Create(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_create(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
 	}
 	return fc, nil
 }
@@ -23093,12 +23040,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "create":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_create(ctx, field)
-			})
-
 		case "airport":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {

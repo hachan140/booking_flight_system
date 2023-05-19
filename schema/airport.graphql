@@ -5,7 +5,7 @@ type AirportOps{
     find_airport_by_id(id: Int!): Airport! @goField(forceResolver: true)
     list_airports(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: AirportOrder): AirportConnection! @goField(forceResolver: true)
 }
-extend type Mutation {
+type Mutation {
     airport: AirportOps! @goField(forceResolver: true)
 }
 
@@ -14,6 +14,7 @@ type AirportConnection{
     pageInfo: PageInfo!
     totalCount: Int!
 }
+
 type AirportEdge{
     node: Airport
     cursor: Cursor!

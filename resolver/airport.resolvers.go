@@ -96,4 +96,8 @@ func (r *mutationResolver) Airport(ctx context.Context) (*ent.AirportOps, error)
 // AirportOps returns graphql1.AirportOpsResolver implementation.
 func (r *Resolver) AirportOps() graphql1.AirportOpsResolver { return &airportOpsResolver{r} }
 
+// Mutation returns graphql1.MutationResolver implementation.
+func (r *Resolver) Mutation() graphql1.MutationResolver { return &mutationResolver{r} }
+
 type airportOpsResolver struct{ *Resolver }
+type mutationResolver struct{ *Resolver }
