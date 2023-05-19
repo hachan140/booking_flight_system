@@ -149,7 +149,7 @@ var (
 		{Name: "name", Type: field.TypeString},
 		{Name: "economy_class_slots", Type: field.TypeInt64, Default: 0},
 		{Name: "business_class_slots", Type: field.TypeInt64, Default: 0},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"BOOKED", "FREE"}, Default: "FREE"},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"AVAILABLE", "UNAVAILABLE"}, Default: "AVAILABLE"},
 	}
 	// PlanesTable holds the schema information for the "planes" table.
 	PlanesTable = &schema.Table{

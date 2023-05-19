@@ -48,7 +48,6 @@ type ResolverRoot interface {
 	FlightOps() FlightOpsResolver
 	MemberOps() MemberOpsResolver
 	Mutation() MutationResolver
-	PlaneEdge() PlaneEdgeResolver
 	PlaneOps() PlaneOpsResolver
 	Query() QueryResolver
 }
@@ -350,9 +349,6 @@ type MutationResolver interface {
 	Flight(ctx context.Context) (*ent.FlightOps, error)
 	Member(ctx context.Context) (*ent.MemberOps, error)
 	Plane(ctx context.Context) (*ent.PlaneOps, error)
-}
-type PlaneEdgeResolver interface {
-	Node(ctx context.Context, obj *ent.PlaneEdge) (*ent.Member, error)
 }
 type PlaneOpsResolver interface {
 	CreatePlane(ctx context.Context, obj *ent.PlaneOps, input ent.CreatePlaneInput) (*ent.Plane, error)
@@ -1797,6 +1793,7 @@ type AirportConnection{
     pageInfo: PageInfo!
     totalCount: Int!
 }
+
 type AirportEdge{
     node: Airport
     cursor: Cursor!
@@ -1833,6 +1830,7 @@ input CustomerBookingRoundTrip{
     customer_id: Int!
     seat_type_comeback: BookingSeatType!
     flight_id_comeback: Int!
+
 }
 
 input MemberBooking{
@@ -2739,8 +2737,8 @@ enum PlaneOrderField {
 }
 """PlaneStatus is enum for the field status"""
 enum PlaneStatus @goModel(model: "booking-flight-system/ent/plane.Status") {
-  BOOKED
-  FREE
+  AVAILABLE
+  UNAVAILABLE
 }
 """
 PlaneWhereInput is used for filtering Plane objects.
@@ -3066,7 +3064,7 @@ type PlaneConnection{
 }
 
 type PlaneEdge{
-    node: Member
+    node: Plane
     cursor: Cursor!
 }
 `, BuiltIn: false},
@@ -11569,7 +11567,7 @@ func (ec *executionContext) _PlaneEdge_node(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.PlaneEdge().Node(rctx, obj)
+		return obj.Node, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11578,41 +11576,37 @@ func (ec *executionContext) _PlaneEdge_node(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*ent.Member)
+	res := resTmp.(*ent.Plane)
 	fc.Result = res
-	return ec.marshalOMember2ᚖbookingᚑflightᚑsystemᚋentᚐMember(ctx, field.Selections, res)
+	return ec.marshalOPlane2ᚖbookingᚑflightᚑsystemᚋentᚐPlane(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_PlaneEdge_node(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "PlaneEdge",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Member_id(ctx, field)
+				return ec.fieldContext_Plane_id(ctx, field)
 			case "createdAt":
-				return ec.fieldContext_Member_createdAt(ctx, field)
+				return ec.fieldContext_Plane_createdAt(ctx, field)
 			case "updatedAt":
-				return ec.fieldContext_Member_updatedAt(ctx, field)
-			case "email":
-				return ec.fieldContext_Member_email(ctx, field)
-			case "phoneNumber":
-				return ec.fieldContext_Member_phoneNumber(ctx, field)
-			case "fullName":
-				return ec.fieldContext_Member_fullName(ctx, field)
-			case "dob":
-				return ec.fieldContext_Member_dob(ctx, field)
-			case "cid":
-				return ec.fieldContext_Member_cid(ctx, field)
-			case "memberType":
-				return ec.fieldContext_Member_memberType(ctx, field)
-			case "hasCustomer":
-				return ec.fieldContext_Member_hasCustomer(ctx, field)
+				return ec.fieldContext_Plane_updatedAt(ctx, field)
+			case "name":
+				return ec.fieldContext_Plane_name(ctx, field)
+			case "economyClassSlots":
+				return ec.fieldContext_Plane_economyClassSlots(ctx, field)
+			case "businessClassSlots":
+				return ec.fieldContext_Plane_businessClassSlots(ctx, field)
+			case "status":
+				return ec.fieldContext_Plane_status(ctx, field)
+			case "flights":
+				return ec.fieldContext_Plane_flights(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Member", field.Name)
+			return nil, fmt.Errorf("no field named %q was found under type Plane", field.Name)
 		},
 	}
 	return fc, nil
@@ -23285,28 +23279,15 @@ func (ec *executionContext) _PlaneEdge(ctx context.Context, sel ast.SelectionSet
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("PlaneEdge")
 		case "node":
-			field := field
 
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._PlaneEdge_node(ctx, field, obj)
-				return res
-			}
+			out.Values[i] = ec._PlaneEdge_node(ctx, field, obj)
 
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
 		case "cursor":
 
 			out.Values[i] = ec._PlaneEdge_cursor(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))

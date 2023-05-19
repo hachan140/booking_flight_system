@@ -22,7 +22,7 @@ func (Plane) Fields() []ent.Field {
 		field.String("name").NotEmpty().Annotations(entgql.OrderField("NAME")),
 		field.Int64("economy_class_slots").Default(0).Annotations(entgql.OrderField("ECONOMY_CLASS_SLOTS")),
 		field.Int64("business_class_slots").Default(0).Annotations(entgql.OrderField("BUSINESS_CLASS_SLOTS")),
-		field.Enum("status").NamedValues("booked", "BOOKED", "free", "FREE").Default("FREE").Annotations(entgql.OrderField("STATUS")),
+		field.Enum("status").NamedValues("available", "AVAILABLE", "unavailable", "UNAVAILABLE").Default("AVAILABLE").Annotations(entgql.OrderField("STATUS")),
 	}
 }
 

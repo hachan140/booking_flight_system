@@ -10,7 +10,6 @@ import (
 	graphql1 "booking-flight-system/graphql"
 	"booking-flight-system/helper"
 	"context"
-	"fmt"
 
 	"entgo.io/contrib/entgql"
 )
@@ -47,7 +46,7 @@ func (r *customerOpsResolver) ListCustomers(ctx context.Context, obj *ent.Custom
 
 // Customer is the resolver for the customer field.
 func (r *mutationResolver) Customer(ctx context.Context) (*ent.CustomerOps, error) {
-	panic(fmt.Errorf("not implemented: Customer - customer"))
+	return &ent.CustomerOps{}, nil
 }
 
 // CustomerOps returns graphql1.CustomerOpsResolver implementation.

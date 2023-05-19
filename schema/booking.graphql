@@ -30,6 +30,7 @@ input CustomerBookingRoundTrip{
     customer_id: Int!
     seat_type_comeback: BookingSeatType!
     flight_id_comeback: Int!
+
 }
 
 input MemberBooking{

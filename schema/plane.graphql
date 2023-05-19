@@ -17,6 +17,6 @@ type PlaneConnection{
 }
 
 type PlaneEdge{
-    node: Member
+    node: Plane
     cursor: Cursor!
 }

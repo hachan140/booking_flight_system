@@ -13,7 +13,6 @@ import (
 	"booking-flight-system/helper"
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"entgo.io/contrib/entgql"
@@ -314,7 +313,7 @@ func (r *bookingOpsResolver) ListBookings(ctx context.Context, obj *ent.BookingO
 
 // Booking is the resolver for the booking field.
 func (r *mutationResolver) Booking(ctx context.Context) (*ent.BookingOps, error) {
-	panic(fmt.Errorf("not implemented: Booking - booking"))
+	return &ent.BookingOps{}, nil
 }
 
 // BookingOps returns graphql1.BookingOpsResolver implementation.

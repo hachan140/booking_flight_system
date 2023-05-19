@@ -10,19 +10,13 @@ import (
 	graphql1 "booking-flight-system/graphql"
 	"context"
 	"errors"
-	"fmt"
 
 	"entgo.io/contrib/entgql"
 )
 
 // Plane is the resolver for the plane field.
 func (r *mutationResolver) Plane(ctx context.Context) (*ent.PlaneOps, error) {
-	panic(fmt.Errorf("not implemented: Plane - plane"))
-}
-
-// Node is the resolver for the node field.
-func (r *planeEdgeResolver) Node(ctx context.Context, obj *ent.PlaneEdge) (*ent.Member, error) {
-	panic(fmt.Errorf("not implemented: Node - node"))
+	return &ent.PlaneOps{}, nil
 }
 
 // CreatePlane is the resolver for the create_plane field.
@@ -84,11 +78,7 @@ func (r *planeOpsResolver) ListPlanes(ctx context.Context, obj *ent.PlaneOps, af
 	return r.client.Plane.Query().Paginate(ctx, after, first, before, last, ent.WithPlaneOrder(orderBy))
 }
 
-// PlaneEdge returns graphql1.PlaneEdgeResolver implementation.
-func (r *Resolver) PlaneEdge() graphql1.PlaneEdgeResolver { return &planeEdgeResolver{r} }
-
 // PlaneOps returns graphql1.PlaneOpsResolver implementation.
 func (r *Resolver) PlaneOps() graphql1.PlaneOpsResolver { return &planeOpsResolver{r} }
 
-type planeEdgeResolver struct{ *Resolver }
 type planeOpsResolver struct{ *Resolver }

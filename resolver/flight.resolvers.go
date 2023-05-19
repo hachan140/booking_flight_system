@@ -13,7 +13,6 @@ import (
 	graphql1 "booking-flight-system/graphql"
 	"context"
 	"errors"
-	"fmt"
 
 	"entgo.io/contrib/entgql"
 )
@@ -48,11 +47,11 @@ func (r *flightOpsResolver) UpdateFlightStatus(ctx context.Context, obj *ent.Fli
 	if err != nil {
 		return nil, err
 	}
-	if _, err := f.Update().SetStatus(input.Status).Save(ctx); err != nil {
+	fNew, err := r.client.Flight.UpdateOneID(f.ID).SetStatus(input.Status).Save(ctx)
+	if err != nil {
 		return nil, err
 	}
-
-	return f, err
+	return fNew, err
 }
 
 // SearchFlight is the resolver for the search_flight field.
@@ -153,7 +152,7 @@ func (r *flightOpsResolver) ListFlights(ctx context.Context, obj *ent.FlightOps,
 
 // Flight is the resolver for the flight field.
 func (r *mutationResolver) Flight(ctx context.Context) (*ent.FlightOps, error) {
-	panic(fmt.Errorf("not implemented: Flight - flight"))
+	return &ent.FlightOps{}, nil
 }
 
 // FlightOps returns graphql1.FlightOpsResolver implementation.

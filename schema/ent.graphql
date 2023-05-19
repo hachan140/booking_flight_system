@@ -841,8 +841,8 @@ enum PlaneOrderField {
 }
 """PlaneStatus is enum for the field status"""
 enum PlaneStatus @goModel(model: "booking-flight-system/ent/plane.Status") {
-  BOOKED
-  FREE
+  AVAILABLE
+  UNAVAILABLE
 }
 """
 PlaneWhereInput is used for filtering Plane objects.

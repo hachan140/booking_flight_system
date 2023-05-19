@@ -10,7 +10,6 @@ import (
 	graphql1 "booking-flight-system/graphql"
 	"context"
 	"errors"
-	"fmt"
 
 	"entgo.io/contrib/entgql"
 )
@@ -90,7 +89,7 @@ func (r *airportOpsResolver) ListAirports(ctx context.Context, obj *ent.AirportO
 
 // Airport is the resolver for the airport field.
 func (r *mutationResolver) Airport(ctx context.Context) (*ent.AirportOps, error) {
-	panic(fmt.Errorf("not implemented: Airport - airport"))
+	return &ent.AirportOps{}, nil
 }
 
 // AirportOps returns graphql1.AirportOpsResolver implementation.

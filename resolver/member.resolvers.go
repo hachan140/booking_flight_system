@@ -12,7 +12,6 @@ import (
 	"booking-flight-system/helper"
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 
 	"entgo.io/contrib/entgql"
@@ -23,7 +22,7 @@ func (r *memberOpsResolver) SignUp(ctx context.Context, obj *ent.MemberOps, inpu
 	if err := helper.StringValidation(input.Email, "[a-z0-9]+@[a-z]+\\.[a-z]{1,2}", "email"); err != nil {
 		return nil, err
 	}
-	if err := helper.StringValidation(input.Password, ".{8,}", "email"); err != nil {
+	if err := helper.StringValidation(input.Password, ".{8,}", "password"); err != nil {
 		return nil, err
 	}
 	if err := helper.StringValidation(input.PhoneNumber, "[0]\\d{9}", "phone number"); err != nil {
@@ -173,7 +172,7 @@ func (r *memberOpsResolver) ListMembers(ctx context.Context, obj *ent.MemberOps,
 
 // Member is the resolver for the member field.
 func (r *mutationResolver) Member(ctx context.Context) (*ent.MemberOps, error) {
-	panic(fmt.Errorf("not implemented: Member - member"))
+	return &ent.MemberOps{}, nil
 }
 
 // MemberOps returns graphql1.MemberOpsResolver implementation.

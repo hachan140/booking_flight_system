@@ -81,13 +81,13 @@ var (
 // Status defines the type for the "status" enum field.
 type Status string
 
-// StatusFree is the default value of the Status enum.
-const DefaultStatus = StatusFree
+// StatusAvailable is the default value of the Status enum.
+const DefaultStatus = StatusAvailable
 
 // Status values.
 const (
-	StatusBooked Status = "BOOKED"
-	StatusFree   Status = "FREE"
+	StatusAvailable   Status = "AVAILABLE"
+	StatusUnavailable Status = "UNAVAILABLE"
 )
 
 func (s Status) String() string {
@@ -97,7 +97,7 @@ func (s Status) String() string {
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
 func StatusValidator(s Status) error {
 	switch s {
-	case StatusBooked, StatusFree:
+	case StatusAvailable, StatusUnavailable:
 		return nil
 	default:
 		return fmt.Errorf("plane: invalid enum value for status field: %q", s)

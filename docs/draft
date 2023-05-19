@@ -1,0 +1,703 @@
+# mutation sign_up{
+#   member{
+#     sign_up(
+#     input: {email: "haha6@gmail.com", password: "234346789", phoneNumber: "03377961666", fullName: "Vu Ha", cid: "012347735645568"}
+#   ) {
+#     email
+#     fullName
+#   }
+#   }
+# }
+
+# mutation sign_up_admin {
+#   member {
+#     sign_up(
+#       input: {email: "admin2@gmail.com", password: "123456789", phoneNumber: "01234563467", fullName: "Admin", cid: "0123456677884545", memberType:ADMIN}
+#     ) {
+#       email
+#       fullName
+#     }
+#   }
+# }
+# mutation {
+#   sign_up(
+#     input: {email: "admin@gmail.com", password: "123", phoneNumber: "023456778", fullName: "Admin", cid: "0123576723", memberType:ADMIN}
+#   ) {
+#     email
+#     fullName
+#   }
+# }
+
+# mutation admin_login{
+#   member{
+#     login(email:"admin2@gmail.com", password:"123456789"){
+#     	token
+#     	expired_at
+#   		}
+#   }
+# }
+
+# mutation{
+#   login(email:"havu14102@gmail.com", password:"123"){
+#     token
+#     expired_at
+#   }
+# }
+
+
+# mutation call_self{
+#   member{
+#     self{
+#     	email
+#     	fullName
+#     	createdAt
+#   	}
+#   }
+# }
+
+# mutation{
+#   delete_by_id(id:3)
+# }
+
+# mutation{
+#   change_password(oldPassword:"123", newPassword:"1234")
+# }
+
+# query{
+#   members{
+#     id
+#     fullName
+#     phoneNumber
+#     dob
+#     cid
+#   }
+# }
+
+# mutation find_member_by_name{
+#   member{
+#     find_member_by_name(name: "vu"){
+#       id
+#       createdAt
+#       updatedAt
+#       email
+#       phoneNumber
+#       fullName
+#       dob
+#       cid
+#     }
+#   }
+# }
+
+# mutation change_password{
+#   member{
+#     change_password(oldPassword: "123456789", newPassword: "12345678")
+#   }
+# }
+
+# mutation {
+#   member{
+#   update_member_profile(input:{fullName:"Hi Admin", cid:"32554675678", phoneNumber:"0987654321" dob:"2002-10-14T15:04:05+07:00"}){
+#     createdAt
+#     updatedAt
+#     email
+#     fullName
+#     cid
+#     phoneNumber
+#     dob
+#   }
+#   }
+# }
+
+# mutation find_member_by_email{
+#   member{
+#     find_member_by_email(email: "havu14102@gmail.com"){
+#      		createdAt
+#         updatedAt
+#         email
+#         fullName
+#         cid
+#         phoneNumber
+#         dob
+#     }
+#   }
+# }
+
+# mutation list_members{
+#   member{
+#     list_members(first: 5, orderBy:{direction: ASC, field: FULL_NAME}, after: "gqFp0wAAAAAAAAARoXalQWRtaW4"){
+#      		edges{
+#           node{
+#             fullName
+#             email
+#             phoneNumber
+#             dob
+#             cid
+#           }
+#           cursor
+#         }
+#       pageInfo{
+#         hasNextPage
+#         hasPreviousPage
+#         startCursor
+#         endCursor
+#       }
+#       totalCount
+#     }
+#   }
+# }
+
+# mutation create_customer{
+#   customer{
+#     create_customer(input:{email: "Hachan14@gmail.com", phoneNumber: "01234567894", fullName:"ha ha", cid:"1354657683453"}){
+#       createdAt
+#       email
+#       fullName
+#       dob
+#       cid
+#     }
+#   }
+# }
+
+
+# mutation list_customers{
+#   customer{
+#     list_customers(first: 5, orderBy:{direction: ASC, field: FULL_NAME}){
+#      		edges{
+#           node{
+#             fullName
+#             email
+#             phoneNumber
+#             dob
+#             cid
+#           }
+#           cursor
+#         }
+#       pageInfo{
+#         hasNextPage
+#         hasPreviousPage
+#         startCursor
+#         endCursor
+#       }
+#       totalCount
+#     }
+#   }
+# }
+
+# mutation{
+#   create_flight(input:{name:"HN-HCM", departAt:"2022-10-14T08:00:00Z", landAt:"2022-10-14T10:00:00Z", toID:1, fromID:3, planeID:1, availableEcSlot:1, availableBcSlot:1}){
+#     name
+#     createdAt
+
+#   }
+# }
+
+# mutation{
+#   create_flight(input:{name:"HN-HP", departAt:"2022-10-16T08:00:00Z", landAt:"2022-10-16T10:00:00Z", toID:5, fromID:3, planeID:2}){
+#     name
+#     createdAt
+#     fromAirport{
+#       name
+#     }
+#     toAirport{
+#       name
+#     }
+#     departAt
+#     landAt
+#     hasPlane{
+#       name
+#     }
+#   }
+# }
+
+# mutation{
+#   flight{
+#     create_flight(input:{name:"HCM-HN", departAt:"2022-10-23T10:00:00+07:00", landAt:"2022-10-23T12:00:00+07:00", fromID:1,  toID:3, planeID:2}){
+#     name
+#     createdAt
+#     fromAirport{
+#       name
+#     }
+#     toAirport{
+#       name
+#     }
+#     departAt
+#     landAt
+#     hasPlane{
+#       name
+#     }
+#   }
+#   }
+# }
+
+# mutation update_flight_status{
+#   flight{
+#     update_flight_status(id: 16, input:{status: LANDED}){
+#       id
+#       name
+#       status
+#     }
+#   }
+# }
+
+# mutation{
+#   flight{
+#     search_flight(input:{from_airport:"Noi Bai", to_airport:"Tan Son Nhat", depart_at:"2022-10-16T00:00:00+07:00"}){
+#     name
+#     id
+#     createdAt
+#     fromAirport{
+#       name
+#     }
+#     toAirport{
+#       name
+#     }
+#     departAt
+#     landAt
+#     hasPlane{
+#       name
+#     }
+#   }
+#   }
+
+# }
+
+# mutation{
+#   flight{
+#     update_flight(input:{id: 4, departAt:"2022-10-16T09:00:00Z", landAt: "2022-10-16T11:00:00Z", planeID: 2}){
+#     id
+#     planeID
+#     departAt
+#     landAt
+#   }
+#   }
+
+# }
+
+# mutation cancel_flight{
+#   flight{
+#     cancel_flight(id: 3)
+#   }
+# }
+
+# query{
+#   flights{
+#     id
+#     planeID
+#     departAt
+#     landAt
+#   }
+# }
+
+# query{
+#   planes{
+#     id
+#     name
+#   }
+# }
+
+#airport
+
+# mutation create_airport{
+#   airport{
+#     create_airport(input:{name:"Da Nang", lat: 15.8, long: 130.7}){
+#     createdAt
+#     updatedAt
+#     name
+#     lat
+#     long
+#   }
+#   }
+# }
+
+# mutation{
+#   create_airport(input:{name:"Cat Bi", lat: 15.1, long: 150.4}){
+#     createdAt
+#     updatedAt
+#     name
+#     lat
+#     long
+#   }
+# }
+
+# mutation find_airport_by_name{
+#   flight{
+#     find_airport_by_name(name: "Tan Son Nhat"){
+#       name
+#       createdAt
+#       updatedAt
+#       lat
+#       long
+#     }
+#   }
+# }
+
+# mutation find_flight_by_id{
+#   flight{
+#     find_flight_by_id(id: 18){
+#       name
+#       departAt
+#       landAt
+#       availableEcSlot
+#       availableBcSlot
+#       hasPlane{
+#         name
+#         economyClassSlots
+#         businessClassSlots
+#       }
+#       hasBooking{
+#         hasCustomer{
+#           fullName
+#           phoneNumber
+#         }
+#       }
+#     }
+#   }
+# }
+
+# mutation list_flights{
+#   flight{
+#     list_flights(first: 5, orderBy:{direction: ASC, field: NAME}){
+#      		edges{
+#           node{
+#             id
+#             name
+#             availableEcSlot
+#             availableBcSlot
+#             departAt
+#             landAt
+#           }
+#           cursor
+#         }
+#       pageInfo{
+#         hasNextPage
+#         hasPreviousPage
+#         startCursor
+#         endCursor
+#       }
+#       totalCount
+#     }
+#   }
+# }
+
+# mutation{
+#   update_airport(id: 2, input:{name:"San bay Tan Son Nhat"}){
+#     id
+#     name
+#     lat
+#     long
+#   }
+# }
+
+# mutation{
+#   delete_airport(id: 2)
+# }
+
+# mutation{
+#   airport{
+#     find_airport_by_id(id: 5){
+#     name
+#   }
+#   }
+# }
+
+# mutation list_airports{
+#   airport{
+#     list_airports(first: 2, orderBy:{direction: ASC, field: NAME}){
+#      		edges{
+#           node{
+#             id
+#             name
+#             lat
+#             long
+#           }
+#           cursor
+#         }
+#       pageInfo{
+#         hasNextPage
+#         hasPreviousPage
+#         startCursor
+#         endCursor
+#       }
+#       totalCount
+#     }
+#   }
+# }
+
+# mutation create_plane{
+#   plane{
+#     create_plane(input:{name:"VN Airlines", economyClassSlots: 200, businessClassSlots:50 }){
+#     name
+#     createdAt
+#     updatedAt
+#     economyClassSlots
+#     businessClassSlots
+#     status
+#   }
+#   }
+# }
+
+# mutation update_plane{
+#   plane{
+#     update_plane(id: 3, input:{name:"VietName Airlines"}){
+#       name
+#       updatedAt
+#       economyClassSlots
+#       businessClassSlots
+#       status
+#     }
+#   }
+# }
+
+# mutation find_plane_by_id{
+#   plane{
+#     find_plane_by_id(id:1){
+#     name
+#   }
+#   }
+# }
+
+
+# mutation{
+#   delete_plane(id: 1)
+# }
+
+# mutation list_planes{
+#   plane{
+#     list_planes(first: 2, orderBy:{direction: ASC, field: NAME}){
+#      		edges{
+#           node{
+#             id
+#             name
+#             economyClassSlots
+#             businessClassSlots
+#           }
+#           cursor
+#         }
+#       pageInfo{
+#         hasNextPage
+#         hasPreviousPage
+#         startCursor
+#         endCursor
+#       }
+#       totalCount
+#     }
+#   }
+# }
+
+# mutation{
+#   customer{
+#     create_customer(input:{email: "hachan14@gmail.com", phoneNumber: "012344569", fullName: "Ha Chan", cid: "123455679", dob:"2002-10-14T08:59:33.15871Z"}){
+#     email
+#     fullName
+#   }
+#   }
+
+# }
+
+# mutation{
+#   create_customer_booking(input:{seatType:EC, flight_id: 1, customer_id: 1}){
+#     id
+#     hasFlight{
+#       name
+#     }
+#     hasCustomer{
+#       fullName
+
+#     }
+#     status
+#   }
+# }
+
+# mutation{
+#   create_member_booking(input:{seatType:EC, flight_id:3}){
+#     createdAt
+#     updatedAt
+#     code
+#     flightID
+#     hasFlight{
+#       name
+#       availableEcSlot
+#       availableBcSlot
+#     }
+#     hasCustomer{
+#       id
+#       fullName
+#       memberID
+#     }
+#   }
+# }
+
+# mutation{
+#   create_member_booking_round_trip(input:{
+#     seat_type_arrive:EC,
+#     flight_id_arrive:16,
+#     seat_type_comeback:BC
+#     flight_id_comeback:18
+#   }){
+#     seatType
+#     id
+#     code
+#     hasCustomer{
+#       fullName
+#     }
+#     hasFlight{
+#       id
+#       name
+#       availableEcSlot
+#       availableBcSlot
+#     }
+#   }
+# }
+
+# mutation create_customer_booking{
+#   booking{
+#     create_customer_booking(input:{seatType:EC, flight_id:18, customer_id: 1}){
+#     createdAt
+#     updatedAt
+#     code
+#     flightID
+#     hasFlight{
+#       name
+#       availableEcSlot
+#       availableBcSlot
+#     }
+#     hasCustomer{
+#       id
+#       fullName
+#       memberID
+#     }
+#   }
+#   }
+# }
+
+mutation check_customer_booking_exist{
+  booking{
+    check_customer_booking_exist(cus_id: 1, flight_id: 18){
+      code
+      customerID
+      flightID
+    }
+  }
+}
+
+# mutation{
+#   create_customer_booking_round_trip(input:{
+#     seat_type_arrive:EC,
+#     flight_id_arrive:16,
+#     customer_id:1
+#     seat_type_comeback:BC
+#     flight_id_comeback:18
+#   }){
+#     seatType
+#     id
+#     code
+#     hasCustomer{
+#       fullName
+#     }
+#     hasFlight{
+#       id
+#       name
+#       availableEcSlot
+#       availableBcSlot
+#     }
+#   }
+# }
+
+# query{
+#   flights{
+#     id
+#     name
+#     availableEcSlot
+#     availableBcSlot
+#   }
+# }
+
+# query{
+#   bookings{
+#     id
+#     hasFlight{
+#     	name
+#     }
+#     hasCustomer{
+#       fullName
+#     }
+#     code
+#   }
+# }
+
+# mutation{
+#   find_customer_by_cid(cid:"123455679"){
+#     fullName
+#   }
+# }
+
+# mutation{
+#   booking{
+#     search_booking(input: {flight_id:1, booking_code:"j", cid:"123455679"}){
+#     code
+#     seatType
+#     hasFlight{
+#       fromAirport{
+#         name
+#       }
+#       toAirport{
+#         name
+#       }
+#       departAt
+#       landAt
+#     }
+#   }
+#   }
+
+# }
+
+# mutation{
+
+# }
+
+# mutation{
+#   view_booking_history{
+#     id
+#     code
+#     status
+#     seatType
+#     hasFlight{
+#       fromAirport{
+#         name
+#       }
+#       toAirport{
+#         name
+#       }
+#       departAt
+#       landAt
+#     }
+#     hasCustomer{
+#       fullName
+#     }
+#   }
+# }
+
+# mutation{
+#   search_flight(input:{})
+# }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
