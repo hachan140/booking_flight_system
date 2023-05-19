@@ -5,6 +5,7 @@ package ent
 import (
 	"booking-flight-system/ent/booking"
 	"booking-flight-system/ent/flight"
+	"booking-flight-system/ent/plane"
 	"time"
 )
 
@@ -129,6 +130,12 @@ type Token struct {
 	ExpiredAt time.Time `json:"expired_at"`
 }
 
+type UpdateAirport struct {
+	Name *string  `json:"name,omitempty"`
+	Lat  *float64 `json:"lat,omitempty"`
+	Long *float64 `json:"long,omitempty"`
+}
+
 type UpdateFlight struct {
 	ID       int        `json:"id"`
 	Name     *string    `json:"name,omitempty"`
@@ -151,4 +158,11 @@ type UpdateMember struct {
 	FullName    *string    `json:"fullName,omitempty"`
 	Dob         *time.Time `json:"dob,omitempty"`
 	Cid         *string    `json:"cid,omitempty"`
+}
+
+type UpdatePlane struct {
+	Name               *string       `json:"name,omitempty"`
+	EconomyClassSlots  *int          `json:"economyClassSlots,omitempty"`
+	BusinessClassSlots *int          `json:"businessClassSlots,omitempty"`
+	Status             *plane.Status `json:"status,omitempty"`
 }

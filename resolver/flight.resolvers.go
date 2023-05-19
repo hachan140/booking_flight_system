@@ -92,7 +92,6 @@ func (r *flightOpsResolver) UpdateFlight(ctx context.Context, obj *ent.FlightOps
 	if err != nil {
 		return nil, err
 	}
-
 	if _, err := r.client.Plane.Get(ctx, *input.PlaneID); err != nil {
 		return nil, errors.New("can't find plane")
 	}

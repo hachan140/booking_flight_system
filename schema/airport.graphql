@@ -1,6 +1,6 @@
 type AirportOps{
     create_airport(input:CreateAirportInput!): Airport! @goField(forceResolver: true)
-    update_airport(id: Int!, input:UpdateAirportInput!): Airport! @goField(forceResolver: true)
+    update_airport(id: Int!, input:UpdateAirport!): Airport! @goField(forceResolver: true)
     delete_airport(id: Int!): String @goField(forceResolver: true)
     find_airport_by_id(id: Int!): Airport! @goField(forceResolver: true)
     list_airports(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: AirportOrder): AirportConnection! @goField(forceResolver: true)
@@ -18,4 +18,9 @@ type AirportConnection{
 type AirportEdge{
     node: Airport
     cursor: Cursor!
+}
+input UpdateAirport{
+    name: String
+    lat: Float
+    long: Float
 }

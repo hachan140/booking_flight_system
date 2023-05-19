@@ -4,7 +4,7 @@
 - All API need authentication need add below section to header
 
   ```json{ "Authorization": "token_member_here"}```
-- API need authentication will have role                                                         
+- API need authentication will have role [MEMBER, ADMIN]                                                      
 ## Member
 ### Sign up new member
 ```graphql
@@ -137,7 +137,7 @@ mutation find_member_by_email{
 }
 ```
 
-### List member
+### List members
 Role: ADMIN
 ```graphql
 mutation list_members{
@@ -240,7 +240,20 @@ mutation find_plane_by_id{
 ```
 ### Update Plane
 Role: ADMIN
-
+```graphql
+mutation{
+  plane{
+    update_plane(id: 1, input:{name:"Updated", economyClassSlots:200, businessClassSlots: 40, status:AVAILABLE}){
+      id
+      updatedAt
+      name
+      economyClassSlots
+      businessClassSlots
+      status
+    }
+  }
+}
+```
 ### List Planes
 Role: ADMIN
 ```graphql
@@ -289,7 +302,19 @@ mutation create_airport{
 ### Update airport
 Role: ADMIN
 ```graphql
-
+mutation update_airport{
+  airport{
+    update_airport(id: 1, input:{name: "Tan Son Nhat", lat: 124.5, long: 32.5, }){
+      id
+      createdAt
+      updatedAt
+      name
+      lat
+      long
+      
+    }
+  }
+}
 ```
 
 ### Find airport by ID
@@ -394,12 +419,6 @@ mutation{
 }
 ```
 
-### Update Flight Status
-Role: ADMIN
-```graphql
-
-```
-
 ### Cancel Flight
 Role: ADMIN
 ```graphql
@@ -481,6 +500,231 @@ mutation list_flights{
 ```
 
 ## BOOKING
+### Create Customer Booking (one way) (not login)
+After finding suitable flight (search flight), customer can book a flight
+```graphql
+mutation create_customer_booking{
+  booking{
+    create_customer_booking(input:{seatType:EC, flight_id:2, customer_id: 1}){
+    createdAt
+    updatedAt
+    code
+    flightID
+    hasFlight{
+      name
+      availableEcSlot
+      availableBcSlot
+    }
+    hasCustomer{
+      id
+      fullName
+      memberID
+    }
+  }
+  }
+}
+```
+### Create Customer booking round trip
+After choosing round trip, customer find flight departure flight and return flight and can reserve 2 slot
+```graphql
+mutation create_customer_booking_round_trip{
+  booking{
+    create_customer_booking_round_trip(input:{
+    seat_type_arrive:EC,
+    flight_id_arrive:2,
+    customer_id:1
+    seat_type_comeback:BC
+    flight_id_comeback:1
+  }){
+    seatType
+    id
+    code
+    hasCustomer{
+      fullName
+    }
+    hasFlight{
+      id
+      name
+      availableEcSlot
+      availableBcSlot
+    }
+  }
+  }
+ 
+}
+```
+### Create Member Booking (one way)
+Role: MEMBER
+```graphql
+mutation create_member_booking{
+  booking{
+    create_member_booking(input:{seatType:EC, flight_id:3}){
+    createdAt
+    updatedAt
+    code
+    flightID
+    hasFlight{
+      name
+      availableEcSlot
+      availableBcSlot
+    }
+    hasCustomer{
+      id
+      fullName
+      memberID
+    }
+  }
+  }
+}
+```
+### Create Member Booking Round Trip 
+Role: MEMBER
+```graphql
+mutation create_member_booking_round_trip{
+  booking{
+    create_member_booking_round_trip(input:{
+    seat_type_arrive:EC,
+    flight_id_arrive:7,
+    seat_type_comeback:BC
+    flight_id_comeback:2
+  }){
+    seatType
+    id
+    code
+    hasCustomer{
+      fullName
+    }
+    hasFlight{
+      id
+      name
+      availableEcSlot
+      availableBcSlot
+    }
+  }
+  }
+  
+}
+```
+
+### View Booking History
+Role: MEMBER
+```graphql
+mutation{
+  booking{
+    view_booking_history{
+    id
+    code
+    status
+    seatType
+    hasFlight{
+      fromAirport{
+        name
+      }
+      toAirport{
+        name
+      }
+      departAt
+      landAt
+    }
+    hasCustomer{
+      fullName
+    }
+  }
+  }
+  
+}
+```
+
+### Search Booking (for customer does not log in)
+```graphql
+mutation search_booking{
+  booking{
+    search_booking(input: {flight_id:2, booking_code:"52KJZYGK", cid:"1354657683453"}){
+    code
+    seatType
+    hasFlight{
+      fromAirport{
+        name
+      }
+      toAirport{
+        name
+      }
+      departAt
+      landAt
+    }
+  }
+  }
+}
+```
+
+### Cancel booking 
+```graphql
+mutation cancel_booking{
+  booking{
+    cancel_booking(input:{flight_id: 1, booking_code: "11DNKFGT", cid: "12345234754"})
+  }
+}
+```
+### Update Booking Status Cancel when flight had been canceled
+Return total booking was canceled
+```graphql
+mutation update_bookings_status_cancel{
+  booking{
+    update_bookings_status(flight_id: 1)
+  }
+}
+```
+
+### List Bookings
+Role: ADMIN
+```graphql
+mutation list_bookings{
+  booking{
+      list_bookings(first: 5, orderBy:{direction: ASC, field: CUSTOMER_ID}){
+     		edges{
+          node{
+            id
+            createdAt
+            updatedAt
+            code
+            status
+            seatType
+            isRound
+          }
+          cursor
+        }
+      pageInfo{
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+      }
+      totalCount
+    }
+    
+  }
+}
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -31,14 +31,14 @@ func (r *planeOpsResolver) CreatePlane(ctx context.Context, obj *ent.PlaneOps, i
 }
 
 // UpdatePlane is the resolver for the update_plane field.
-func (r *planeOpsResolver) UpdatePlane(ctx context.Context, obj *ent.PlaneOps, id int, input ent.UpdatePlaneInput) (*ent.Plane, error) {
+func (r *planeOpsResolver) UpdatePlane(ctx context.Context, obj *ent.PlaneOps, id int, input ent.UpdatePlane) (*ent.Plane, error) {
 	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
 	if len(*input.Name) == 0 || *input.BusinessClassSlots <= 0 || *input.EconomyClassSlots <= 0 {
 		return nil, errors.New("invalid plane input")
 	}
-	plane, err := r.client.Plane.UpdateOneID(id).SetInput(input).Save(ctx)
+	plane, err := r.client.Plane.UpdateOneID(id).SetName(*input.Name).SetStatus(*input.Status).SetBusinessClassSlots(int64(*input.BusinessClassSlots)).SetEconomyClassSlots(int64(*input.EconomyClassSlots)).Save(ctx)
 	if err != nil {
 		return nil, err
 	}

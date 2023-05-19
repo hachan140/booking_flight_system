@@ -1,6 +1,6 @@
 type PlaneOps{
     create_plane(input:CreatePlaneInput!): Plane! @goField(forceResolver: true)
-    update_plane(id:Int!, input: UpdatePlaneInput!): Plane! @goField(forceResolver: true)
+    update_plane(id:Int!, input: UpdatePlane!): Plane! @goField(forceResolver: true)
     delete_plane(id:Int!): String @goField(forceResolver: true)
     find_plane_by_id(id: Int!): Plane! @goField(forceResolver: true)
     list_planes(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: PlaneOrder): PlaneConnection! @goField(forceResolver: true)
@@ -19,4 +19,11 @@ type PlaneConnection{
 type PlaneEdge{
     node: Plane
     cursor: Cursor!
+}
+
+input UpdatePlane{
+    name: String
+    economyClassSlots: Int
+    businessClassSlots: Int
+    status: PlaneStatus
 }

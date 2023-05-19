@@ -48,6 +48,9 @@ func (r *bookingOpsResolver) CreateCustomerBooking(ctx context.Context, obj *ent
 
 // CreateCustomerBookingRoundTrip is the resolver for the create_customer_booking_round_trip field.
 func (r *bookingOpsResolver) CreateCustomerBookingRoundTrip(ctx context.Context, obj *ent.BookingOps, input *ent.CustomerBookingRoundTrip) ([]*ent.Booking, error) {
+	if input.FlightIDComeback == input.FlightIDArrive {
+		return nil, errors.New("flight comebacks must be different with flight arrive")
+	}
 	flightArrive, err := r.FindFlightByID(ctx, obj, input.FlightIDArrive)
 	if err != nil {
 		return nil, err
@@ -257,6 +260,10 @@ func (r *bookingOpsResolver) CancelBooking(ctx context.Context, obj *ent.Booking
 
 // UpdateBookingsStatus is the resolver for the update_bookings_status field.
 func (r *bookingOpsResolver) UpdateBookingsStatus(ctx context.Context, obj *ent.BookingOps, flightID int) (*int, error) {
+	_, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin)
+	if err != nil {
+		return nil, err
+	}
 	bookings, err := r.client.Booking.Update().Where(booking.FlightID(flightID)).SetStatus(booking.StatusCancel).Save(ctx)
 	if err != nil {
 		return nil, err

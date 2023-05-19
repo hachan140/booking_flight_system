@@ -30,7 +30,7 @@ func (r *airportOpsResolver) CreateAirport(ctx context.Context, obj *ent.Airport
 }
 
 // UpdateAirport is the resolver for the update_airport field.
-func (r *airportOpsResolver) UpdateAirport(ctx context.Context, obj *ent.AirportOps, id int, input ent.UpdateAirportInput) (*ent.Airport, error) {
+func (r *airportOpsResolver) UpdateAirport(ctx context.Context, obj *ent.AirportOps, id int, input ent.UpdateAirport) (*ent.Airport, error) {
 	if _, err := r.memberTypeValidator.OneOf(ctx, member.MemberTypeAdmin); err != nil {
 		return nil, err
 	}
@@ -41,7 +41,7 @@ func (r *airportOpsResolver) UpdateAirport(ctx context.Context, obj *ent.Airport
 	if err != nil {
 		return nil, errors.New("can't find airport")
 	}
-	airportRes, err = airportRes.Update().SetInput(input).Save(ctx)
+	airportRes, err = airportRes.Update().SetName(*input.Name).SetLat(*input.Lat).SetLong(*input.Long).Save(ctx)
 	if err != nil {
 		return nil, err
 	}

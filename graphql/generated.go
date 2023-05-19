@@ -83,7 +83,7 @@ type ComplexityRoot struct {
 		DeleteAirport   func(childComplexity int, id int) int
 		FindAirportByID func(childComplexity int, id int) int
 		ListAirports    func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.AirportOrder) int
-		UpdateAirport   func(childComplexity int, id int, input ent.UpdateAirportInput) int
+		UpdateAirport   func(childComplexity int, id int, input ent.UpdateAirport) int
 	}
 
 	Booking struct {
@@ -276,7 +276,7 @@ type ComplexityRoot struct {
 		DeletePlane   func(childComplexity int, id int) int
 		FindPlaneByID func(childComplexity int, id int) int
 		ListPlanes    func(childComplexity int, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.PlaneOrder) int
-		UpdatePlane   func(childComplexity int, id int, input ent.UpdatePlaneInput) int
+		UpdatePlane   func(childComplexity int, id int, input ent.UpdatePlane) int
 	}
 
 	Query struct {
@@ -298,7 +298,7 @@ type ComplexityRoot struct {
 
 type AirportOpsResolver interface {
 	CreateAirport(ctx context.Context, obj *ent.AirportOps, input ent.CreateAirportInput) (*ent.Airport, error)
-	UpdateAirport(ctx context.Context, obj *ent.AirportOps, id int, input ent.UpdateAirportInput) (*ent.Airport, error)
+	UpdateAirport(ctx context.Context, obj *ent.AirportOps, id int, input ent.UpdateAirport) (*ent.Airport, error)
 	DeleteAirport(ctx context.Context, obj *ent.AirportOps, id int) (*string, error)
 	FindAirportByID(ctx context.Context, obj *ent.AirportOps, id int) (*ent.Airport, error)
 	ListAirports(ctx context.Context, obj *ent.AirportOps, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.AirportOrder) (*ent.AirportConnection, error)
@@ -352,7 +352,7 @@ type MutationResolver interface {
 }
 type PlaneOpsResolver interface {
 	CreatePlane(ctx context.Context, obj *ent.PlaneOps, input ent.CreatePlaneInput) (*ent.Plane, error)
-	UpdatePlane(ctx context.Context, obj *ent.PlaneOps, id int, input ent.UpdatePlaneInput) (*ent.Plane, error)
+	UpdatePlane(ctx context.Context, obj *ent.PlaneOps, id int, input ent.UpdatePlane) (*ent.Plane, error)
 	DeletePlane(ctx context.Context, obj *ent.PlaneOps, id int) (*string, error)
 	FindPlaneByID(ctx context.Context, obj *ent.PlaneOps, id int) (*ent.Plane, error)
 	ListPlanes(ctx context.Context, obj *ent.PlaneOps, after *entgql.Cursor[int], first *int, before *entgql.Cursor[int], last *int, orderBy *ent.PlaneOrder) (*ent.PlaneConnection, error)
@@ -532,7 +532,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.AirportOps.UpdateAirport(childComplexity, args["id"].(int), args["input"].(ent.UpdateAirportInput)), true
+		return e.complexity.AirportOps.UpdateAirport(childComplexity, args["id"].(int), args["input"].(ent.UpdateAirport)), true
 
 	case "Booking.code":
 		if e.complexity.Booking.Code == nil {
@@ -1591,7 +1591,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.PlaneOps.UpdatePlane(childComplexity, args["id"].(int), args["input"].(ent.UpdatePlaneInput)), true
+		return e.complexity.PlaneOps.UpdatePlane(childComplexity, args["id"].(int), args["input"].(ent.UpdatePlane)), true
 
 	case "Query.airports":
 		if e.complexity.Query.Airports == nil {
@@ -1707,6 +1707,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputPlaneWhereInput,
 		ec.unmarshalInputSearchBooking,
 		ec.unmarshalInputSearchFlight,
+		ec.unmarshalInputUpdateAirport,
 		ec.unmarshalInputUpdateAirportInput,
 		ec.unmarshalInputUpdateBookingInput,
 		ec.unmarshalInputUpdateCustomerInput,
@@ -1716,6 +1717,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputUpdateFlightStatus,
 		ec.unmarshalInputUpdateMember,
 		ec.unmarshalInputUpdateMemberInput,
+		ec.unmarshalInputUpdatePlane,
 		ec.unmarshalInputUpdatePlaneInput,
 	)
 	first := true
@@ -1779,7 +1781,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 var sources = []*ast.Source{
 	{Name: "../schema/airport.graphql", Input: `type AirportOps{
     create_airport(input:CreateAirportInput!): Airport! @goField(forceResolver: true)
-    update_airport(id: Int!, input:UpdateAirportInput!): Airport! @goField(forceResolver: true)
+    update_airport(id: Int!, input:UpdateAirport!): Airport! @goField(forceResolver: true)
     delete_airport(id: Int!): String @goField(forceResolver: true)
     find_airport_by_id(id: Int!): Airport! @goField(forceResolver: true)
     list_airports(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: AirportOrder): AirportConnection! @goField(forceResolver: true)
@@ -1797,7 +1799,13 @@ type AirportConnection{
 type AirportEdge{
     node: Airport
     cursor: Cursor!
-}`, BuiltIn: false},
+}
+input UpdateAirport{
+    name: String
+    lat: Float
+    long: Float
+}
+`, BuiltIn: false},
 	{Name: "../schema/booking.graphql", Input: `type BookingOps{
     create_customer_booking(input: CustomerBooking!): Booking! @goField(forceResolver: true)
     create_customer_booking_round_trip(input: CustomerBookingRoundTrip): [Booking!] @goField(forceResolver: true)
@@ -3047,7 +3055,7 @@ type MemberEdge{
 `, BuiltIn: false},
 	{Name: "../schema/plane.graphql", Input: `type PlaneOps{
     create_plane(input:CreatePlaneInput!): Plane! @goField(forceResolver: true)
-    update_plane(id:Int!, input: UpdatePlaneInput!): Plane! @goField(forceResolver: true)
+    update_plane(id:Int!, input: UpdatePlane!): Plane! @goField(forceResolver: true)
     delete_plane(id:Int!): String @goField(forceResolver: true)
     find_plane_by_id(id: Int!): Plane! @goField(forceResolver: true)
     list_planes(after: Cursor, first: Int, before: Cursor, last: Int, orderBy: PlaneOrder): PlaneConnection! @goField(forceResolver: true)
@@ -3067,7 +3075,13 @@ type PlaneEdge{
     node: Plane
     cursor: Cursor!
 }
-`, BuiltIn: false},
+
+input UpdatePlane{
+    name: String
+    economyClassSlots: Int
+    businessClassSlots: Int
+    status: PlaneStatus
+}`, BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
@@ -3183,10 +3197,10 @@ func (ec *executionContext) field_AirportOps_update_airport_args(ctx context.Con
 		}
 	}
 	args["id"] = arg0
-	var arg1 ent.UpdateAirportInput
+	var arg1 ent.UpdateAirport
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNUpdateAirportInput2bookingᚑflightᚑsystemᚋentᚐUpdateAirportInput(ctx, tmp)
+		arg1, err = ec.unmarshalNUpdateAirport2bookingᚑflightᚑsystemᚋentᚐUpdateAirport(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3918,10 +3932,10 @@ func (ec *executionContext) field_PlaneOps_update_plane_args(ctx context.Context
 		}
 	}
 	args["id"] = arg0
-	var arg1 ent.UpdatePlaneInput
+	var arg1 ent.UpdatePlane
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNUpdatePlaneInput2bookingᚑflightᚑsystemᚋentᚐUpdatePlaneInput(ctx, tmp)
+		arg1, err = ec.unmarshalNUpdatePlane2bookingᚑflightᚑsystemᚋentᚐUpdatePlane(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4762,7 +4776,7 @@ func (ec *executionContext) _AirportOps_update_airport(ctx context.Context, fiel
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.AirportOps().UpdateAirport(rctx, obj, fc.Args["id"].(int), fc.Args["input"].(ent.UpdateAirportInput))
+		return ec.resolvers.AirportOps().UpdateAirport(rctx, obj, fc.Args["id"].(int), fc.Args["input"].(ent.UpdateAirport))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -11743,7 +11757,7 @@ func (ec *executionContext) _PlaneOps_update_plane(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.PlaneOps().UpdatePlane(rctx, obj, fc.Args["id"].(int), fc.Args["input"].(ent.UpdatePlaneInput))
+		return ec.resolvers.PlaneOps().UpdatePlane(rctx, obj, fc.Args["id"].(int), fc.Args["input"].(ent.UpdatePlane))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -20291,6 +20305,53 @@ func (ec *executionContext) unmarshalInputSearchFlight(ctx context.Context, obj 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateAirport(ctx context.Context, obj interface{}) (ent.UpdateAirport, error) {
+	var it ent.UpdateAirport
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "lat", "long"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "lat":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("lat"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Lat = data
+		case "long":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("long"))
+			data, err := ec.unmarshalOFloat2ᚖfloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Long = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateAirportInput(ctx context.Context, obj interface{}) (ent.UpdateAirportInput, error) {
 	var it ent.UpdateAirportInput
 	asMap := map[string]interface{}{}
@@ -21149,6 +21210,62 @@ func (ec *executionContext) unmarshalInputUpdateMemberInput(ctx context.Context,
 				return it, err
 			}
 			it.ClearHasCustomer = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdatePlane(ctx context.Context, obj interface{}) (ent.UpdatePlane, error) {
+	var it ent.UpdatePlane
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"name", "economyClassSlots", "businessClassSlots", "status"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "name":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Name = data
+		case "economyClassSlots":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("economyClassSlots"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.EconomyClassSlots = data
+		case "businessClassSlots":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("businessClassSlots"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.BusinessClassSlots = data
+		case "status":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			data, err := ec.unmarshalOPlaneStatus2ᚖbookingᚑflightᚑsystemᚋentᚋplaneᚐStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Status = data
 		}
 	}
 
@@ -25006,8 +25123,8 @@ func (ec *executionContext) marshalNToken2ᚖbookingᚑflightᚑsystemᚋentᚐT
 	return ec._Token(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNUpdateAirportInput2bookingᚑflightᚑsystemᚋentᚐUpdateAirportInput(ctx context.Context, v interface{}) (ent.UpdateAirportInput, error) {
-	res, err := ec.unmarshalInputUpdateAirportInput(ctx, v)
+func (ec *executionContext) unmarshalNUpdateAirport2bookingᚑflightᚑsystemᚋentᚐUpdateAirport(ctx context.Context, v interface{}) (ent.UpdateAirport, error) {
+	res, err := ec.unmarshalInputUpdateAirport(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -25021,8 +25138,8 @@ func (ec *executionContext) unmarshalNUpdateMember2bookingᚑflightᚑsystemᚋe
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNUpdatePlaneInput2bookingᚑflightᚑsystemᚋentᚐUpdatePlaneInput(ctx context.Context, v interface{}) (ent.UpdatePlaneInput, error) {
-	res, err := ec.unmarshalInputUpdatePlaneInput(ctx, v)
+func (ec *executionContext) unmarshalNUpdatePlane2bookingᚑflightᚑsystemᚋentᚐUpdatePlane(ctx context.Context, v interface{}) (ent.UpdatePlane, error) {
+	res, err := ec.unmarshalInputUpdatePlane(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
